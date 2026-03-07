@@ -1,0 +1,740 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line
+} from 'recharts'
+
+interface User { id: number; username: string; email: string; role: string; status: string; created_at: string }
+interface PDF { id: number; name: string; url: string; category: string; thumbnail: string; views: number; downloads: number; is_active: boolean }
+interface Stats { totalPdf: number; activePdf: number; totalUser: number; totalDownload: number; totalViews: number }
+interface AdminRequest {
+  id: number
+  requester_id: number | null
+  requester_username: string | null
+  username: string
+  email: string
+  requested_role: string
+  status: 'Pending' | 'Approved' | 'Rejected'
+  owner_note: string | null
+  owner_username: string | null
+  created_at: string
+  updated_at: string
+}
+
+const CATS = ['fx-basic', 'fx-advanced', 'fx-technical', 'fx-psychology']
+const THUMBS = ['📊', '📈', '📉', '🧠', '📚', '💰', '⚖️', '🔧', '🌍', '⚠️', '🎯', '💧', '✅', '🔨', '⚡', '📦', '🌊', '🏗️', '🎁', '📍', '🔐', '🕯️', '🎨', '💼', '📖', '🚀', '💎', '📄']
+
+const COLORS = ['#4488ff', '#C720E6', '#28c864', '#FF6B35', '#7aadff', '#e070ff']
+
+// Menu items
+const MENU_ITEMS = [
+  { key: 'dashboard', label: 'Dashboard', icon: '📊' },
+  { key: 'pdfs', label: 'Kelola PDF', icon: '📄' },
+  { key: 'users', label: 'Kelola User', icon: '👥' },
+  { key: 'settings', label: 'Pengaturan', icon: '⚙️' },
+]
+
+export default function AdminPage() {
+  const router = useRouter()
+  const [me, setMe] = useState<any>(null)
+  const [activeMenu, setActiveMenu] = useState('dashboard')
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [pdfs, setPdfs] = useState<PDF[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState<null | 'add' | 'edit'>(null)
+  const [editTarget, setEditTarget] = useState<PDF | null>(null)
+  const [form, setForm] = useState({ name: '', url: '', category: 'fx-basic', thumbnail: '📄' })
+  const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState('')
+  const [search, setSearch] = useState('')
+  const [maintenance, setMaintenance] = useState(false)
+  const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([])
+  const [adminForm, setAdminForm] = useState({ username: '', email: '', password: '' })
+  const [creatingAdmin, setCreatingAdmin] = useState(false)
+  const [processingRequestId, setProcessingRequestId] = useState<number | null>(null)
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.json()).then(d => {
+      if (!d.data || !['Owner', 'Admin'].includes(d.data.role)) router.push('/library')
+      else { setMe(d.data); loadAll() }
+    })
+  }, [])
+
+  async function loadAll() {
+    setLoading(true)
+    const [pRes, uRes, sRes, reqRes] = await Promise.all([
+      fetch('/api/pdfs').then(r => r.json()),
+      fetch('/api/users').then(r => r.json()),
+      fetch('/api/admin/settings').then(r => r.json()),
+      fetch('/api/admin/admin-requests').then(r => r.json()).catch(() => ({ success: false, data: [] }))
+    ])
+    if (pRes.success) setPdfs(pRes.data)
+    if (uRes.success) setUsers(uRes.data)
+    if (sRes.success && sRes.data) setMaintenance(sRes.data.maintenance_mode === 'true')
+    if (reqRes.success) setAdminRequests(reqRes.data || [])
+    setLoading(false)
+  }
+
+  async function toggleMaintenance() {
+    if (!confirm(maintenance ? 'Matikan Mode Maintenance?' : 'Aktifkan Mode Maintenance? Semua user biasa tidak akan bisa akses web.')) return
+    const newVal = !maintenance
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'maintenance_mode', value: String(newVal) })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setMaintenance(newVal)
+        showToast(newVal ? '🚧 Mode Maintenance AKTIF' : '✅ Mode Maintenance MATI')
+      } else showToast('⚠️ Gagal ubah maintenance')
+    } catch { showToast('⚠️ Error ubah maintenance') }
+  }
+
+  function openAdd() { setForm({ name: '', url: '', category: 'fx-basic', thumbnail: '📄' }); setEditTarget(null); setModal('add') }
+  function openEdit(p: PDF) { setForm({ name: p.name, url: p.url, category: p.category, thumbnail: p.thumbnail }); setEditTarget(p); setModal('edit') }
+
+  async function savePDF() {
+    if (!form.name || !form.url) { showToast('⚠️ Nama dan URL wajib diisi'); return }
+    setSaving(true)
+    try {
+      const res = await fetch(editTarget ? `/api/pdfs/${editTarget.id}` : '/api/pdfs', {
+        method: editTarget ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      })
+      const data = await res.json()
+      if (data.success) { setModal(null); loadAll(); showToast(editTarget ? '✅ PDF diperbarui' : '✅ PDF ditambahkan') }
+      else showToast('⚠️ ' + data.error)
+    } finally { setSaving(false) }
+  }
+
+  async function toggleActive(p: PDF) {
+    await fetch(`/api/pdfs/${p.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: !p.is_active }) })
+    loadAll(); showToast(`${!p.is_active ? '✅ Diaktifkan' : '🚫 Dinonaktifkan'}`)
+  }
+
+  async function deletePDF(p: PDF) {
+    if (!confirm(`Hapus "${p.name}"?`)) return
+    await fetch(`/api/pdfs/${p.id}`, { method: 'DELETE' })
+    loadAll(); showToast('🗑️ PDF dihapus')
+  }
+
+  async function toggleUserStatus(u: User) {
+    // Admin tidak bisa mengubah status user lain
+    if (me?.role === 'Admin') {
+      showToast('⚠️ Admin tidak memiliki akses untuk mengubah status user')
+      return
+    }
+    
+    const newStatus = u.status === 'Aktif' ? 'Tidak Aktif' : 'Aktif'
+    await fetch('/api/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, status: newStatus }) })
+    loadAll(); showToast(`User ${newStatus === 'Aktif' ? '✅ diaktifkan' : '🚫 dinonaktifkan'}`)
+  }
+
+  async function deleteUser(u: User) {
+    if (!confirm(`Hapus user "${u.username}"? Aksi ini tidak bisa dibatalkan.`)) return
+    try {
+      const res = await fetch('/api/users', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id }) })
+      const data = await res.json()
+      if (data.success) { loadAll(); showToast('🗑️ User dihapus') }
+      else showToast('⚠️ ' + data.error)
+    } catch { showToast('⚠️ Gagal hapus user') }
+  }
+
+  async function createAdminCandidate() {
+    if (!adminForm.username || !adminForm.email || !adminForm.password) {
+      showToast('⚠️ Username, email, dan password wajib diisi')
+      return
+    }
+    if (adminForm.password.length < 6) {
+      showToast('⚠️ Password minimal 6 karakter')
+      return
+    }
+    setCreatingAdmin(true)
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...adminForm, role: 'Admin' })
+      })
+      const data = await res.json()
+      if (!data.success) {
+        showToast('⚠️ ' + (data.error || 'Gagal tambah admin'))
+        return
+      }
+      setAdminForm({ username: '', email: '', password: '' })
+      if (data.mode === 'request') showToast('📝 Permintaan admin dikirim ke Owner')
+      else showToast('✅ Admin baru berhasil dibuat')
+      loadAll()
+    } catch {
+      showToast('⚠️ Gagal tambah admin')
+    } finally {
+      setCreatingAdmin(false)
+    }
+  }
+
+  async function processAdminRequest(id: number, action: 'approve' | 'reject') {
+    const owner_note = action === 'reject' ? (prompt('Alasan penolakan (opsional):') || '') : ''
+    setProcessingRequestId(id)
+    try {
+      const res = await fetch('/api/admin/admin-requests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action, owner_note })
+      })
+      const data = await res.json()
+      if (!data.success) {
+        showToast('⚠️ ' + (data.error || 'Gagal memproses request'))
+        return
+      }
+      showToast(action === 'approve' ? '✅ Request disetujui' : '🚫 Request ditolak')
+      loadAll()
+    } catch {
+      showToast('⚠️ Gagal memproses request')
+    } finally {
+      setProcessingRequestId(null)
+    }
+  }
+
+  const filteredPdfs = pdfs.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+  const filteredUsers = users.filter(u => u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
+  const filteredAdminRequests = adminRequests.filter(r =>
+    r.username.toLowerCase().includes(search.toLowerCase()) ||
+    r.email.toLowerCase().includes(search.toLowerCase()) ||
+    (r.requester_username || '').toLowerCase().includes(search.toLowerCase())
+  )
+
+  // Stats calculation
+  const stats: Stats = {
+    totalPdf: pdfs.length,
+    activePdf: pdfs.filter(p => p.is_active).length,
+    totalUser: users.length,
+    totalDownload: pdfs.reduce((a, p) => a + p.downloads, 0),
+    totalViews: pdfs.reduce((a, p) => a + p.views, 0)
+  }
+
+  // Chart data
+  const categoryData = CATS.map(cat => ({
+    name: cat.replace('fx-', '').toUpperCase(),
+    value: pdfs.filter(p => p.category === cat).length
+  })).filter(d => d.value > 0)
+
+  const userRoleData = [
+    { name: 'Owner', value: users.filter(u => u.role === 'Owner').length },
+    { name: 'Admin', value: users.filter(u => u.role === 'Admin').length },
+    { name: 'User', value: users.filter(u => u.role === 'User').length },
+  ].filter(d => d.value > 0)
+
+  const monthlyData = [
+    { month: 'Jan', users: Math.floor(users.length * 0.1), pdfs: Math.floor(pdfs.length * 0.15) },
+    { month: 'Feb', users: Math.floor(users.length * 0.15), pdfs: Math.floor(pdfs.length * 0.2) },
+    { month: 'Mar', users: Math.floor(users.length * 0.2), pdfs: Math.floor(pdfs.length * 0.25) },
+    { month: 'Apr', users: Math.floor(users.length * 0.25), pdfs: Math.floor(pdfs.length * 0.3) },
+    { month: 'May', users: Math.floor(users.length * 0.35), pdfs: Math.floor(pdfs.length * 0.4) },
+    { month: 'Jun', users: users.length, pdfs: pdfs.length },
+  ]
+
+  if (!me) return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ fontSize: '48px' }} className="spin">⚙️</div>
+    </div>
+  )
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex' }}>
+      {toast && <div className="toast success">{toast}</div>}
+
+      {/* Sidebar */}
+      <aside style={{ 
+        width: sidebarOpen ? '260px' : '80px', 
+        background: 'rgba(10,10,26,0.98)', 
+        borderRight: '1px solid var(--border)',
+        display: 'flex', 
+        flexDirection: 'column',
+        transition: 'all 0.3s ease',
+        position: 'fixed',
+        height: '100vh',
+        zIndex: 100
+      }}>
+        {/* Logo */}
+        <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+            ⚡
+          </div>
+          {sidebarOpen && (
+            <div>
+              <span style={{ fontWeight: 800, fontSize: '16px' }} className="grad-text">FX ADMIN</span>
+              <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Panel Management</div>
+            </div>
+          )}
+        </div>
+
+        {/* User Info */}
+        <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+              {me.username[0].toUpperCase()}
+            </div>
+            {sidebarOpen && (
+              <div style={{ overflow: 'hidden' }}>
+                <p style={{ fontWeight: 600, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{me.username}</p>
+                <span className={`badge ${me.role === 'Owner' ? 'badge-orange' : 'badge-purple'}`} style={{ fontSize: '10px' }}>{me.role}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Menu */}
+        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
+          {MENU_ITEMS.map(item => (
+            <button
+              key={item.key}
+              onClick={() => setActiveMenu(item.key)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: sidebarOpen ? '12px 16px' : '12px',
+                borderRadius: '10px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 600,
+                fontFamily: 'inherit',
+                marginBottom: '4px',
+                transition: 'all 0.2s',
+                background: activeMenu === item.key ? 'var(--gradient)' : 'transparent',
+                color: activeMenu === item.key ? '#fff' : 'var(--text2)',
+                justifyContent: sidebarOpen ? 'flex-start' : 'center'
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>{item.icon}</span>
+              {sidebarOpen && <span>{item.label}</span>}
+            </button>
+          ))}
+
+          {/* Maintenance Toggle */}
+          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+            <button
+              onClick={toggleMaintenance}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: sidebarOpen ? '12px 16px' : '12px',
+                borderRadius: '10px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 600,
+                fontFamily: 'inherit',
+                background: maintenance ? 'rgba(255,50,50,0.15)' : 'rgba(50,255,50,0.15)',
+                color: maintenance ? '#ff5555' : '#55ff55',
+                justifyContent: sidebarOpen ? 'flex-start' : 'center'
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>{maintenance ? '🚧' : '🌐'}</span>
+              {sidebarOpen && <span>Maintenance {maintenance ? 'ON' : 'OFF'}</span>}
+            </button>
+            <Link href="/admin/banners-manage" style={{ textDecoration: 'none' }}>
+              <button
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: sidebarOpen ? '12px 16px' : '12px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  fontFamily: 'inherit',
+                  marginTop: '8px',
+                  background: 'transparent',
+                  color: 'var(--text2)',
+                  justifyContent: sidebarOpen ? 'flex-start' : 'center'
+                }}
+              >
+                <span style={{ fontSize: '18px' }}>🖼️</span>
+                {sidebarOpen && <span>Banner Manager</span>}
+              </button>
+            </Link>
+            <Link href="/admin/banners-sql" style={{ textDecoration: 'none' }}>
+              <button
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: sidebarOpen ? '12px 16px' : '12px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  fontFamily: 'inherit',
+                  marginTop: '4px',
+                  background: 'transparent',
+                  color: 'var(--text2)',
+                  justifyContent: sidebarOpen ? 'flex-start' : 'center'
+                }}
+              >
+                <span style={{ fontSize: '18px' }}>🛠️</span>
+                {sidebarOpen && <span>Banner SQL</span>}
+              </button>
+            </Link>
+          </div>
+        </nav>
+
+        {/* Bottom Actions */}
+        <div style={{ padding: '16px', borderTop: '1px solid var(--border)' }}>
+          <Link href="/library" style={{ textDecoration: 'none' }}>
+            <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', background: 'transparent', color: 'var(--text2)', justifyContent: sidebarOpen ? 'flex-start' : 'center' }}>
+              <span style={{ fontSize: '18px' }}>📚</span>
+              {sidebarOpen && <span>Ke Library</span>}
+            </button>
+          </Link>
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', background: 'transparent', color: 'var(--text2)', justifyContent: sidebarOpen ? 'flex-start' : 'center', marginTop: '4px' }}
+          >
+            <span style={{ fontSize: '18px' }}>{sidebarOpen ? '◀' : '▶'}</span>
+            {sidebarOpen && <span>Collapse</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main style={{ 
+        flex: 1, 
+        marginLeft: sidebarOpen ? '260px' : '80px',
+        transition: 'margin-left 0.3s ease',
+        minHeight: '100vh'
+      }}>
+        {/* Header */}
+        <header style={{ background: 'rgba(10,10,26,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '20px' }}>{MENU_ITEMS.find(m => m.key === activeMenu)?.icon}</span>
+            <h1 style={{ fontSize: '18px', fontWeight: 700 }} className="grad-text">
+              {MENU_ITEMS.find(m => m.key === activeMenu)?.label}
+            </h1>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <span style={{ color: 'var(--text2)', fontSize: '13px' }}>Selamat datang, {me.username}</span>
+          </div>
+        </header>
+
+        <div style={{ padding: '24px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '60px' }}>
+              <div style={{ fontSize: '48px' }} className="spin">⚙️</div>
+            </div>
+          ) : activeMenu === 'dashboard' ? (
+            /* DASHBOARD VIEW */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Stats Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                {[
+                  { icon: '📄', label: 'Total PDF', value: stats.totalPdf, color: '#4488ff', bg: 'rgba(68,136,255,0.15)' },
+                  { icon: '✅', label: 'PDF Aktif', value: stats.activePdf, color: '#28c864', bg: 'rgba(40,200,100,0.15)' },
+                  { icon: '👥', label: 'Total User', value: stats.totalUser, color: '#C720E6', bg: 'rgba(199,32,230,0.15)' },
+                  { icon: '📥', label: 'Total Download', value: stats.totalDownload, color: '#FF6B35', bg: 'rgba(255,107,53,0.15)' },
+                  { icon: '👁', label: 'Total View', value: stats.totalViews, color: '#7aadff', bg: 'rgba(122,173,255,0.15)' },
+                ].map(s => (
+                  <div key={s.label} className="card" style={{ padding: '20px', background: s.bg, border: `1px solid ${s.color}33` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ fontSize: '28px', fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text2)', marginTop: '4px' }}>{s.label}</div>
+                      </div>
+                      <div style={{ fontSize: '36px' }}>{s.icon}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Charts Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '16px' }}>
+                {/* Category Distribution */}
+                <div className="card" style={{ padding: '20px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>📊 Distribusi PDF per Kategori</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie data={categoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                        {categoryData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '8px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* User Roles */}
+                <div className="card" style={{ padding: '20px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>👥 Distribusi User per Role</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie data={userRoleData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({name, value}) => `${name}: ${value}`}>
+                        {userRoleData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '8px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Growth Chart */}
+              <div className="card" style={{ padding: '20px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>📈 Pertumbuhan Users & PDF</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month" stroke="var(--text3)" />
+                    <YAxis stroke="var(--text3)" />
+                    <Tooltip contentStyle={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '8px' }} />
+                    <Line type="monotone" dataKey="users" stroke="#C720E6" strokeWidth={3} dot={{ fill: '#C720E6' }} name="Users" />
+                    <Line type="monotone" dataKey="pdfs" stroke="#4488ff" strokeWidth={3} dot={{ fill: '#4488ff' }} name="PDFs" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : activeMenu === 'pdfs' ? (
+            /* PDF MANAGEMENT */
+            <>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                <input className="input" placeholder="🔍 Cari PDF..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: '300px' }} />
+                <button className="btn btn-primary" onClick={openAdd}>➕ Tambah PDF</button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {filteredPdfs.map(pdf => (
+                  <div key={pdf.id} className="card" style={{ padding: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <span style={{ fontSize: '40px' }}>{pdf.thumbnail}</span>
+                      <div style={{ flex: 1 }}>
+                        <a href={pdf.url} target="_blank" rel="noreferrer" style={{ fontWeight: 600, fontSize: '14px', color: '#7aadff', textDecoration: 'none' }}>{pdf.name}</a>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                          <span className="badge badge-blue">{pdf.category}</span>
+                          <span className={`badge ${pdf.is_active ? 'badge-green' : 'badge-red'}`}>{pdf.is_active ? 'Aktif' : 'Nonaktif'}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text3)' }}>👁{pdf.views} 📥{pdf.downloads}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-ghost btn-sm" onClick={() => toggleActive(pdf)}>{pdf.is_active ? '🚫' : '✅'}</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => openEdit(pdf)}>✏️</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => deletePDF(pdf)}>🗑️</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : activeMenu === 'users' ? (
+            /* USER MANAGEMENT */
+            <>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                <input className="input" placeholder="🔍 Cari user..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: '300px' }} />
+              </div>
+
+              <div className="card" style={{ padding: '20px', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>
+                  {me?.role === 'Owner' ? '➕ Tambah Admin Baru' : '📝 Ajukan Admin Baru (Butuh Verifikasi Owner)'}
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: '10px' }}>
+                  <input className="input" placeholder="Username admin" value={adminForm.username} onChange={e => setAdminForm(f => ({ ...f, username: e.target.value }))} />
+                  <input className="input" type="email" placeholder="Email admin" value={adminForm.email} onChange={e => setAdminForm(f => ({ ...f, email: e.target.value }))} />
+                  <input className="input" type="password" placeholder="Password admin (min 6)" value={adminForm.password} onChange={e => setAdminForm(f => ({ ...f, password: e.target.value }))} />
+                </div>
+                <button className="btn btn-primary" onClick={createAdminCandidate} disabled={creatingAdmin} style={{ marginTop: '12px' }}>
+                  {creatingAdmin ? <><span className="spin">⚙️</span> Memproses...</> : me?.role === 'Owner' ? 'Tambah Admin Sekarang' : 'Ajukan ke Owner'}
+                </button>
+              </div>
+
+              {me?.role === 'Admin' && (
+                <div style={{ background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.3)', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>ℹ️</span>
+                  <span style={{ color: '#ff9970', fontSize: '13px' }}>Sebagai Admin, Anda tidak dapat ubah status user. Untuk admin baru, kirim request ke Owner.</span>
+                </div>
+              )}
+
+              <div className="card" style={{ padding: '20px', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>
+                  {me?.role === 'Owner' ? '✅ Verifikasi Permintaan Admin' : '📨 Status Permintaan Admin Saya'}
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {filteredAdminRequests.length ? filteredAdminRequests.map(r => (
+                    <div key={r.id} style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', background: 'var(--bg4)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div>
+                          <p style={{ fontWeight: 700, fontSize: '13px' }}>{r.username} · {r.email}</p>
+                          <p style={{ color: 'var(--text3)', fontSize: '12px' }}>
+                            Requester: {r.requester_username || '-'} · {new Date(r.created_at).toLocaleString('id-ID')}
+                          </p>
+                          {r.owner_note && <p style={{ color: '#ffb26a', fontSize: '12px', marginTop: '4px' }}>Catatan Owner: {r.owner_note}</p>}
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <span className={`badge ${r.status === 'Approved' ? 'badge-green' : r.status === 'Rejected' ? 'badge-red' : 'badge-blue'}`}>{r.status}</span>
+                          {me?.role === 'Owner' && r.status === 'Pending' && (
+                            <>
+                              <button className="btn btn-sm" disabled={processingRequestId === r.id} onClick={() => processAdminRequest(r.id, 'approve')} style={{ background: 'rgba(40,200,100,0.2)', color: '#60d090' }}>
+                                Setujui
+                              </button>
+                              <button className="btn btn-sm" disabled={processingRequestId === r.id} onClick={() => processAdminRequest(r.id, 'reject')} style={{ background: 'rgba(220,50,50,0.2)', color: '#ff8080' }}>
+                                Tolak
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )) : (
+                    <div style={{ color: 'var(--text3)', fontSize: '13px' }}>Belum ada request admin.</div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {filteredUsers.map(u => (
+                  <div key={u.id} className="card" style={{ padding: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '18px' }}>
+                        {u.username[0].toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontWeight: 600, fontSize: '14px' }}>{u.username}</p>
+                        <p style={{ color: 'var(--text3)', fontSize: '12px' }}>{u.email}</p>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                          <span className={`badge ${u.role === 'Owner' ? 'badge-orange' : u.role === 'Admin' ? 'badge-purple' : 'badge-blue'}`}>{u.role}</span>
+                          <span className={`badge ${u.status === 'Aktif' ? 'badge-green' : 'badge-red'}`}>{u.status}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {me?.role === 'Owner' ? (
+                          <>
+                            <button 
+                              onClick={() => toggleUserStatus(u)}
+                              className="btn btn-sm" 
+                              style={{ background: u.status === 'Aktif' ? 'rgba(220,50,50,0.2)' : 'rgba(40,200,100,0.2)', color: u.status === 'Aktif' ? '#ff8080' : '#60d090' }}
+                            >
+                              {u.status === 'Aktif' ? '🚫 Nonaktifkan' : '✅ Aktifkan'}
+                            </button>
+                            <button className="btn btn-danger btn-sm" onClick={() => deleteUser(u)}>🗑️</button>
+                          </>
+                        ) : me?.role === 'Admin' ? (
+                          <span style={{ color: 'var(--text3)', fontSize: '12px' }}>Tidak ada akses</span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : activeMenu === 'settings' ? (
+            /* SETTINGS */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="card" style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>⚙️ Pengaturan Sistem</h3>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg4)', borderRadius: '10px' }}>
+                    <div>
+                      <p style={{ fontWeight: 600 }}>Mode Maintenance</p>
+                      <p style={{ color: 'var(--text3)', fontSize: '12px' }}>Nonaktifkan akses untuk user biasa</p>
+                    </div>
+                    <button 
+                      onClick={toggleMaintenance}
+                      style={{
+                        padding: '10px 20px',
+                        background: maintenance ? 'rgba(255,50,50,0.2)' : 'rgba(50,255,50,0.2)',
+                        border: `1px solid ${maintenance ? 'rgba(255,50,50,0.3)' : 'rgba(50,255,50,0.3)'}`,
+                        color: maintenance ? '#ff5555' : '#55ff55',
+                        borderRadius: '8px',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {maintenance ? '🚧 AKTIF' : '🌐 MATI'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card" style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>🔗 Quick Links</h3>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+                    <button className="btn btn-secondary">📊 Dashboard User</button>
+                  </Link>
+                  <Link href="/library" style={{ textDecoration: 'none' }}>
+                    <button className="btn btn-secondary">📚 Library</button>
+                  </Link>
+                  <Link href="/profile" style={{ textDecoration: 'none' }}>
+                    <button className="btn btn-secondary">👤 Profil</button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </main>
+
+      {/* Add/Edit Modal */}
+      {modal && (
+        <div className="modal-overlay" onClick={() => setModal(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 700 }}>{modal === 'edit' ? '✏️ Edit PDF' : '➕ Tambah PDF'}</h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setModal(null)}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>NAMA PDF</label>
+                <input className="input" placeholder="Nama PDF" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>URL (Google Drive)</label>
+                <input className="input" placeholder="https://drive.google.com/..." value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>KATEGORI</label>
+                <select className="input" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                  {CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>THUMBNAIL EMOJI</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {THUMBS.map(t => (
+                    <button key={t} onClick={() => setForm(f => ({ ...f, thumbnail: t }))}
+                      style={{ fontSize: '20px', padding: '6px', borderRadius: '8px', border: `2px solid ${form.thumbnail === t ? 'var(--accent)' : 'transparent'}`, background: form.thumbnail === t ? 'rgba(199,32,230,0.2)' : 'var(--bg4)', cursor: 'pointer', transition: 'all 0.15s' }}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                <button className="btn btn-ghost" onClick={() => setModal(null)} style={{ flex: 1 }}>Batal</button>
+                <button className="btn btn-primary" onClick={savePDF} disabled={saving} style={{ flex: 2 }}>
+                  {saving ? <><span className="spin">⚙️</span> Menyimpan...</> : `💾 ${modal === 'edit' ? 'Simpan Perubahan' : 'Tambahkan PDF'}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

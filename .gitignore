@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.next-dev/
+.next-dev-v2/
+.next-runtime/
+dist/
+build/
+coverage/
+*.log
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+.vscode/
