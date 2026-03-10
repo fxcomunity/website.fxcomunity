@@ -31,11 +31,6 @@ const CATEGORIES = [
   { key: 'fx-psychology', label: 'Psychology', icon: '🧠', color: '#fbbf24' },
 ]
 
-const SOCIAL_LINKS = [
-  { label: 'WhatsApp', icon: '💬', url: 'https://wa.me/62895404147521', color: '#25D366' },
-  { label: 'Instagram', icon: '📸', url: 'https://instagram.com/si.palingjack', color: '#E1306C' },
-]
-
 export default function HomePage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
@@ -294,26 +289,9 @@ export default function HomePage() {
               <span style={{ fontSize: 12, padding: '5px 16px', borderRadius: 20, background: user.role === 'Owner' ? 'rgba(249,115,22,0.2)' : 'rgba(168,85,247,0.2)', color: user.role === 'Owner' ? '#fb923c' : '#c4b5fd', fontWeight: 700 }}>{user.role === 'Owner' ? '👑' : '⭐'} {user.role}</span>
             </div>
             <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', marginBottom: 16 }} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <Link href="/dashboard" style={{ textDecoration: 'none' }}><button style={{ width: '100%', padding: 14, background: 'rgba(56,189,248,0.12)', border: '1px solid rgba(56,189,248,0.25)', borderRadius: 14, color: '#38bdf8', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>📊 Dashboard</button></Link>
-              {isAdmin
-                ? <Link href="/admin" style={{ textDecoration: 'none' }}><button style={{ width: '100%', padding: 14, background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 14, color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>⚙️ Admin</button></Link>
-                : <button style={{ width: '100%', padding: 14, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.14)', borderRadius: 14, color: 'rgba(165,180,252,0.45)', cursor: 'not-allowed', fontSize: 14, fontWeight: 700 }} disabled>⚙️ Admin</button>}
-              <button onClick={() => setShowQuickLinks(v => !v)} style={{ width: '100%', padding: 14, background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: 14, color: '#c4b5fd', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>🔗 Links</button>
-              <Link href="/music" style={{ textDecoration: 'none' }}><button style={{ width: '100%', padding: 14, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 14, color: '#86efac', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>🎵 Music</button></Link>
-            </div>
-            {showQuickLinks && (
-              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {SOCIAL_LINKS.map(s => (
-                  <a key={s.label} href={s.url} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                    <button style={{ width: '100%', padding: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: s.color, cursor: 'pointer', fontSize: 13, fontWeight: 700, textAlign: 'left' }}>{s.label}</button>
-                  </a>
-                ))}
-              </div>
-            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
               <button onClick={handleLogout} style={{ padding: 14, background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.25)', borderRadius: 14, color: '#f87171', cursor: 'pointer', fontSize: 15, fontWeight: 700 }}>🚪 Logout</button>
-              <button onClick={() => { setShowProfile(false); setShowQuickLinks(false) }} style={{ padding: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 14 }}>Tutup</button>
+              <button onClick={() => { setShowProfile(false) }} style={{ padding: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 14 }}>Tutup</button>
             </div>
           </div>
         </div>
