@@ -135,7 +135,7 @@ export default function CryptoDecryptPage() {
             </div>
             <button 
               className="btn btn-primary" 
-              onClick={decode}
+              onClick={() => decode()}
               disabled={loading || !input.trim()}
               style={{ whiteSpace: 'nowrap', padding: '12px 24px' }}
             >

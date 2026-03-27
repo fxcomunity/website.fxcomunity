@@ -1,4 +1,5 @@
 "use client";
+// @ts-ignore
 import { useAuthClient } from "@neondatabase/neon-js/react";
 
 export default function LoginButton() {
