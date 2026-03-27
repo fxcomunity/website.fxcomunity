@@ -11,20 +11,20 @@ interface PDF {
 interface User { id: number; username: string; email: string; role: string }
 
 const CATS = [
-  { key: 'semua',        label: 'Semua',      icon: '📚' },
-  { key: 'favorit',      label: 'Favorit',    icon: '❤️' },
-  { key: 'publik',       label: 'Public',     icon: <PublicFolderIcon /> },
-  { key: 'fx-basic',     label: 'Basic FX',   icon: '🎓' },
-  { key: 'fx-advanced',  label: 'Advanced',   icon: '🚀' },
-  { key: 'fx-technical', label: 'Technical',  icon: '📊' },
-  { key: 'fx-psychology',label: 'Psychology', icon: '🧠' },
+  { key: 'semua', label: 'Semua', icon: '📚' },
+  { key: 'favorit', label: 'Favorit', icon: '❤️' },
+  { key: 'publik', label: 'Public', icon: <PublicFolderIcon /> },
+  { key: 'fx-basic', label: 'Basic FX', icon: '🎓' },
+  { key: 'fx-advanced', label: 'Advanced', icon: '🚀' },
+  { key: 'fx-technical', label: 'Technical', icon: '📊' },
+  { key: 'fx-psychology', label: 'Psychology', icon: '🧠' },
 ]
 
 function PublicFolderIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 32 32" fill="#00E5FF" xmlns="http://www.w3.org/2000/svg">
       <path d="M27.5,5.5H18.2L16.1,9.7H4.4V26.5H29.6V5.5Zm0,4.2H19.3l1.1-2.1h7.1Z" />
-      <path d="M22.6,16.3a3.787,3.787,0,0,1,1.8,2.8,3.048,3.048,0,1,0-1.8-2.8Zm-2,6.3a3.1,3.1,0,1,0-3.1-3.1h0A3.116,3.116,0,0,0,20.6,22.6Zm1.3.2H19.3a3.9,3.9,0,0,0-3.9,3.9V30h0l.2.1A16.106,16.106,0,0,0,21,31a9.638,9.638,0,0,0,4.7-.9l.2-.1h0V26.8A4.148,4.148,0,0,0,21.9,22.8ZM27,19.6H24.4a3.225,3.225,0,0,1-1.2,2.6,4.621,4.621,0,0,1,3.3,4.5v1a9.782,9.782,0,0,0,4.1-.9l.2-.1h0V23.5A3.82,3.82,0,0,0,27,19.6Zm-11.8-.2a3.022,3.022,0,0,0,1.6-.5,3.71,3.71,0,0,1,1.4-2.4v-.2a3.1,3.1,0,0,0-6.2,0,3.272,3.272,0,0,0,3.2,3.1Zm2.7,2.9a4.2,4.2,0,0,1-1.2-2.6H13.8a3.9,3.9,0,0,0-3.9,3.9v3.2h0l.2.1a16.28,16.28,0,0,0,4.4.8v-1a4.81,4.81,0,0,1,3.4-4.4Z" fill="#66EFFF"/>
+      <path d="M22.6,16.3a3.787,3.787,0,0,1,1.8,2.8,3.048,3.048,0,1,0-1.8-2.8Zm-2,6.3a3.1,3.1,0,1,0-3.1-3.1h0A3.116,3.116,0,0,0,20.6,22.6Zm1.3.2H19.3a3.9,3.9,0,0,0-3.9,3.9V30h0l.2.1A16.106,16.106,0,0,0,21,31a9.638,9.638,0,0,0,4.7-.9l.2-.1h0V26.8A4.148,4.148,0,0,0,21.9,22.8ZM27,19.6H24.4a3.225,3.225,0,0,1-1.2,2.6,4.621,4.621,0,0,1,3.3,4.5v1a9.782,9.782,0,0,0,4.1-.9l.2-.1h0V23.5A3.82,3.82,0,0,0,27,19.6Zm-11.8-.2a3.022,3.022,0,0,0,1.6-.5,3.71,3.71,0,0,1,1.4-2.4v-.2a3.1,3.1,0,0,0-6.2,0,3.272,3.272,0,0,0,3.2,3.1Zm2.7,2.9a4.2,4.2,0,0,1-1.2-2.6H13.8a3.9,3.9,0,0,0-3.9,3.9v3.2h0l.2.1a16.28,16.28,0,0,0,4.4.8v-1a4.81,4.81,0,0,1,3.4-4.4Z" fill="#66EFFF" />
     </svg>
   )
 }
@@ -62,7 +62,7 @@ export default function Library() {
     if (qParam) setSearch(qParam)
     fetch('/api/auth/me').then(r => r.status === 200 ? r.json() : null).then(d => {
       if (d?.data) setUser(d.data)
-    }).catch(() => {})
+    }).catch(() => { })
     loadPDFs()
   }, [])
 
@@ -137,11 +137,11 @@ export default function Library() {
   async function handleDownload(pdf: PDF) {
     try {
       await fetch(`/api/pdfs/${pdf.id}/download`, { method: 'POST' })
-      setPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads||0)+1, views: (p.views||0)+1 } : p))
-      setAllPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads||0)+1, views: (p.views||0)+1 } : p))
+      setPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads || 0) + 1, views: (p.views || 0) + 1 } : p))
+      setAllPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads || 0) + 1, views: (p.views || 0) + 1 } : p))
       window.open(`/api/pdfs/${pdf.id}/view`, '_blank')
       showToast('📥 PDF dibuka!')
-    } catch {}
+    } catch { }
   }
 
   function getShareUrl(pdf: PDF) {
@@ -321,9 +321,9 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
   const catLabel = pdf.category.replace('fx-', '').toUpperCase()
   const catColor = pdf.category.includes('basic') ? '#00E5FF'
     : pdf.category.includes('advanced') ? '#A855F7'
-    : pdf.category.includes('technical') ? '#F59E0B'
-    : pdf.category.includes('psychology') ? '#10B981'
-    : '#6B7280'
+      : pdf.category.includes('technical') ? '#F59E0B'
+        : pdf.category.includes('psychology') ? '#10B981'
+          : '#6B7280'
 
   return (
     <div
@@ -395,11 +395,11 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
         marginTop: '8px', flexShrink: 0,
       }}>
         <span style={{ fontSize: '11px', color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: '3px' }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
           {pdf.views}
         </span>
         <span style={{ fontSize: '11px', color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: '3px' }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
           {pdf.downloads}
         </span>
       </div>
@@ -421,7 +421,7 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 18px rgba(0,229,255,0.4)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0,229,255,0.25)' }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
           Lihat
         </button>
 
@@ -440,7 +440,7 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(124,58,237,0.4), rgba(168,85,247,0.3))'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(168,85,247,0.15))'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
           Unduh
         </button>
 
@@ -458,8 +458,8 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)' }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
           </svg>
         </button>
       </div>

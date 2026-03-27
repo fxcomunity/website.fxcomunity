@@ -18,29 +18,17 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     
     const pdf = pdfRes.rows[0]
     const pdfUrl = pdf.url
-    
-    // Fetch PDF dari external URL (Google Drive dll)
-    const response = await fetch(pdfUrl)
-    
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch PDF' }, { status: 500 })
-    }
-    
     // Increment view count
     await query('UPDATE pdfs SET views=views+1 WHERE id=$1', [id])
     
-    // Set headers untuk PDF streaming
-    const headers = new Headers()
-    headers.set('Content-Type', 'application/pdf')
-    headers.set('Content-Disposition', 'inline; filename="' + encodeURIComponent(pdf.name + '.pdf') + '"')
-    headers.set('Cache-Control', 'public, max-age=3600')
-    headers.set('Access-Control-Allow-Origin', '*')
+    // For Google Drive links, we must use /preview to embed in an iframe
+    let embedUrl = pdfUrl
+    if (embedUrl.includes('drive.google.com/file/d/')) {
+      embedUrl = embedUrl.replace('/view', '/preview')
+    }
     
-    // Stream PDF content
-    return new NextResponse(response.body, {
-      status: 200,
-      headers
-    })
+    // Redirect the iframe to the actual Google Drive preview URL
+    return NextResponse.redirect(embedUrl)
     
   } catch (error) {
     console.error('PDF view error:', error)
