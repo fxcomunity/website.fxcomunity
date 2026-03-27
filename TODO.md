@@ -1,53 +1,43 @@
-# TODO - Dashboard Redesign Project
+# Fix Dashboard Responsive Layout (Desktop + Tablet)
 
-## Progress Checklist
+## Status: ✅ APPROVED - Implementation Started
 
-- [x] 1. Baca dan analisis file yang relevan
-- [x] 2. Buat brainstorm_plan (Rencana)
-- [x] 3. Konfirmasi rencana ke user
-- [x] 4. Redesign Dashboard Admin dengan Sidebar Layout (dengan Charts)
-- [x] 5. Setup Hak Akses Admin vs Owner (Admin = ga bisa ubah status user)
-- [x] 6. Redesign Dashboard User (Modern UI dengan Charts)
-- [x] 7. Update Forgot Password UI (styling sesuai tema dark)
-- [x] 8. Test dan verify
+### Plan Breakdown (Logical Steps):
 
----
+#### ✅ Step 1: Create this TODO.md [COMPLETED]
 
-## Summary
+#### ✅ Step 2: Fix UserLayout.tsx (PRIORITY 1)
+- ✅ Hide sidebar completely di tablet (641px - 1024px) 
+- ✅ Main content full width 100% di tablet
+- ✅ Update media queries konsisten
+- ✅ Mobile drawer + bottom nav OK
 
-### 1. Dashboard Admin/Owner ✅ DONE
-- Layout: Sidebar (kiri) + Content (kanan)
-- Menu: Dashboard, PDF Management, User Management, Settings
-- Charts: Pie chart untuk kategori PDF, user roles, dan line chart pertumbuhan
-- Hak Akses: 
-  - **Owner**: Bisa aktif/nonaktifkan user ✓
-  - **Admin**: Tidak bisa ubah status user (muncul pesan info)
+#### ✅ Step 3: Fix app/dashboard/page.tsx (PRIORITY 2)
+- ✅ Stats-grid responsive `repeat(auto-fit, minmax(220px, 1fr))`
+- ✅ Container padding tablet-optimized `'32px 24px'`
+- ✅ Quick actions `repeat(auto-fit, minmax(160px, 1fr))`
+- ✅ Favorites grid menggunakan `cards-grid` class
+- [ ] Stats-grid → `repeat(auto-fit, minmax(220px, 1fr))`
+- [ ] Container padding tablet: `'32px 24px'`
+- [ ] Quick actions: `repeat(auto-fit, minmax(160px, 1fr))`
+- [ ] Favorites grid optimasi tablet/desktop
+- [ ] Gunakan className="library-grid" untuk charts section
 
-### 2. Dashboard User ✅ DONE
-- Stats cards dengan icons dan gradients
-- Pie chart untuk distribusi kategori materi
-- Quick action cards
-- Recent activity section
-- Recent favorites section
+#### ⏳ Step 4: CSS Cleanup (OPTIONAL)
+- [ ] Update `.stats-grid` di globals-enhanced.css untuk 4 cards
+- [ ] Tablet card spacing adjustments
 
-### 3. Forgot Password ✅ DONE
-- Styling dark theme yang sesuai dengan tema
-- Support Email dan WhatsApp OTP
-- UI yang modern dan responsif
+#### ⏳ Step 5: Testing & Validation
+- [ ] Test Desktop (1440px): Stats 4 kolom rapi
+- [ ] Test Tablet (768px portrait, 1024px landscape): Full width content, no sidebar
+- [ ] Test Mobile (375px): Drawer + bottom nav OK
+- [ ] Run `npm run dev` → browser DevTools responsive test
 
-### 4. Dependencies ✅ DONE
-- Recharts sudah terinstall untuk charts
+#### ⏳ Step 6: Completion
+- [ ] Update TODO.md dengan ✅ semua steps
+- [ ] attempt_completion dengan demo command
 
----
+**Current Progress: 1/6 steps completed**
 
-## Fitur yang Diimplementasikan
-
-| Fitur | Status |
-|-------|--------|
-| Dashboard Admin dengan Sidebar | ✅ |
-| Charts (Pie, Line) dengan Recharts | ✅ |
-| Hak akses Owner vs Admin | ✅ |
-| Dashboard User Modern | ✅ |
-| Forgot Password UI | ✅ |
-| OTP Lupa Password (sudah ada) | ✅ |
+**Next Action: Edit UserLayout.tsx → Step 2**
 

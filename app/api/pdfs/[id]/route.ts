@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { getToken, verifyToken } from '@/lib/auth'
 
-export async function PUT(req: NextRequest, context: any) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = context?.params || {}
+    const { id } = await context.params
     const token = getToken(req)
     const user = token ? await verifyToken(token) : null
     if (!user || !['Owner', 'Admin'].includes(user.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -20,9 +20,9 @@ export async function PUT(req: NextRequest, context: any) {
   } catch (e) { return NextResponse.json({ error: 'Server error' }, { status: 500 }) }
 }
 
-export async function DELETE(req: NextRequest, context: any) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = context?.params || {}
+    const { id } = await context.params
     const token = getToken(req)
     const user = token ? await verifyToken(token) : null
     if (!user || !['Owner', 'Admin'].includes(user.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

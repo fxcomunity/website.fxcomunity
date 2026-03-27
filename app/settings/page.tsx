@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import UserLayout from '@/components/UserLayout'
 
 interface User { id: number; username: string; email: string; role: string; status: string; created_at: string; email_verified: boolean }
 
@@ -121,34 +122,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      {toast && <div className="toast success">{toast}</div>}
-
-      {/* Header */}
-      <header style={{ background: 'rgba(10,10,26,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '28px' }}>⚙️</span>
-            <div>
-              <span style={{ fontSize: '16px', fontWeight: 900, letterSpacing: '1px' }} className="grad-text">PENGATURAN</span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Link href="/profile" style={{ textDecoration: 'none' }}>
-              <button className="btn btn-ghost btn-sm">← Kembali ke Profil</button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <UserLayout>
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 16px' }}>
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '32px', borderBottom: '1px solid var(--border)' }}>
           {[
             { id: 'password', label: '🔑 Password', icon: '🔑' },
-            { id: 'notifications', label: '🔔 Notifikasi', icon: '🔔' },
-            { id: 'account', label: '👤 Akun', icon: '👤' }
+            { id: 'notifications', label: '🔔 Notifications', icon: '🔔' },
+            { id: 'account', label: '👤 Account', icon: '👤' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -166,47 +148,47 @@ export default function SettingsPage() {
                 transition: 'all 0.2s'
               }}
             >
-              {tab.icon} {tab.label}
+              {tab.label}
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
-        <div className="card" style={{ padding: '32px' }}>
+        <div className="card glass-panel" style={{ padding: '32px' }}>
 
           {/* Password Tab */}
           {activeTab === 'password' && (
             <div>
               <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🔑</span> Ubah Password
+                <span>🔑</span> Change Password
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '400px' }}>
                 <div>
-                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>PASSWORD SAAT INI</label>
+                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>CURRENT PASSWORD</label>
                   <input
                     className="input"
                     type="password"
-                    placeholder="Masukkan password saat ini"
+                    placeholder="Enter current password"
                     value={passwordForm.current}
                     onChange={e => setPasswordForm(f => ({ ...f, current: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>PASSWORD BARU</label>
+                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>NEW PASSWORD</label>
                   <input
                     className="input"
                     type="password"
-                    placeholder="Minimal 6 karakter"
+                    placeholder="Min 6 characters"
                     value={passwordForm.new}
                     onChange={e => setPasswordForm(f => ({ ...f, new: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>KONFIRMASI PASSWORD BARU</label>
+                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>CONFIRM NEW PASSWORD</label>
                   <input
                     className="input"
                     type="password"
-                    placeholder="Ulangi password baru"
+                    placeholder="Repeat new password"
                     value={passwordForm.confirm}
                     onChange={e => setPasswordForm(f => ({ ...f, confirm: e.target.value }))}
                   />
@@ -217,7 +199,7 @@ export default function SettingsPage() {
                   disabled={changingPassword}
                   style={{ marginTop: '8px' }}
                 >
-                  {changingPassword ? <><span className="spin">⚙️</span> Mengubah...</> : '🔑 Ubah Password'}
+                  {changingPassword ? <><span className="spin">⚙️</span> Changing...</> : '🔑 Change Password'}
                 </button>
               </div>
             </div>
@@ -227,13 +209,13 @@ export default function SettingsPage() {
           {activeTab === 'notifications' && (
             <div>
               <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🔔</span> Pengaturan Notifikasi
+                <span>🔔</span> Notification Settings
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '500px' }}>
                 {[
-                  { key: 'email_updates', label: 'Update Email', desc: 'Terima email tentang update aplikasi' },
-                  { key: 'new_content', label: 'Konten Baru', desc: 'Notifikasi saat ada materi baru' },
-                  { key: 'weekly_digest', label: 'Ringkasan Mingguan', desc: 'Email ringkasan aktivitas mingguan' }
+                  { key: 'email_updates', label: 'Email Updates', desc: 'Receive emails about app updates' },
+                  { key: 'new_content', label: 'New Content', desc: 'Notify when new materials drop' },
+                  { key: 'weekly_digest', label: 'Weekly Digest', desc: 'Email summary of weekly activity' }
                 ].map(setting => (
                   <div key={setting.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid var(--border2)', borderRadius: '8px' }}>
                     <div>
@@ -256,7 +238,7 @@ export default function SettingsPage() {
                   disabled={savingNotifications}
                   style={{ marginTop: '8px', alignSelf: 'flex-start' }}
                 >
-                  {savingNotifications ? <><span className="spin">⚙️</span> Menyimpan...</> : '💾 Simpan Pengaturan'}
+                  {savingNotifications ? <><span className="spin">⚙️</span> Saving...</> : '💾 Save Settings'}
                 </button>
               </div>
             </div>
@@ -266,11 +248,11 @@ export default function SettingsPage() {
           {activeTab === 'account' && (
             <div>
               <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>👤</span> Pengaturan Akun
+                <span>👤</span> Account Settings
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '500px' }}>
                 <div style={{ padding: '20px', background: 'var(--bg3)', borderRadius: '8px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Informasi Akun</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Account Info</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px', fontSize: '14px' }}>
                     <span style={{ color: 'var(--text2)' }}>Username:</span>
                     <span style={{ fontWeight: 600 }}>{user.username}</span>
@@ -280,27 +262,26 @@ export default function SettingsPage() {
                     <span style={{ fontWeight: 600 }}>{user.role}</span>
                     <span style={{ color: 'var(--text2)' }}>Status:</span>
                     <span style={{ fontWeight: 600 }}>{user.status}</span>
-                    <span style={{ color: 'var(--text2)' }}>Bergabung:</span>
+                    <span style={{ color: 'var(--text2)' }}>Joined:</span>
                     <span style={{ fontWeight: 600 }}>{new Date(user.created_at).toLocaleDateString('id-ID')}</span>
                   </div>
                 </div>
 
                 <div style={{ padding: '20px', background: 'var(--bg3)', borderRadius: '8px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Aksi Akun</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Account Actions</h3>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <Link href="/profile" style={{ textDecoration: 'none' }}>
-                      <button className="btn btn-secondary btn-sm">✏️ Edit Profil</button>
+                      <button className="btn btn-secondary btn-sm">✏️ Edit Profile</button>
                     </Link>
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={async () => {
-                        if (confirm('Yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.')) {
-                          // Implement account deletion
-                          showToast('⚠️ Fitur hapus akun belum diimplementasi')
+                        if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
+                          showToast('⚠️ Delete account feature not implemented yet')
                         }
                       }}
                     >
-                      🗑️ Hapus Akun
+                      🗑️ Delete Account
                     </button>
                   </div>
                 </div>
@@ -311,6 +292,6 @@ export default function SettingsPage() {
         </div>
 
       </div>
-    </div>
+    </UserLayout>
   )
 }

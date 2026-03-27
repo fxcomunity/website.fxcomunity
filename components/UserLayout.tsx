@@ -1,0 +1,531 @@
+'use client'
+import { useState, useEffect, useRef } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import Notification from './Notification'
+
+export default function UserLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const [theme, setTheme] = useState('dark')
+  const [user, setUser] = useState<{ username: string; email: string; role: string } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark'
+    setTheme(savedTheme)
+    document.documentElement.setAttribute('data-theme', savedTheme)
+
+    fetch('/api/auth/me')
+      .then(res => {
+        if (res.status === 503) { router.push('/maintenance'); return }
+        return res.json()
+      })
+      .then(data => {
+        if (data?.data) setUser(data.data)
+        setLoading(false)
+      })
+      .catch(() => { setLoading(false) })
+  }, [router])
+
+  // Focus search input when opened
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [searchOpen])
+
+  // Handle search submit
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/library?q=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchOpen(false)
+      setSearchQuery('')
+    }
+  }
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/login')
+  }
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    localStorage.setItem('theme', nextTheme)
+    document.documentElement.setAttribute('data-theme', nextTheme)
+  }
+
+  const NAV_LINKS = [
+    { name: 'Home',      path: '/dashboard', icon: '🏠' },
+    { name: 'Library',   path: '/library',   icon: '🧭' },
+    { name: 'Popular',   path: '/popular',   icon: '🔥' },
+    { name: 'Favorites', path: '/favorites', icon: '📖' },
+  ]
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#080B14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spin" style={{ fontSize: '44px', marginBottom: '16px' }}>⏳</div>
+          <p style={{ color: 'var(--text2)', fontWeight: 600, fontSize: '14px' }}>Tunggu sebentar...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
+
+      {/* ── Header ── */}
+      <header style={{
+        height: '64px',
+        background: 'rgba(8, 11, 20, 0.92)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderBottom: '1px solid rgba(0, 229, 255, 0.08)',
+        position: 'sticky', top: 0, zIndex: 200,
+        display: 'flex', alignItems: 'center',
+        padding: '0 16px',
+        justifyContent: 'space-between',
+        gap: '8px',
+      }}>
+        {/* LEFT: Hamburger + Logo + Desktop Nav */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+          {/* Hamburger (mobile/tablet) */}
+          <button
+            className="hide-desktop hdr-btn"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Menu"
+          >
+            <span style={{ fontSize: '20px' }}>{isMenuOpen ? '✕' : '☰'}</span>
+          </button>
+
+          {/* Logo */}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #00B8D4, #00E5FF)',
+              color: '#000', padding: '4px 8px', borderRadius: '6px',
+              fontWeight: 900, fontSize: '15px', letterSpacing: '1px',
+              boxShadow: '0 3px 12px rgba(0,229,255,0.3)',
+            }}>FXC</div>
+            <div className="hide-tablet" style={{
+              fontWeight: 900, fontSize: '16px', letterSpacing: '1.5px',
+              background: 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>
+              FXCOMMUNITY
+            </div>
+          </Link>
+
+          {/* Desktop Nav */}
+          <nav className="hide-mobile-tablet" style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '8px' }}>
+            {NAV_LINKS.map(link => {
+              const isActive = pathname === link.path
+              return (
+                <Link
+                  key={link.path}
+                  href={link.path}
+                  style={{
+                    textDecoration: 'none',
+                    color: isActive ? 'var(--primary)' : 'var(--text2)',
+                    fontSize: '13px', fontWeight: 600,
+                    padding: '6px 12px', borderRadius: '8px',
+                    background: isActive ? 'rgba(0,229,255,0.1)' : 'transparent',
+                    border: isActive ? '1px solid rgba(0,229,255,0.2)' : '1px solid transparent',
+                    transition: 'all 0.2s ease',
+                    display: 'flex', alignItems: 'center', gap: '5px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <span style={{ fontSize: '14px' }}>{link.icon}</span>
+                  {link.name}
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+
+        {/* RIGHT: Search + Theme + Notifications + Auth */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+
+          {/* 🔍 Search button */}
+          <button
+            className="hdr-btn"
+            onClick={() => setSearchOpen(v => !v)}
+            aria-label="Search"
+            title="Cari materi"
+            style={{ color: searchOpen ? 'var(--primary)' : 'var(--text2)' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </button>
+
+          {/* 🌙/☀️ Theme toggle */}
+          <button
+            className="hdr-btn"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            title={theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+          >
+            {theme === 'dark'
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            }
+          </button>
+
+          {/* 🔔 Notifications – always visible when logged in */}
+          {user && <Notification />}
+
+          {/* Auth */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px' }}>
+              <Link href="/profile">
+                <div style={{
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  overflow: 'hidden',
+                  border: '2px solid rgba(0,229,255,0.5)',
+                  boxShadow: '0 0 8px rgba(0,229,255,0.2)',
+                  cursor: 'pointer',
+                }}>
+                  <img
+                    src={`https://ui-avatars.com/api/?name=${user?.username || 'G'}&background=random`}
+                    alt="avatar"
+                    style={{ width: '100%', height: '100%' }}
+                  />
+                </div>
+              </Link>
+              {['Owner', 'Admin'].includes(user.role) && (
+                <Link
+                  href="/admin"
+                  className="hide-mobile"
+                  style={{
+                    textDecoration: 'none',
+                    color: 'var(--primary)',
+                    fontWeight: 800, fontSize: '10px',
+                    border: '1px solid rgba(0,229,255,0.3)',
+                    padding: '3px 8px', borderRadius: '5px',
+                    background: 'rgba(0,229,255,0.08)',
+                    letterSpacing: '1px',
+                  }}
+                >
+                  ADMIN
+                </Link>
+              )}
+            </div>
+          ) : (
+            <Link href="/login" style={{ textDecoration: 'none', marginLeft: '4px' }}>
+              <button style={{
+                background: 'transparent',
+                color: 'var(--primary)',
+                border: '1.5px solid rgba(0,229,255,0.4)',
+                padding: '6px 14px', borderRadius: '8px',
+                fontWeight: 800, fontSize: '12px',
+                cursor: 'pointer', letterSpacing: '0.5px',
+              }}>LOGIN</button>
+            </Link>
+          )}
+        </div>
+      </header>
+
+      {/* ── Search Dropdown Bar ── */}
+      <div style={{
+        position: 'sticky',
+        top: '64px',
+        zIndex: 199,
+        overflow: 'hidden',
+        maxHeight: searchOpen ? '80px' : '0',
+        transition: 'max-height 0.3s cubic-bezier(0.4,0,0.2,1)',
+        background: 'rgba(8,11,20,0.98)',
+        backdropFilter: 'blur(24px)',
+        borderBottom: searchOpen ? '1px solid rgba(0,229,255,0.12)' : 'none',
+      }}>
+        <form onSubmit={handleSearchSubmit} style={{ padding: '12px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <span style={{
+              position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
+              opacity: 0.4, pointerEvents: 'none',
+            }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </span>
+            <input
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Cari materi trading... (tekan Enter)"
+              style={{
+                width: '100%', padding: '10px 14px 10px 40px',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(0,229,255,0.2)',
+                borderRadius: '10px', color: 'var(--text)',
+                fontFamily: 'inherit', fontSize: '14px', outline: 'none',
+              }}
+              onKeyDown={e => e.key === 'Escape' && setSearchOpen(false)}
+            />
+          </div>
+          <button type="submit" style={{
+            background: 'linear-gradient(135deg, #00B8D4, #00E5FF)',
+            border: 'none', color: '#000', padding: '10px 18px',
+            borderRadius: '10px', fontWeight: 800, fontSize: '13px',
+            cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+          }}>Cari</button>
+          <button type="button" onClick={() => setSearchOpen(false)} style={{
+            background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+            color: 'var(--text2)', padding: '10px 12px',
+            borderRadius: '10px', cursor: 'pointer', flexShrink: 0, fontSize: '13px',
+          }}>✕</button>
+        </form>
+      </div>
+
+      {/* ── Sidebar Overlay ── */}
+      {isMenuOpen && (
+        <div
+          onClick={() => setIsMenuOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)',
+            zIndex: 998, backdropFilter: 'blur(4px)',
+          }}
+        />
+      )}
+
+      {/* ── Sidebar (mobile) ── */}
+      <div style={{
+        position: 'fixed', top: '64px', left: 0, bottom: 0,
+        width: '270px',
+        background: 'rgba(8,11,20,0.98)',
+        backdropFilter: 'blur(24px)',
+        zIndex: 999,
+        transform: isMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        borderRight: '1px solid rgba(0,229,255,0.08)',
+        padding: '16px 12px',
+        overflowY: 'auto',
+      }}>
+        {/* User info */}
+        {user && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '10px 12px', marginBottom: '12px',
+            background: 'rgba(0,229,255,0.05)',
+            borderRadius: '12px', border: '1px solid rgba(0,229,255,0.12)',
+          }}>
+            <img
+              src={`https://ui-avatars.com/api/?name=${user.username}&background=random`}
+              alt="avatar"
+              style={{ width: '34px', height: '34px', borderRadius: '50%', border: '2px solid rgba(0,229,255,0.4)' }}
+            />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '13px' }}>{user.username}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text3)' }}>{user.role}</div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          {NAV_LINKS.map(link => {
+            const isActive = pathname === link.path
+            return (
+              <Link
+                key={link.path}
+                href={link.path}
+                onClick={() => setIsMenuOpen(false)}
+                style={{
+                  textDecoration: 'none',
+                  color: isActive ? 'var(--primary)' : 'var(--text)',
+                  padding: '11px 13px', borderRadius: '10px',
+                  background: isActive ? 'rgba(0,229,255,0.1)' : 'transparent',
+                  border: isActive ? '1px solid rgba(0,229,255,0.2)' : '1px solid transparent',
+                  fontSize: '14px', fontWeight: 600,
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <span style={{ fontSize: '18px' }}>{link.icon}</span>
+                {link.name}
+              </Link>
+            )
+          })}
+
+          {/* Report links in sidebar */}
+          <Link
+            href="/report"
+            onClick={() => setIsMenuOpen(false)}
+            style={{
+              textDecoration: 'none', color: 'var(--text)',
+              padding: '11px 13px', borderRadius: '10px',
+              background: pathname === '/report' ? 'rgba(124,58,237,0.1)' : 'transparent',
+              border: pathname === '/report' ? '1px solid rgba(124,58,237,0.25)' : '1px solid transparent',
+              fontSize: '14px', fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s',
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>📬</span>
+            Kirim Laporan
+          </Link>
+          <Link
+            href="/report?tab=riwayat"
+            onClick={() => setIsMenuOpen(false)}
+            style={{
+              textDecoration: 'none', color: 'var(--text)',
+              padding: '11px 13px', borderRadius: '10px',
+              background: 'transparent', border: '1px solid transparent',
+              fontSize: '14px', fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s',
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>📋</span>
+            Riwayat Laporan
+          </Link>
+
+          <div style={{ height: '1px', background: 'var(--border)', margin: '10px 0' }} />
+
+          {/* Theme toggle in sidebar */}
+          <button
+            onClick={toggleTheme}
+            style={{
+              background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)',
+              color: 'var(--text2)', textAlign: 'left',
+              padding: '11px 13px', fontSize: '14px',
+              fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px',
+              cursor: 'pointer', borderRadius: '10px', width: '100%',
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            {theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+          </button>
+
+          {user && (
+            <button
+              onClick={handleLogout}
+              style={{
+                background: 'rgba(220,50,50,0.08)',
+                border: '1px solid rgba(220,50,50,0.2)',
+                color: '#F87171', textAlign: 'left',
+                padding: '11px 13px', fontSize: '14px',
+                fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px',
+                cursor: 'pointer', borderRadius: '10px', width: '100%',
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>🚪</span>
+              Logout
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Main Content ── */}
+      <main style={{ paddingBottom: '80px' }}>
+        {children}
+      </main>
+
+      {/* ── Floating Report Button (desktop only) ── */}
+      <Link
+        href="/report"
+        className="hide-mobile-tablet"
+        title="Kirim laporan / bug report"
+        style={{
+          position: 'fixed', bottom: '28px', right: '24px',
+          display: 'flex', alignItems: 'center', gap: '8px',
+          background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
+          color: '#fff', textDecoration: 'none',
+          padding: '10px 18px', borderRadius: '50px',
+          fontWeight: 800, fontSize: '13px',
+          boxShadow: '0 8px 28px rgba(124,58,237,0.45)',
+          zIndex: 95,
+          transition: 'transform 0.2s, box-shadow 0.2s',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 36px rgba(124,58,237,0.55)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 28px rgba(124,58,237,0.45)' }}
+      >
+        📬 <span>Kirim Laporan</span>
+      </Link>
+
+      {/* ── Mobile Bottom Navigation ── */}
+      <nav className="hide-desktop" style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        height: '64px',
+        background: 'rgba(8,11,20,0.96)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(0,229,255,0.08)',
+        display: 'flex', alignItems: 'center',
+        zIndex: 100,
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}>
+        {NAV_LINKS.map(link => {
+          const isActive = pathname === link.path
+          return (
+            <Link
+              key={link.path}
+              href={link.path}
+              style={{
+                flex: 1, textAlign: 'center', textDecoration: 'none',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+                padding: '8px 0', position: 'relative',
+              }}
+            >
+              {isActive && (
+                <div style={{
+                  position: 'absolute', top: 0, left: '20%', right: '20%',
+                  height: '2px',
+                  background: 'linear-gradient(90deg, transparent, var(--primary), transparent)',
+                  borderRadius: '1px',
+                }} />
+              )}
+              <div style={{
+                fontSize: '21px',
+                color: isActive ? 'var(--primary)' : 'var(--text3)',
+                transition: 'all 0.2s',
+                transform: isActive ? 'scale(1.18)' : 'scale(1)',
+              }}>
+                {link.icon}
+              </div>
+              <span style={{
+                fontSize: '9px', fontWeight: 700,
+                color: isActive ? 'var(--primary)' : 'var(--text3)',
+                letterSpacing: '0.3px', textTransform: 'uppercase',
+              }}>
+                {link.name}
+              </span>
+            </Link>
+          )
+        })}
+      </nav>
+
+      <style jsx>{`
+        .hdr-btn {
+          background: transparent;
+          border: none;
+          color: var(--text2);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px;
+          border-radius: 8px;
+          transition: background 0.2s, color 0.2s;
+          min-width: 36px;
+          height: 36px;
+        }
+        .hdr-btn:hover {
+          background: rgba(255,255,255,0.07);
+          color: var(--text);
+        }
+        @media (min-width: 1025px) { .hide-desktop { display: none !important; } }
+        @media (max-width: 1024px) {
+          .hide-tablet { display: none !important; }
+          .hide-mobile-tablet { display: none !important; }
+        }
+        @media (max-width: 768px) { .hide-mobile { display: none !important; } }
+      `}</style>
+    </div>
+  )
+}

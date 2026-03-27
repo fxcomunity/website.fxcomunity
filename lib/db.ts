@@ -238,4 +238,20 @@ export async function initDB() {
         ('Welcome Banner', 'Banner aktif default', 'image', 'https://cdn.example.com/banners/lebaran-2025.jpg', decode('', 'hex'), 'image/jpeg', 'welcome.jpg', 0, 'Welcome Banner', NULL, TRUE, NOW() - INTERVAL '1 day', NOW() + INTERVAL '30 day', 1, TRUE, 'system')
     `)
   }
+  await query(`CREATE TABLE IF NOT EXISTS crypt_data (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    encrypted_text TEXT NOT NULL,
+    method VARCHAR(50) DEFAULT 'base64',
+    created_at TIMESTAMP DEFAULT NOW()
+  )`)
+  await query(`CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info',
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT NOW()
+  )`)
 }

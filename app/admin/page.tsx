@@ -34,6 +34,9 @@ const MENU_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', icon: '📊' },
   { key: 'pdfs', label: 'Kelola PDF', icon: '📄' },
   { key: 'users', label: 'Kelola User', icon: '👥' },
+  { key: 'notifications', label: 'Notifikasi', icon: '🔔' },
+  { key: 'reports', label: 'Laporan User', icon: '📬' },
+  { key: 'crypto', label: 'Crypto Decoder', icon: '🔓' },
   { key: 'settings', label: 'Pengaturan', icon: '⚙️' },
 ]
 
@@ -56,6 +59,10 @@ export default function AdminPage() {
   const [adminForm, setAdminForm] = useState({ username: '', email: '', password: '' })
   const [creatingAdmin, setCreatingAdmin] = useState(false)
   const [processingRequestId, setProcessingRequestId] = useState<number | null>(null)
+  const [notifForm, setNotifForm] = useState({ title: '', message: '', type: 'info', user_id: 'all' })
+  const [sendingNotif, setSendingNotif] = useState(false)
+  const [reports, setReports] = useState<any[]>([])
+  const [reportFilter, setReportFilter] = useState<{ type: string; status: string }>({ type: 'all', status: 'all' })
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -68,17 +75,28 @@ export default function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [pRes, uRes, sRes, reqRes] = await Promise.all([
+    const [pRes, uRes, sRes, reqRes, repRes] = await Promise.all([
       fetch('/api/pdfs').then(r => r.json()),
       fetch('/api/users').then(r => r.json()),
       fetch('/api/admin/settings').then(r => r.json()),
-      fetch('/api/admin/admin-requests').then(r => r.json()).catch(() => ({ success: false, data: [] }))
+      fetch('/api/admin/admin-requests').then(r => r.json()).catch(() => ({ success: false, data: [] })),
+      fetch('/api/report').then(r => r.json()).catch(() => ({ success: false, data: [] }))
     ])
     if (pRes.success) setPdfs(pRes.data)
     if (uRes.success) setUsers(uRes.data)
     if (sRes.success && sRes.data) setMaintenance(sRes.data.maintenance_mode === 'true')
     if (reqRes.success) setAdminRequests(reqRes.data || [])
+    if (repRes.success) setReports(repRes.data || [])
     setLoading(false)
+  }
+
+  async function updateReportStatus(id: number, status: string) {
+    await fetch('/api/report', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status })
+    })
+    setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r))
+    showToast('✅ Status laporan diperbarui')
   }
 
   async function toggleMaintenance() {
@@ -203,6 +221,42 @@ export default function AdminPage() {
     }
   }
 
+async function sendNotification() {
+    if (!notifForm.title || !notifForm.message) {
+      showToast('⚠️ Judul dan pesan wajib diisi')
+      return
+    }
+    setSendingNotif(true)
+    try {
+      // FIX: Convert user_id 'all' -> null, string ID -> number
+      const payload = {
+        title: notifForm.title,
+        message: notifForm.message,
+        type: notifForm.type,
+        user_id: notifForm.user_id === 'all' ? null : parseInt(notifForm.user_id as string)
+      }
+      
+      const res = await fetch('/api/admin/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      console.log('API Response:', data) // Debug
+      if (data.success) {
+        showToast('✅ Notifikasi berhasil dikirim!')
+        setNotifForm({ title: '', message: '', type: 'info', user_id: 'all' })
+      } else {
+        showToast(`⚠️ Gagal: ${data.message || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Send notification error:', error)
+      showToast('⚠️ Network/DB error - Cek console')
+    } finally {
+      setSendingNotif(false)
+    }
+  }
+
   const filteredPdfs = pdfs.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
   const filteredUsers = users.filter(u => u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
   const filteredAdminRequests = adminRequests.filter(r =>
@@ -296,7 +350,10 @@ export default function AdminPage() {
           {MENU_ITEMS.map(item => (
             <button
               key={item.key}
-              onClick={() => setActiveMenu(item.key)}
+              onClick={() => {
+                if (item.key === 'crypto') router.push('/crypto')
+                else setActiveMenu(item.key)
+              }}
               style={{
                 width: '100%',
                 display: 'flex',
@@ -642,6 +699,131 @@ export default function AdminPage() {
                 ))}
               </div>
             </>
+          ) : activeMenu === 'notifications' ? (
+            /* NOTIFICATION MANAGEMENT */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div className="card" style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>🔔 Kirim Notifikasi Baru</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>Judul Notifikasi</label>
+                    <input className="input" placeholder="Contoh: Update Chapter Baru!" value={notifForm.title} onChange={e => setNotifForm({...notifForm, title: e.target.value})} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>Pesan</label>
+                    <textarea className="input" rows={3} placeholder="Isi pesan notifikasi..." value={notifForm.message} onChange={e => setNotifForm({...notifForm, message: e.target.value})} style={{ resize: 'vertical' }} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>Tipe</label>
+                      <select className="input" value={notifForm.type} onChange={e => setNotifForm({...notifForm, type: e.target.value})}>
+                        <option value="info">Info (Biru)</option>
+                        <option value="success">Success (Hijau)</option>
+                        <option value="warning">Warning (Kuning)</option>
+                        <option value="error">Error (Merah)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>Target User</label>
+                      <select className="input" value={notifForm.user_id} onChange={e => setNotifForm({...notifForm, user_id: e.target.value})}>
+                        <option value="all">Semua User</option>
+                        {users.map(u => (
+                          <option key={u.id} value={u.id}>{u.username} ({u.role})</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button className="btn btn-primary" onClick={sendNotification} disabled={sendingNotif} style={{ marginTop: '10px' }}>
+                    {sendingNotif ? 'Mengirim...' : '🚀 Kirim Notifikasi'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : activeMenu === 'reports' ? (
+            /* REPORTS MANAGEMENT */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Filters */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <select className="input" value={reportFilter.type} onChange={e => setReportFilter(f => ({ ...f, type: e.target.value }))} style={{ width: 'auto' }}>
+                  <option value="all">Semua Jenis</option>
+                  <option value="bug">🐛 Bug</option>
+                  <option value="saran">💡 Saran</option>
+                  <option value="pertanyaan">❓ Pertanyaan</option>
+                  <option value="konten">📄 Konten</option>
+                  <option value="lainnya">📬 Lainnya</option>
+                </select>
+                <select className="input" value={reportFilter.status} onChange={e => setReportFilter(f => ({ ...f, status: e.target.value }))} style={{ width: 'auto' }}>
+                  <option value="all">Semua Status</option>
+                  <option value="open">🔴 Open</option>
+                  <option value="resolved">🟡 Resolved</option>
+                  <option value="closed">⚫ Closed</option>
+                </select>
+                <span style={{ fontSize: '13px', color: 'var(--text3)' }}>
+                  {reports.filter(r =>
+                    (reportFilter.type === 'all' || r.type === reportFilter.type) &&
+                    (reportFilter.status === 'all' || r.status === reportFilter.status)
+                  ).length} laporan
+                </span>
+              </div>
+
+              {/* Report List */}
+              {reports
+                .filter(r =>
+                  (reportFilter.type === 'all' || r.type === reportFilter.type) &&
+                  (reportFilter.status === 'all' || r.status === reportFilter.status)
+                )
+                .length === 0 ? (
+                <div className="card" style={{ padding: '48px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '12px' }}>📭</div>
+                  <p style={{ color: 'var(--text2)' }}>Tidak ada laporan ditemukan</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {reports
+                    .filter(r =>
+                      (reportFilter.type === 'all' || r.type === reportFilter.type) &&
+                      (reportFilter.status === 'all' || r.status === reportFilter.status)
+                    )
+                    .map(r => {
+                      const typeIcon = r.type === 'bug' ? '🐛' : r.type === 'saran' ? '💡' : r.type === 'pertanyaan' ? '❓' : r.type === 'konten' ? '📄' : '📬'
+                      const statusColor = r.status === 'open' ? '#EF4444' : r.status === 'resolved' ? '#F59E0B' : '#6B7280'
+                      return (
+                        <div key={r.id} className="card" style={{ padding: '18px', borderLeft: `3px solid ${statusColor}` }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                <span style={{ fontSize: '18px' }}>{typeIcon}</span>
+                                <span style={{ fontWeight: 700, fontSize: '14px' }}>{r.title}</span>
+                                <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '10px', background: `${statusColor}18`, color: statusColor, border: `1px solid ${statusColor}30`, fontWeight: 700, textTransform: 'uppercase' }}>
+                                  {r.status}
+                                </span>
+                              </div>
+                              <p style={{ color: 'var(--text2)', fontSize: '13px', lineHeight: 1.6, marginBottom: '8px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{r.description}</p>
+                              <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text3)', flexWrap: 'wrap' }}>
+                                <span>👤 {r.username || 'Tamu'}</span>
+                                {r.email && <span>✉️ {r.email}</span>}
+                                <span>🕐 {new Date(r.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                              {r.status === 'open' && (
+                                <button className="btn btn-sm" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }} onClick={() => updateReportStatus(r.id, 'resolved')}>Resolve</button>
+                              )}
+                              {r.status !== 'closed' && (
+                                <button className="btn btn-sm" style={{ background: 'rgba(107,114,128,0.15)', color: '#9CA3AF' }} onClick={() => updateReportStatus(r.id, 'closed')}>Close</button>
+                              )}
+                              {r.status === 'closed' && (
+                                <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.15)', color: '#F87171' }} onClick={() => updateReportStatus(r.id, 'open')}>Reopen</button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })
+                  }
+                </div>
+              )}
+            </div>
           ) : activeMenu === 'settings' ? (
             /* SETTINGS */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

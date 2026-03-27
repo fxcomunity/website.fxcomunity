@@ -10,13 +10,13 @@ const validateEmail = (email: string): boolean => {
   return emailRegex.test(email)
 }
 
-// Sanitasi input untuk mencegah SQL Injection
 const sanitizeInput = (input: string): string => {
+  if (typeof input !== 'string') return ''
+  
   // Hapus karakter yang berpotensi berbahaya
   return input
     .replace(/['";\\]/g, '')  // Hapus kutip dan semicolon
     .replace(/--/g, '')       // Hapus comment SQL
-    .replace(/\/\*/g, '')     // Hapus block comment
     .replace(/\*\//g, '')
     .trim()
 }

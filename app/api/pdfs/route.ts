@@ -6,6 +6,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const search = searchParams.get('search') || ''
+    const folder = searchParams.get('folder') || ''
     const category = searchParams.get('category') || ''
     const fav = searchParams.get('favorites') === '1'
 
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest) {
     let i = 1
 
     if (search) { where += ` AND p.name ILIKE $${i++}`; params.push(`%${search}%`) }
+    if (folder) { where += ` AND p.category LIKE $${i++}`; params.push(`fx-${folder}%`) }
     if (category && category !== 'semua' && category !== 'favorit') { where += ` AND p.category=$${i++}`; params.push(category) }
 
     let sql: string
