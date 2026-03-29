@@ -125,11 +125,11 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
               src="/logo.png"
               alt="FXCOMUNITY Logo"
               style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                boxShadow: '0 0 10px rgba(0,229,255,0.3)',
+                width: '38px',
+                height: '38px',
+                objectFit: 'contain',
+                background: 'transparent',
+                filter: 'drop-shadow(0 0 6px rgba(0,229,255,0.4))',
               }}
             />
             <div className="hide-tablet" style={{
