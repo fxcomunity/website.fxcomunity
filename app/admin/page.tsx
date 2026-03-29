@@ -100,17 +100,21 @@ export default function AdminPage() {
   }
 
   async function deleteReport(id: number) {
-    if (!confirm('Hapus laporan ini? Aksi tidak bisa dibatalkan.')) return
-    const res = await fetch('/api/report', {
-      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id })
-    })
-    const data = await res.json()
-    if (data.success) {
-      setReports(prev => prev.filter(r => r.id !== id))
-      showToast('🗑️ Laporan dihapus')
-    } else {
-      showToast('⚠️ Gagal hapus laporan')
+    try {
+      const res = await fetch('/api/report', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setReports(prev => prev.filter(r => Number(r.id) !== Number(id)))
+        showToast('🗑️ Laporan dihapus')
+      } else {
+        showToast('⚠️ ' + (data.message || 'Gagal hapus laporan'))
+      }
+    } catch {
+      showToast('⚠️ Error koneksi saat hapus')
     }
   }
 
