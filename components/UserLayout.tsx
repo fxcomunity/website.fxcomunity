@@ -576,7 +576,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         zIndex: 100,
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
-        {NAV_LINKS.filter(link => link.name !== 'Home' && link.name !== 'Library').map(link => {
+        {NAV_LINKS.filter(link => link.name !== 'Home' && link.name !== 'Library' && link.name !== 'Popular').map(link => {
           const isActive = pathname === link.path
           return (
             <Link
