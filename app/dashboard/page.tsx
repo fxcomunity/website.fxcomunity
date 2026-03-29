@@ -91,13 +91,13 @@ export default function UserDashboard() {
 
   return (
     <UserLayout>
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '24px 16px 40px' }}>
+      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '24px 16px 40px' }} className="dash-wrap">
 
         {/* ── Profile Hero ── */}
-        <div style={{
+        <div className="profile-hero" style={{
           background: 'linear-gradient(135deg, rgba(0,184,212,0.07), rgba(168,85,247,0.07))',
           border: '1px solid rgba(0,229,255,0.12)',
-          borderRadius: '20px', padding: '28px 24px',
+          borderRadius: '20px', padding: '24px',
           display: 'flex', alignItems: 'center', gap: '20px',
           flexWrap: 'wrap', marginBottom: '24px',
           position: 'relative', overflow: 'hidden',
@@ -105,7 +105,7 @@ export default function UserDashboard() {
           <div style={{ position: 'absolute', top: '-40px', left: '-40px', width: '180px', height: '180px', borderRadius: '50%', background: 'rgba(0,229,255,0.05)', filter: 'blur(40px)', pointerEvents: 'none' }} />
 
           {/* Avatar */}
-          <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div className="profile-avatar" style={{ position: 'relative', flexShrink: 0 }}>
             <img
               src={`https://ui-avatars.com/api/?name=${user.username}&background=random&size=80&bold=true`}
               alt="avatar"
@@ -125,12 +125,12 @@ export default function UserDashboard() {
           </div>
 
           {/* Info */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{ fontSize: '21px', fontWeight: 800, marginBottom: '4px' }}>
+          <div className="profile-info" style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>
               Halo, {user.username}!
             </h1>
-            <p style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '10px' }}>{user.email}</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               <span style={{ background: 'rgba(0,229,255,0.1)', color: '#00E5FF', border: '1px solid rgba(0,229,255,0.22)', padding: '3px 11px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>{user.role}</span>
               <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)', padding: '3px 11px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>{user.status}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.04)', color: 'var(--text3)', border: '1px solid rgba(255,255,255,0.07)', padding: '3px 11px', borderRadius: '20px', fontSize: '11px' }}>
@@ -139,7 +139,7 @@ export default function UserDashboard() {
             </div>
           </div>
 
-          <Link href="/profile" style={{
+          <Link href="/profile" className="edit-profil-btn" style={{
             textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px',
             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
             color: 'var(--text2)', padding: '8px 15px', borderRadius: '10px',
@@ -265,10 +265,47 @@ export default function UserDashboard() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
-        @media (max-width: 600px) {
+
+        /* ── Tablet (max 768px) ── */
+        @media (max-width: 768px) {
+          .dash-wrap { padding: 16px 12px 32px !important; }
           .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .quick-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .bottom-grid { grid-template-columns: 1fr !important; }
+        }
+
+        /* ── Mobile (max 480px) ── */
+        @media (max-width: 480px) {
+          .dash-wrap { padding: 12px 10px 28px !important; }
+
+          /* Profile hero: stack vertically, center everything */
+          .profile-hero {
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+            padding: 20px 16px !important;
+            gap: 14px !important;
+          }
+          .profile-info {
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+          .profile-info h1 { font-size: 18px !important; }
+          .profile-info p  { white-space: normal !important; text-align: center !important; }
+          .profile-info > div { justify-content: center !important; }
+          .edit-profil-btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+
+          /* Stats: 2x2 */
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+
+          /* Quick links: 2x2 */
+          .quick-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+
+          /* Bottom: single column */
+          .bottom-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
         }
       `}</style>
     </UserLayout>

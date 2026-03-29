@@ -99,6 +99,21 @@ export default function AdminPage() {
     showToast('✅ Status laporan diperbarui')
   }
 
+  async function deleteReport(id: number) {
+    if (!confirm('Hapus laporan ini? Aksi tidak bisa dibatalkan.')) return
+    const res = await fetch('/api/report', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+    const data = await res.json()
+    if (data.success) {
+      setReports(prev => prev.filter(r => r.id !== id))
+      showToast('🗑️ Laporan dihapus')
+    } else {
+      showToast('⚠️ Gagal hapus laporan')
+    }
+  }
+
   async function toggleMaintenance() {
     if (!confirm(maintenance ? 'Matikan Mode Maintenance?' : 'Aktifkan Mode Maintenance? Semua user biasa tidak akan bisa akses web.')) return
     const newVal = !maintenance
@@ -805,7 +820,7 @@ async function sendNotification() {
                                 <span>🕐 {new Date(r.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                            <div style={{ display: 'flex', gap: '6px', flexShrink: 0, flexWrap: 'wrap' }}>
                               {r.status === 'open' && (
                                 <button className="btn btn-sm" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }} onClick={() => updateReportStatus(r.id, 'resolved')}>Resolve</button>
                               )}
@@ -815,6 +830,12 @@ async function sendNotification() {
                               {r.status === 'closed' && (
                                 <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.15)', color: '#F87171' }} onClick={() => updateReportStatus(r.id, 'open')}>Reopen</button>
                               )}
+                              <button
+                                className="btn btn-sm"
+                                style={{ background: 'rgba(239,68,68,0.15)', color: '#F87171', border: '1px solid rgba(239,68,68,0.25)' }}
+                                onClick={() => deleteReport(r.id)}
+                                title="Hapus laporan"
+                              >🗑️ Hapus</button>
                             </div>
                           </div>
                         </div>

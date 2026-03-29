@@ -93,3 +93,18 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: false, message: error?.message }, { status: 500 })
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getCurrentUser()
+    if (!session || !['Owner', 'Admin'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    }
+    const { id } = await req.json()
+    if (!id) return NextResponse.json({ success: false, message: 'ID wajib diisi' }, { status: 400 })
+    await query(`DELETE FROM reports WHERE id = $1`, [id])
+    return NextResponse.json({ success: true, message: 'Laporan berhasil dihapus' })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error?.message }, { status: 500 })
+  }
+}
