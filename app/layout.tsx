@@ -5,6 +5,11 @@ import Footer from '@/components/Footer'
 export const metadata: Metadata = {
   title: 'FXCOMMUNITY',
   description: 'FXCOMMUNITY Platform',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export default function RootLayout({

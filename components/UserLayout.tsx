@@ -121,12 +121,17 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
           {/* Logo */}
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #00B8D4, #00E5FF)',
-              color: '#000', padding: '4px 8px', borderRadius: '6px',
-              fontWeight: 900, fontSize: '15px', letterSpacing: '1px',
-              boxShadow: '0 3px 12px rgba(0,229,255,0.3)',
-            }}>FXC</div>
+            <img
+              src="/logo.png"
+              alt="FXCOMUNITY Logo"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                boxShadow: '0 0 10px rgba(0,229,255,0.3)',
+              }}
+            />
             <div className="hide-tablet" style={{
               fontWeight: 900, fontSize: '16px', letterSpacing: '1.5px',
               background: 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)',
