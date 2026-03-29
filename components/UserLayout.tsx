@@ -460,7 +460,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         zIndex: 100,
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
-        {NAV_LINKS.map(link => {
+        {NAV_LINKS.filter(link => link.name !== 'Home' && link.name !== 'Library').map(link => {
           const isActive = pathname === link.path
           return (
             <Link
