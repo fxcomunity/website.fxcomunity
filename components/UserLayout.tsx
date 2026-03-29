@@ -13,7 +13,9 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [userDropOpen, setUserDropOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const userDropRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark'
@@ -31,6 +33,17 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       })
       .catch(() => { setLoading(false) })
   }, [router])
+
+  // Close user dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userDropRef.current && !userDropRef.current.contains(e.target as Node)) {
+        setUserDropOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Focus search input when opened
   useEffect(() => {
@@ -185,14 +198,22 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
           {/* Auth */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px' }}>
-              <Link href="/profile">
+            <div ref={userDropRef} style={{ position: 'relative', marginLeft: '4px' }}>
+              {/* Avatar button */}
+              <button
+                onClick={() => setUserDropOpen(v => !v)}
+                style={{
+                  background: 'none', border: 'none', padding: 0,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                }}
+                aria-label="User menu"
+              >
                 <div style={{
-                  width: '32px', height: '32px', borderRadius: '50%',
+                  width: '34px', height: '34px', borderRadius: '50%',
                   overflow: 'hidden',
-                  border: '2px solid rgba(0,229,255,0.5)',
-                  boxShadow: '0 0 8px rgba(0,229,255,0.2)',
-                  cursor: 'pointer',
+                  border: userDropOpen ? '2px solid var(--primary)' : '2px solid rgba(0,229,255,0.4)',
+                  boxShadow: userDropOpen ? '0 0 0 3px rgba(0,229,255,0.15)' : '0 0 8px rgba(0,229,255,0.15)',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
                 }}>
                   <img
                     src={`https://ui-avatars.com/api/?name=${user?.username || 'G'}&background=random`}
@@ -200,23 +221,118 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                     style={{ width: '100%', height: '100%' }}
                   />
                 </div>
-              </Link>
-              {['Owner', 'Admin'].includes(user.role) && (
-                <Link
-                  href="/admin"
-                  className="hide-mobile"
-                  style={{
-                    textDecoration: 'none',
-                    color: 'var(--primary)',
-                    fontWeight: 800, fontSize: '10px',
-                    border: '1px solid rgba(0,229,255,0.3)',
-                    padding: '3px 8px', borderRadius: '5px',
-                    background: 'rgba(0,229,255,0.08)',
-                    letterSpacing: '1px',
-                  }}
+                {/* Chevron */}
+                <svg
+                  width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="var(--text3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ transform: userDropOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
                 >
-                  ADMIN
-                </Link>
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {/* Dropdown */}
+              {userDropOpen && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 10px)', right: 0,
+                  background: 'rgba(10,14,26,0.98)',
+                  backdropFilter: 'blur(24px)',
+                  WebkitBackdropFilter: 'blur(24px)',
+                  border: '1px solid rgba(0,229,255,0.12)',
+                  borderRadius: '14px',
+                  minWidth: '200px',
+                  boxShadow: '0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,255,0.06)',
+                  overflow: 'hidden',
+                  zIndex: 300,
+                  animation: 'dropIn 0.18s cubic-bezier(0.4,0,0.2,1)',
+                }}>
+                  {/* Header info */}
+                  <div style={{
+                    padding: '14px 16px 10px',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>{user.username}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>{user.role}</div>
+                  </div>
+
+                  {/* Menu items */}
+                  <div style={{ padding: '8px' }}>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setUserDropOpen(false)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '10px',
+                        padding: '9px 12px', borderRadius: '9px',
+                        textDecoration: 'none', color: 'var(--text)',
+                        fontSize: '13px', fontWeight: 600,
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.07)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <span style={{ fontSize: '16px' }}>🏠</span>
+                      Dashboard
+                    </Link>
+
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserDropOpen(false)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '10px',
+                        padding: '9px 12px', borderRadius: '9px',
+                        textDecoration: 'none', color: 'var(--text)',
+                        fontSize: '13px', fontWeight: 600,
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.07)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <span style={{ fontSize: '16px' }}>👤</span>
+                      Profile
+                    </Link>
+
+                    {['Owner', 'Admin'].includes(user.role) && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setUserDropOpen(false)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '10px',
+                          padding: '9px 12px', borderRadius: '9px',
+                          textDecoration: 'none',
+                          color: 'var(--primary)',
+                          fontSize: '13px', fontWeight: 700,
+                          transition: 'background 0.15s',
+                          background: 'rgba(0,229,255,0.05)',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.12)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.05)')}
+                      >
+                        <span style={{ fontSize: '16px' }}>⚙️</span>
+                        Panel Admin
+                      </Link>
+                    )}
+
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '6px 0' }} />
+
+                    <button
+                      onClick={() => { setUserDropOpen(false); handleLogout() }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '10px',
+                        width: '100%', padding: '9px 12px', borderRadius: '9px',
+                        background: 'transparent',
+                        border: 'none', color: '#F87171',
+                        fontSize: '13px', fontWeight: 700,
+                        cursor: 'pointer', textAlign: 'left',
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(248,113,113,0.08)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <span style={{ fontSize: '16px' }}>🚪</span>
+                      Logout
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           ) : (
@@ -518,6 +634,10 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         .hdr-btn:hover {
           background: rgba(255,255,255,0.07);
           color: var(--text);
+        }
+        @keyframes dropIn {
+          from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)  scale(1); }
         }
         @media (min-width: 1025px) { .hide-desktop { display: none !important; } }
         @media (max-width: 1024px) {
