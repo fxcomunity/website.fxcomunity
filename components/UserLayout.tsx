@@ -538,7 +538,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* ── Main Content ── */}
-      <main style={{ paddingBottom: '80px' }}>
+      <main>
         {children}
       </main>
 
@@ -564,57 +564,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         📬 <span>Kirim Laporan</span>
       </Link>
 
-      {/* ── Mobile Bottom Navigation ── */}
-      <nav className="hide-desktop" style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        height: '64px',
-        background: 'rgba(8,11,20,0.96)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(0,229,255,0.08)',
-        display: 'flex', alignItems: 'center',
-        zIndex: 100,
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}>
-        {NAV_LINKS.filter(link => link.name !== 'Home' && link.name !== 'Library' && link.name !== 'Popular').map(link => {
-          const isActive = pathname === link.path
-          return (
-            <Link
-              key={link.path}
-              href={link.path}
-              style={{
-                flex: 1, textAlign: 'center', textDecoration: 'none',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-                padding: '8px 0', position: 'relative',
-              }}
-            >
-              {isActive && (
-                <div style={{
-                  position: 'absolute', top: 0, left: '20%', right: '20%',
-                  height: '2px',
-                  background: 'linear-gradient(90deg, transparent, var(--primary), transparent)',
-                  borderRadius: '1px',
-                }} />
-              )}
-              <div style={{
-                fontSize: '21px',
-                color: isActive ? 'var(--primary)' : 'var(--text3)',
-                transition: 'all 0.2s',
-                transform: isActive ? 'scale(1.18)' : 'scale(1)',
-              }}>
-                {link.icon}
-              </div>
-              <span style={{
-                fontSize: '9px', fontWeight: 700,
-                color: isActive ? 'var(--primary)' : 'var(--text3)',
-                letterSpacing: '0.3px', textTransform: 'uppercase',
-              }}>
-                {link.name}
-              </span>
-            </Link>
-          )
-        })}
-      </nav>
+
 
       <style jsx>{`
         .hdr-btn {
