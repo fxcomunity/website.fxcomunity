@@ -135,13 +135,12 @@ export default function Library() {
   }
 
   async function handleDownload(pdf: PDF) {
-    try {
-      await fetch(`/api/pdfs/${pdf.id}/download`, { method: 'POST' })
-      setPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads || 0) + 1, views: (p.views || 0) + 1 } : p))
-      setAllPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads || 0) + 1, views: (p.views || 0) + 1 } : p))
-      window.open(`/api/pdfs/${pdf.id}/view`, '_blank')
-      showToast('📥 PDF dibuka!')
-    } catch { }
+    // Open GET /download — API converts to Google Drive direct download URL
+    window.open(`/api/pdfs/${pdf.id}/download`, '_blank')
+    // Optimistic UI update
+    setPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads || 0) + 1 } : p))
+    setAllPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads || 0) + 1 } : p))
+    showToast('📥 Download dimulai!')
   }
 
   function getShareUrl(pdf: PDF) {
@@ -283,8 +282,30 @@ export default function Library() {
                 <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>{viewPdf.name}</h3>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="btn btn-ghost btn-sm" onClick={() => handleDownload(viewPdf)}>📥 Download</button>
-                <button className="btn btn-ghost btn-sm" onClick={() => { setSharePdf(viewPdf); setViewPdf(null) }}>📤 Share</button>
+                <button
+                  onClick={() => handleDownload(viewPdf)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '7px 14px', borderRadius: '9px', border: '1px solid rgba(168,85,247,0.3)', cursor: 'pointer',
+                    background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(168,85,247,0.25))',
+                    color: '#C4B5FD', fontWeight: 700, fontSize: '12px',
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download
+                </button>
+                <button
+                  onClick={() => { setSharePdf(viewPdf); setViewPdf(null) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '7px 14px', borderRadius: '9px', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer',
+                    background: 'rgba(255,255,255,0.06)',
+                    color: 'var(--text2)', fontWeight: 700, fontSize: '12px',
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  Share
+                </button>
                 <button className="btn btn-ghost btn-icon" onClick={() => setViewPdf(null)}>✕</button>
               </div>
             </div>
@@ -444,23 +465,25 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
           Unduh
         </button>
 
-        {/* Share */}
+        {/* Share — same size as other buttons */}
         <button
           onClick={onShare}
           title="Bagikan PDF"
           style={{
-            width: '34px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            borderRadius: '9px', border: '1px solid rgba(255,255,255,0.1)',
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+            padding: '8px 4px', borderRadius: '9px', border: '1px solid rgba(255,255,255,0.1)',
             background: 'rgba(255,255,255,0.05)', cursor: 'pointer',
+            color: 'var(--text2)', fontWeight: 800, fontSize: '11px',
             transition: 'all 0.2s ease',
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.2)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.2)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
           </svg>
+          Share
         </button>
       </div>
     </div>
