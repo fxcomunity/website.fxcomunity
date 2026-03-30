@@ -1,90 +1,133 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { query } from '@/lib/db'
+import { getToken, verifyToken } from '@/lib/auth'
 
-// Simple in-memory cache
-const cache = new Map<string, { data: any; timestamp: number }>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+async function ensureTables() {
+  // genres
+  await query(`
+    CREATE TABLE IF NOT EXISTS genres (
+      id   SERIAL PRIMARY KEY,
+      name VARCHAR(50) NOT NULL UNIQUE,
+      slug VARCHAR(60) NOT NULL UNIQUE
+    )`, [])
 
-export async function GET(req: NextRequest) {
+  // songs — pakai user_id referencing existing users table
+  await query(`
+    CREATE TABLE IF NOT EXISTS songs (
+      id           SERIAL PRIMARY KEY,
+      user_id      INTEGER      NOT NULL,
+      title        VARCHAR(200) NOT NULL,
+      artist       VARCHAR(150),
+      album        VARCHAR(150),
+      file_url     VARCHAR(500) NOT NULL,
+      cover_url    VARCHAR(500),
+      duration_sec INTEGER      DEFAULT 0 CHECK (duration_sec >= 0),
+      status       TEXT         NOT NULL DEFAULT 'active'
+                     CHECK (status IN ('processing','active','private','deleted')),
+      play_count   INTEGER      NOT NULL DEFAULT 0 CHECK (play_count >= 0),
+      uploaded_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    )`, [])
+
+  // song_genres junction
+  await query(`
+    CREATE TABLE IF NOT EXISTS song_genres (
+      song_id  INTEGER NOT NULL REFERENCES songs(id)  ON DELETE CASCADE,
+      genre_id INTEGER NOT NULL REFERENCES genres(id) ON DELETE CASCADE,
+      PRIMARY KEY (song_id, genre_id)
+    )`, [])
+
+  // Seed default genres
+  await query(`
+    INSERT INTO genres (name, slug) VALUES
+      ('Lo-Fi','lo-fi'),('Ambient','ambient'),('Chill','chill'),
+      ('Focus','focus'),('Jazz','jazz'),('Electronic','electronic'),
+      ('Acoustic','acoustic'),('Pop','pop'),('Indie','indie'),
+      ('Rock','rock'),('Hip-Hop','hip-hop'),('Classical','classical')
+    ON CONFLICT (slug) DO NOTHING`, [])
+}
+
+// GET — semua lagu aktif, dengan genre
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url)
-    const query = searchParams.get('q') || 'DJ'
-    const limit = searchParams.get('limit') || 20
-    const index = searchParams.get('index') || 0
-
-    // Check cache first
-    const cacheKey = `${query}-${limit}-${index}`
-    const cached = cache.get(cacheKey)
-    
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return NextResponse.json(cached.data)
-    }
-
-    // Deezer API - Search tracks
-    const deezerUrl = `https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=${limit}&index=${index}`
-    
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
-
-    const response = await fetch(deezerUrl, {
-      headers: {
-        'Accept': 'application/json',
-      },
-      signal: controller.signal
-    })
-
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch from Deezer')
-    }
-
-    const data = await response.json()
-
-    // Transform data untuk frontend
-    const tracks = data.data?.map((track: any) => ({
-      id: track.id,
-      title: track.title,
-      artist: track.artist.name,
-      artistPicture: track.artist.picture_medium,
-      album: track.album.title,
-      albumCover: track.album.cover_medium,
-      preview: track.preview, // 30 second preview URL
-      duration: track.duration,
-      explicit: track.explicit_lyrics,
-      rank: track.rank
-    })) || []
-
-    const result = {
-      success: true,
-      data: tracks,
-      total: data.total || 0,
-      next: data.next || null
-    }
-
-    // Cache the result
-    cache.set(cacheKey, { data: result, timestamp: Date.now() })
-
-    return NextResponse.json(result)
-
-  } catch (error) {
-    console.error('Music API Error:', error)
-    
-    // Return cached data if available even if expired (fallback)
-    const url = new URL(req.url)
-    const query = url.searchParams.get('q') || 'DJ'
-    const limit = url.searchParams.get('limit') || '20'
-    const index = url.searchParams.get('index') || '0'
-    const cacheKey = `${query}-${limit}-${index}`
-    const cached = cache.get(cacheKey)
-    
-    if (cached) {
-      return NextResponse.json(cached.data)
-    }
-    
-    return NextResponse.json(
-      { success: false, error: 'Gagal mengambil data musik' },
-      { status: 500 }
-    )
+    await ensureTables()
+    const res = await query(`
+      SELECT
+        s.id, s.title, s.artist, s.album,
+        s.file_url, s.cover_url, s.duration_sec, s.play_count, s.uploaded_at,
+        COALESCE(
+          (SELECT json_agg(json_build_object('id', g.id, 'name', g.name, 'slug', g.slug))
+           FROM song_genres sg JOIN genres g ON g.id = sg.genre_id
+           WHERE sg.song_id = s.id),
+          '[]'::json
+        ) AS genres
+      FROM songs s
+      WHERE s.status = 'active'
+      ORDER BY s.uploaded_at DESC
+    `, [])
+    return NextResponse.json({ success: true, data: res.rows })
+  } catch (e) {
+    console.error('GET /api/music error:', e)
+    return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 })
   }
 }
 
+// GET genres list (for admin form)
+export async function OPTIONS() {
+  try {
+    await ensureTables()
+    const res = await query('SELECT * FROM genres ORDER BY name', [])
+    return NextResponse.json({ success: true, data: res.rows })
+  } catch {
+    return NextResponse.json({ success: false })
+  }
+}
+
+// POST — tambah lagu (admin/owner only)
+export async function POST(req: NextRequest) {
+  const token = getToken(req)
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const user = await verifyToken(token)
+  if (!user || !['Owner', 'Admin'].includes(user.role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  try {
+    await ensureTables()
+    const { title, artist, album, file_url, cover_url, genre_id } = await req.json()
+    if (!title?.trim() || !file_url?.trim()) {
+      return NextResponse.json({ error: 'Judul dan URL audio wajib diisi' }, { status: 400 })
+    }
+
+    // Insert song
+    const songRes = await query(`
+      INSERT INTO songs (user_id, title, artist, album, file_url, cover_url, status)
+      VALUES ($1, $2, $3, $4, $5, $6, 'active') RETURNING *
+    `, [user.id, title.trim(), artist?.trim() || null, album?.trim() || null, file_url.trim(), cover_url?.trim() || null])
+
+    const song = songRes.rows[0]
+
+    // Assign genre if provided
+    if (genre_id) {
+      await query(`
+        INSERT INTO song_genres (song_id, genre_id) VALUES ($1, $2)
+        ON CONFLICT DO NOTHING
+      `, [song.id, genre_id]).catch(() => { })
+    }
+
+    // Fetch with genres
+    const full = await query(`
+      SELECT s.*,
+        COALESCE(
+          (SELECT json_agg(json_build_object('id', g.id, 'name', g.name))
+           FROM song_genres sg JOIN genres g ON g.id = sg.genre_id
+           WHERE sg.song_id = s.id),
+          '[]'::json
+        ) AS genres
+      FROM songs s WHERE s.id = $1
+    `, [song.id])
+
+    return NextResponse.json({ success: true, data: full.rows[0] })
+  } catch (e) {
+    console.error('POST /api/music error:', e)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}

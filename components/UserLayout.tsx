@@ -133,9 +133,16 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     </svg>
   )
 
+  const IconMusic = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+    </svg>
+  )
+
   const NAV_LINKS = [
     { name: 'Home',      path: '/dashboard', icon: <IconHome /> },
     { name: 'Library',   path: '/library',   icon: <IconLibrary /> },
+    { name: 'Music',     path: '/music',     icon: <IconMusic /> },
     { name: 'Popular',   path: '/popular',   icon: <IconPopular /> },
     { name: 'Favorites', path: '/favorites', icon: <IconFavorites /> },
   ]

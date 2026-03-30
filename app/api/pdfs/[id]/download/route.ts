@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     const token = getToken(req)
     const user = token ? await verifyToken(token) : null
     if (user) {
-      try { await query('INSERT INTO user_downloads (user_id,pdf_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [user.id, id]) } catch {}
+      try { await query('INSERT INTO user_downloads (user_id,pdf_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [user.id, id]) } catch { }
     }
     // Convert Google Drive view URL → direct download URL
     let downloadUrl = url

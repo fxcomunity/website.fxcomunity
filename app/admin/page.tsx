@@ -34,6 +34,7 @@ const MENU_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', icon: '📊' },
   { key: 'pdfs', label: 'Kelola PDF', icon: '📄' },
   { key: 'users', label: 'Kelola User', icon: '👥' },
+  { key: 'music', label: 'Kelola Musik', icon: '🎵' },
   { key: 'notifications', label: 'Notifikasi', icon: '🔔' },
   { key: 'reports', label: 'Laporan User', icon: '📬' },
   { key: 'crypto', label: 'Crypto Decoder', icon: '🔓' },
@@ -63,6 +64,10 @@ export default function AdminPage() {
   const [sendingNotif, setSendingNotif] = useState(false)
   const [reports, setReports] = useState<any[]>([])
   const [reportFilter, setReportFilter] = useState<{ type: string; status: string }>({ type: 'all', status: 'all' })
+  const [musicList, setMusicList] = useState<any[]>([])
+  const [genres, setGenres] = useState<{ id: number; name: string; slug: string }[]>([])
+  const [musicForm, setMusicForm] = useState({ title: '', artist: '', album: '', file_url: '', cover_url: '', genre_id: '' })
+  const [addingMusic, setAddingMusic] = useState(false)
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -75,18 +80,22 @@ export default function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [pRes, uRes, sRes, reqRes, repRes] = await Promise.all([
+    const [pRes, uRes, sRes, reqRes, repRes, mRes, gRes] = await Promise.all([
       fetch('/api/pdfs').then(r => r.json()),
       fetch('/api/users').then(r => r.json()),
       fetch('/api/admin/settings').then(r => r.json()),
       fetch('/api/admin/admin-requests').then(r => r.json()).catch(() => ({ success: false, data: [] })),
-      fetch('/api/report').then(r => r.json()).catch(() => ({ success: false, data: [] }))
+      fetch('/api/report').then(r => r.json()).catch(() => ({ success: false, data: [] })),
+      fetch('/api/music').then(r => r.json()).catch(() => ({ success: false, data: [] })),
+      fetch('/api/music/genres').then(r => r.json()).catch(() => ({ success: false, data: [] }))
     ])
     if (pRes.success) setPdfs(pRes.data)
     if (uRes.success) setUsers(uRes.data)
     if (sRes.success && sRes.data) setMaintenance(sRes.data.maintenance_mode === 'true')
     if (reqRes.success) setAdminRequests(reqRes.data || [])
     if (repRes.success) setReports(repRes.data || [])
+    if (mRes.success) setMusicList(mRes.data || [])
+    if (gRes.success) setGenres(gRes.data || [])
     setLoading(false)
   }
 
@@ -117,6 +126,31 @@ export default function AdminPage() {
       showToast('⚠️ Error koneksi saat hapus')
     }
   }
+  async function addMusic() {
+    if (!musicForm.title.trim() || !musicForm.file_url.trim()) { showToast('⚠️ Judul dan URL audio wajib diisi'); return }
+    setAddingMusic(true)
+    try {
+      const res = await fetch('/api/music', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...musicForm, genre_id: musicForm.genre_id || null })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setMusicList(p => [data.data, ...p])
+        setMusicForm({ title: '', artist: '', album: '', file_url: '', cover_url: '', genre_id: genres[0]?.id?.toString() || '' })
+        showToast('✅ Lagu berhasil ditambahkan!')
+      } else showToast('⚠️ ' + data.error)
+    } catch { showToast('⚠️ Error saat menambahkan lagu') }
+    finally { setAddingMusic(false) }
+  }
+
+  async function deleteMusic(id: number, title: string) {
+    if (!confirm(`Hapus musik "${title}"?`)) return
+    const res = await fetch(`/api/music/${id}`, { method: 'DELETE' })
+    const data = await res.json()
+    if (data.success) { setMusicList(p => p.filter(m => m.id !== id)); showToast('🗑️ Musik dihapus') }
+    else showToast('⚠️ Gagal hapus musik')
+  }
 
   async function toggleMaintenance() {
     if (!confirm(maintenance ? 'Matikan Mode Maintenance?' : 'Aktifkan Mode Maintenance? Semua user biasa tidak akan bisa akses web.')) return
@@ -133,6 +167,7 @@ export default function AdminPage() {
       } else showToast('⚠️ Gagal ubah maintenance')
     } catch { showToast('⚠️ Error ubah maintenance') }
   }
+
 
   function openAdd() { setForm({ name: '', url: '', category: 'fx-basic', thumbnail: '📄' }); setEditTarget(null); setModal('add') }
   function openEdit(p: PDF) { setForm({ name: p.name, url: p.url, category: p.category, thumbnail: p.thumbnail }); setEditTarget(p); setModal('edit') }
@@ -758,6 +793,102 @@ async function sendNotification() {
                 </div>
               </div>
             </div>
+          ) : activeMenu === 'music' ? (
+            /* MUSIC MANAGEMENT */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Add Song Form */}
+              <div className="card" style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🎵</span> Tambah Lagu Baru
+                </h3>
+                {/* Row 1: title, artist, album, genre */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>JUDUL *</label>
+                    <input className="input" placeholder="Nama lagu..." value={musicForm.title}
+                      onChange={e => setMusicForm(f => ({ ...f, title: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>ARTIS</label>
+                    <input className="input" placeholder="Nama artis..." value={musicForm.artist}
+                      onChange={e => setMusicForm(f => ({ ...f, artist: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>ALBUM</label>
+                    <input className="input" placeholder="Nama album..." value={musicForm.album}
+                      onChange={e => setMusicForm(f => ({ ...f, album: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>GENRE</label>
+                    <select className="input" value={musicForm.genre_id}
+                      onChange={e => setMusicForm(f => ({ ...f, genre_id: e.target.value }))}>
+                      <option value="">— Pilih Genre —</option>
+                      {genres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                {/* Row 2: file_url */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
+                    URL AUDIO * <span style={{ fontWeight: 400, color: 'var(--text3)' }}>(Google Drive: /uc?export=download&id=XXX · atau URL MP3 publik)</span>
+                  </label>
+                  <input className="input" placeholder="https://..." value={musicForm.file_url}
+                    onChange={e => setMusicForm(f => ({ ...f, file_url: e.target.value }))} />
+                </div>
+                {/* Row 3: cover_url */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
+                    URL COVER <span style={{ fontWeight: 400, color: 'var(--text3)' }}>(opsional — URL gambar untuk album art)</span>
+                  </label>
+                  <input className="input" placeholder="https://... (jpg/png/webp)" value={musicForm.cover_url}
+                    onChange={e => setMusicForm(f => ({ ...f, cover_url: e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <button className="btn btn-primary" onClick={addMusic} disabled={addingMusic}>
+                    {addingMusic ? <><span className="spin">⚙️</span> Menambahkan...</> : '🎵 Simpan Lagu'}
+                  </button>
+                  <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Total: {musicList.length} lagu</span>
+                </div>
+              </div>
+
+              {/* Song List */}
+              {musicList.length === 0 ? (
+                <div className="card" style={{ padding: '48px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎵</div>
+                  <p style={{ color: 'var(--text2)' }}>Belum ada lagu. Upload lagu pertama!</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {musicList.map((m, i) => {
+                    const genreNames = (m.genres || []).map((g: any) => g.name).join(', ')
+                    return (
+                      <div key={m.id} className="card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--text3)', fontWeight: 600, width: '24px', textAlign: 'center', flexShrink: 0 }}>{i + 1}</span>
+                        {/* Cover */}
+                        <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                          {m.cover_url
+                            ? <img src={m.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            : <span style={{ fontSize: '22px' }}>🎵</span>}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.title}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
+                            {m.artist || 'Unknown'}{m.album ? ` · ${m.album}` : ''}{genreNames ? ` · ${genreNames}` : ''}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'var(--text3)', flexShrink: 0 }}>▶ {m.play_count || 0}x</span>
+                        <audio controls src={m.file_url} style={{ height: '32px', maxWidth: '200px', flexShrink: 0 }} />
+                        <button onClick={() => deleteMusic(m.id, m.title)}
+                          style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: '8px', padding: '6px 12px', color: '#F87171', cursor: 'pointer', fontSize: '12px', fontWeight: 700, flexShrink: 0 }}>
+                          🗑️ Hapus
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
           ) : activeMenu === 'reports' ? (
             /* REPORTS MANAGEMENT */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
