@@ -6,6 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
+import './admin.css'
 
 interface User { id: number; username: string; email: string; role: string; status: string; created_at: string }
 interface PDF { id: number; name: string; url: string; category: string; thumbnail: string; views: number; downloads: number; is_active: boolean }
@@ -360,47 +361,46 @@ async function sendNotification() {
       {toast && <div className="toast success">{toast}</div>}
 
       {/* Sidebar */}
-      <aside style={{ 
-        width: sidebarOpen ? '260px' : '80px', 
-        background: 'rgba(10,10,26,0.98)', 
-        borderRight: '1px solid var(--border)',
+      <aside className="admin-sidebar" style={{ 
+        width: sidebarOpen ? '256px' : '72px', 
         display: 'flex', 
         flexDirection: 'column',
-        transition: 'all 0.3s ease',
+        transition: 'width 0.28s ease',
         position: 'fixed',
         height: '100vh',
-        zIndex: 100
+        zIndex: 100,
+        overflowX: 'hidden',
       }}>
         {/* Logo */}
-        <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+        <div className="admin-sidebar-logo" style={{ display: 'flex', alignItems: 'center', gap: '12px', minHeight: '64px' }}>
+          <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0, boxShadow: '0 4px 14px rgba(0,229,255,0.25)' }}>
             ⚡
           </div>
           {sidebarOpen && (
-            <div>
-              <span style={{ fontWeight: 800, fontSize: '16px' }} className="grad-text">FX ADMIN</span>
-              <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Panel Management</div>
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ fontWeight: 900, fontSize: '15px', letterSpacing: '-0.3px' }} className="grad-text">FX ADMIN</div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, letterSpacing: '0.5px' }}>PANEL MANAGEMENT</div>
             </div>
           )}
         </div>
 
         {/* User Info */}
-        <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="admin-avatar" style={{ width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0 }}>
               {me.username[0].toUpperCase()}
             </div>
             {sidebarOpen && (
-              <div style={{ overflow: 'hidden' }}>
-                <p style={{ fontWeight: 600, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{me.username}</p>
-                <span className={`badge ${me.role === 'Owner' ? 'badge-orange' : 'badge-purple'}`} style={{ fontSize: '10px' }}>{me.role}</span>
+              <div style={{ overflow: 'hidden', flex: 1 }}>
+                <p style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fff' }}>{me.username}</p>
+                <span className={`badge ${me.role === 'Owner' ? 'badge-orange' : 'badge-purple'}`} style={{ fontSize: '9px', padding: '2px 7px' }}>{me.role}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Menu */}
-        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
+        <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto', overflowX: 'hidden' }}>
           {MENU_ITEMS.map(item => (
             <button
               key={item.key}
@@ -408,168 +408,122 @@ async function sendNotification() {
                 if (item.key === 'crypto') router.push('/crypto')
                 else setActiveMenu(item.key)
               }}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: sidebarOpen ? '12px 16px' : '12px',
-                borderRadius: '10px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 600,
-                fontFamily: 'inherit',
-                marginBottom: '4px',
-                transition: 'all 0.2s',
-                background: activeMenu === item.key ? 'var(--gradient)' : 'transparent',
-                color: activeMenu === item.key ? '#fff' : 'var(--text2)',
-                justifyContent: sidebarOpen ? 'flex-start' : 'center'
-              }}
+              className={`admin-nav-item ${activeMenu === item.key ? 'active' : ''}`}
+              style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '11px 14px' : '11px 0' }}
             >
-              <span style={{ fontSize: '18px' }}>{item.icon}</span>
-              {sidebarOpen && <span>{item.label}</span>}
+              <span className="admin-nav-icon">{item.icon}</span>
+              {sidebarOpen && <span style={{ fontSize: '13.5px' }}>{item.label}</span>}
             </button>
           ))}
 
-          {/* Maintenance Toggle */}
-          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+          {/* Utility Section */}
+          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <button
               onClick={toggleMaintenance}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: sidebarOpen ? '12px 16px' : '12px',
-                borderRadius: '10px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 600,
-                fontFamily: 'inherit',
-                background: maintenance ? 'rgba(255,50,50,0.15)' : 'rgba(50,255,50,0.15)',
-                color: maintenance ? '#ff5555' : '#55ff55',
-                justifyContent: sidebarOpen ? 'flex-start' : 'center'
-              }}
+              className="admin-nav-item"
+              style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '11px 14px' : '11px 0', color: maintenance ? '#F87171' : '#4ADE80' }}
             >
-              <span style={{ fontSize: '18px' }}>{maintenance ? '🚧' : '🌐'}</span>
-              {sidebarOpen && <span>Maintenance {maintenance ? 'ON' : 'OFF'}</span>}
+              <span className="admin-nav-icon" style={{ background: maintenance ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)' }}>
+                {maintenance ? '🚧' : '🌐'}
+              </span>
+              {sidebarOpen && <span>Mode Maintenance {maintenance ? 'ON' : 'OFF'}</span>}
             </button>
             <Link href="/admin/banners-manage" style={{ textDecoration: 'none' }}>
-              <button
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: sidebarOpen ? '12px 16px' : '12px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  fontFamily: 'inherit',
-                  marginTop: '8px',
-                  background: 'transparent',
-                  color: 'var(--text2)',
-                  justifyContent: sidebarOpen ? 'flex-start' : 'center'
-                }}
-              >
-                <span style={{ fontSize: '18px' }}>🖼️</span>
-                {sidebarOpen && <span>Banner Manager</span>}
-              </button>
-            </Link>
-            <Link href="/admin/banners-sql" style={{ textDecoration: 'none' }}>
-              <button
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: sidebarOpen ? '12px 16px' : '12px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  fontFamily: 'inherit',
-                  marginTop: '4px',
-                  background: 'transparent',
-                  color: 'var(--text2)',
-                  justifyContent: sidebarOpen ? 'flex-start' : 'center'
-                }}
-              >
-                <span style={{ fontSize: '18px' }}>🛠️</span>
-                {sidebarOpen && <span>Banner SQL</span>}
-              </button>
+              <div className="admin-nav-item" style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '11px 14px' : '11px 0' }}>
+                <span className="admin-nav-icon">🖼️</span>
+                {sidebarOpen && <span style={{ fontSize: '13.5px' }}>Banner Manager</span>}
+              </div>
             </Link>
           </div>
         </nav>
 
-        {/* Bottom Actions */}
-        <div style={{ padding: '16px', borderTop: '1px solid var(--border)' }}>
+        {/* Bottom */}
+        <div style={{ padding: '12px 10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <Link href="/library" style={{ textDecoration: 'none' }}>
-            <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', background: 'transparent', color: 'var(--text2)', justifyContent: sidebarOpen ? 'flex-start' : 'center' }}>
-              <span style={{ fontSize: '18px' }}>📚</span>
-              {sidebarOpen && <span>Ke Library</span>}
-            </button>
+            <div className="admin-nav-item" style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '10px 14px' : '10px 0' }}>
+              <span className="admin-nav-icon">📚</span>
+              {sidebarOpen && <span style={{ fontSize: '13.5px' }}>Ke Library</span>}
+            </div>
           </Link>
-          <button 
+          <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', background: 'transparent', color: 'var(--text2)', justifyContent: sidebarOpen ? 'flex-start' : 'center', marginTop: '4px' }}
+            className="admin-nav-item"
+            style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '10px 14px' : '10px 0', marginTop: '2px' }}
           >
-            <span style={{ fontSize: '18px' }}>{sidebarOpen ? '◀' : '▶'}</span>
-            {sidebarOpen && <span>Collapse</span>}
+            <span className="admin-nav-icon">{sidebarOpen ? '◀' : '▶'}</span>
+            {sidebarOpen && <span style={{ fontSize: '13.5px' }}>Collapse</span>}
           </button>
         </div>
       </aside>
 
+
       {/* Main Content */}
       <main style={{ 
         flex: 1, 
-        marginLeft: sidebarOpen ? '260px' : '80px',
-        transition: 'margin-left 0.3s ease',
-        minHeight: '100vh'
+        marginLeft: sidebarOpen ? '256px' : '72px',
+        transition: 'margin-left 0.28s ease',
+        minHeight: '100vh',
+        background: 'var(--bg)',
       }}>
-        {/* Header */}
-        <header style={{ background: 'rgba(10,10,26,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '20px' }}>{MENU_ITEMS.find(m => m.key === activeMenu)?.icon}</span>
-            <h1 style={{ fontSize: '18px', fontWeight: 700 }} className="grad-text">
-              {MENU_ITEMS.find(m => m.key === activeMenu)?.label}
-            </h1>
+        {/* Topbar */}
+        <header className="admin-topbar">
+          <div className="admin-topbar-title">
+            <div className="admin-topbar-icon">
+              {MENU_ITEMS.find(m => m.key === activeMenu)?.icon ?? '⚙️'}
+            </div>
+            <div>
+              <h1 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }} className="grad-text">
+                {MENU_ITEMS.find(m => m.key === activeMenu)?.label ?? 'Admin'}
+              </h1>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <span style={{ color: 'var(--text2)', fontSize: '13px' }}>Selamat datang, {me.username}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>Selamat datang</div>
+              <div style={{ fontSize: '13px', color: '#fff', fontWeight: 700 }}>{me.username}</div>
+            </div>
+            <div className="admin-avatar" style={{ width: '34px', height: '34px', borderRadius: '9px', fontSize: '13px' }}>
+              {me.username[0].toUpperCase()}
+            </div>
           </div>
         </header>
 
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: '22px' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px' }}>
-              <div style={{ fontSize: '48px' }} className="spin">⚙️</div>
+            <div style={{ textAlign: 'center', padding: '80px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px' }} className="spin">⚙️</div>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}>Memuat data...</p>
             </div>
           ) : activeMenu === 'dashboard' ? (
             /* DASHBOARD VIEW */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Page Header */}
+              <div className="admin-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h2>📊 Overview Dashboard</h2>
+                  <p>Ringkasan statistik dan aktivitas platform secara real-time</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <span className="badge badge-blue">{users.length} Users</span>
+                  <span className="badge badge-green">{pdfs.filter(p => p.is_active).length} PDF Aktif</span>
+                  <span className="badge badge-orange">{musicList.length} Musik</span>
+                </div>
+              </div>
+
               {/* Stats Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+              <div className="admin-stat-grid">
                 {[
-                  { icon: '📄', label: 'Total PDF', value: stats.totalPdf, color: '#4488ff', bg: 'rgba(68,136,255,0.15)' },
-                  { icon: '✅', label: 'PDF Aktif', value: stats.activePdf, color: '#28c864', bg: 'rgba(40,200,100,0.15)' },
-                  { icon: '👥', label: 'Total User', value: stats.totalUser, color: '#C720E6', bg: 'rgba(199,32,230,0.15)' },
-                  { icon: '📥', label: 'Total Download', value: stats.totalDownload, color: '#FF6B35', bg: 'rgba(255,107,53,0.15)' },
-                  { icon: '👁', label: 'Total View', value: stats.totalViews, color: '#7aadff', bg: 'rgba(122,173,255,0.15)' },
+                  { icon: '📄', label: 'Total PDF', value: stats.totalPdf, color: '#4488ff', grad: 'linear-gradient(135deg,#1a3a8f,#1e2d5e)' },
+                  { icon: '✅', label: 'PDF Aktif', value: stats.activePdf, color: '#28c864', grad: 'linear-gradient(135deg,#0f3d20,#0a2415)' },
+                  { icon: '👥', label: 'Total User', value: stats.totalUser, color: '#A855F7', grad: 'linear-gradient(135deg,#3b1d7a,#231145)' },
+                  { icon: '📥', label: 'Total Download', value: stats.totalDownload, color: '#FF6B35', grad: 'linear-gradient(135deg,#5c2410,#3a1608)' },
+                  { icon: '👁', label: 'Total View', value: stats.totalViews, color: '#00E5FF', grad: 'linear-gradient(135deg,#0a3a42,#05222a)' },
                 ].map(s => (
-                  <div key={s.label} className="card" style={{ padding: '20px', background: s.bg, border: `1px solid ${s.color}33` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div>
-                        <div style={{ fontSize: '28px', fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text2)', marginTop: '4px' }}>{s.label}</div>
-                      </div>
-                      <div style={{ fontSize: '36px' }}>{s.icon}</div>
-                    </div>
+                  <div key={s.label} className="admin-stat-card" style={{ background: s.grad, border: `1px solid ${s.color}25` }}>
+                    <div className="admin-stat-value" style={{ color: s.color }}>{s.value.toLocaleString()}</div>
+                    <div className="admin-stat-label" style={{ color: s.color }}>{s.label}</div>
+                    <div className="admin-stat-icon">{s.icon}</div>
+                    <div className="admin-stat-trend" style={{ color: s.color }}>↗ Live</div>
                   </div>
                 ))}
               </div>
