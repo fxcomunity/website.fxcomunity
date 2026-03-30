@@ -190,8 +190,14 @@
   right: 18px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 40px;
-  opacity: 0.12;
+  opacity: 0.1;
+  width: 52px;
+  height: 52px;
+}
+
+.admin-stat-icon svg {
+  width: 52px;
+  height: 52px;
 }
 
 .admin-stat-trend {
