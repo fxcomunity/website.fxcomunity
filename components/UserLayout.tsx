@@ -74,11 +74,57 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     document.documentElement.setAttribute('data-theme', nextTheme)
   }
 
+  // ── SVG Icons ──
+  const IconHome = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  )
+  const IconLibrary = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </svg>
+  )
+  const IconDashboard = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+    </svg>
+  )
+  const IconProfile = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  )
+  const IconAdmin = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  )
+  const IconLogout = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  )
+  const IconReport = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+  )
+
   const NAV_LINKS = [
-    { name: 'Home',      path: '/dashboard', icon: '🏠' },
-    { name: 'Library',   path: '/library',   icon: '🧭' },
-    { name: 'Popular',   path: '/popular',   icon: '🔥' },
-    { name: 'Favorites', path: '/favorites', icon: '📖' },
+    { name: 'Home',    path: '/dashboard', icon: <IconHome /> },
+    { name: 'Library', path: '/library',   icon: <IconLibrary /> },
   ]
 
   if (loading) {
@@ -161,7 +207,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  <span style={{ fontSize: '14px' }}>{link.icon}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', color: isActive ? 'var(--primary)' : 'var(--text3)' }}>{link.icon}</span>
                   {link.name}
                 </Link>
               )
@@ -275,7 +321,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                       onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.07)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
-                      <span style={{ fontSize: '16px' }}>🏠</span>
+                      <span style={{ display: 'flex', alignItems: 'center', color: 'var(--text3)' }}><IconDashboard /></span>
                       Dashboard
                     </Link>
 
@@ -292,7 +338,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                       onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.07)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
-                      <span style={{ fontSize: '16px' }}>👤</span>
+                      <span style={{ display: 'flex', alignItems: 'center', color: 'var(--text3)' }}><IconProfile /></span>
                       Profile
                     </Link>
 
@@ -312,7 +358,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.12)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.05)')}
                       >
-                        <span style={{ fontSize: '16px' }}>⚙️</span>
+                        <span style={{ display: 'flex', alignItems: 'center', color: 'var(--primary)' }}><IconAdmin /></span>
                         Panel Admin
                       </Link>
                     )}
@@ -333,7 +379,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                       onMouseEnter={e => (e.currentTarget.style.background = 'rgba(248,113,113,0.08)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
-                      <span style={{ fontSize: '16px' }}>🚪</span>
+                      <span style={{ display: 'flex', alignItems: 'center' }}><IconLogout /></span>
                       Logout
                     </button>
                   </div>
@@ -469,7 +515,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                   transition: 'all 0.2s',
                 }}
               >
-                <span style={{ fontSize: '18px' }}>{link.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', color: isActive ? 'var(--primary)' : 'var(--text3)' }}>{link.icon}</span>
                 {link.name}
               </Link>
             )
@@ -488,7 +534,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
               display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s',
             }}
           >
-            <span style={{ fontSize: '18px' }}>📬</span>
+            <span style={{ display: 'flex', alignItems: 'center', color: pathname === '/report' ? 'rgba(124,58,237,0.9)' : 'var(--text3)' }}><IconReport /></span>
             Kirim Laporan
           </Link>
           <Link
@@ -502,7 +548,9 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
               display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s',
             }}
           >
-            <span style={{ fontSize: '18px' }}>📋</span>
+            <span style={{ display: 'flex', alignItems: 'center', color: 'var(--text3)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </span>
             Riwayat Laporan
           </Link>
 
@@ -519,7 +567,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
               cursor: 'pointer', borderRadius: '10px', width: '100%',
             }}
           >
-            <span style={{ fontSize: '18px' }}>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            <span style={{ display: 'flex', alignItems: 'center', color: 'var(--text3)' }}>
+              {theme === 'dark'
+                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              }
+            </span>
             {theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
           </button>
 
@@ -535,7 +588,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                 cursor: 'pointer', borderRadius: '10px', width: '100%',
               }}
             >
-              <span style={{ fontSize: '18px' }}>🚪</span>
+              <span style={{ display: 'flex', alignItems: 'center' }}><IconLogout /></span>
               Logout
             </button>
           )}
