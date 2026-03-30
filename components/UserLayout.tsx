@@ -122,9 +122,22 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     </svg>
   )
 
+  const IconPopular = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+    </svg>
+  )
+  const IconFavorites = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  )
+
   const NAV_LINKS = [
-    { name: 'Home',    path: '/dashboard', icon: <IconHome /> },
-    { name: 'Library', path: '/library',   icon: <IconLibrary /> },
+    { name: 'Home',      path: '/dashboard', icon: <IconHome /> },
+    { name: 'Library',   path: '/library',   icon: <IconLibrary /> },
+    { name: 'Popular',   path: '/popular',   icon: <IconPopular /> },
+    { name: 'Favorites', path: '/favorites', icon: <IconFavorites /> },
   ]
 
   if (loading) {
