@@ -1,6 +1,6 @@
 /* ============================================================
-   Admin Panel — Premium Dark Style
-   FX Community | Built for Power Users
+   Admin Panel — Professional Dark Style
+   FX Community | Platform Management
    ============================================================ */
 
 /* ── Sidebar ── */
@@ -457,10 +457,156 @@
   color: rgba(255,255,255,0.5);
 }
 
+/* ── Hamburger Button (hidden on desktop) ── */
+.admin-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s;
+  margin-right: 12px;
+}
+
+.admin-hamburger:hover {
+  background: rgba(0,229,255,0.08);
+  border-color: rgba(0,229,255,0.2);
+}
+
+.admin-hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 2px;
+  transition: all 0.25s ease;
+  transform-origin: center;
+}
+
+/* Mobile Overlay */
+.admin-mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+}
+
 /* ── Responsive ── */
-@media (max-width: 768px) {
-  .admin-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+@media (max-width: 1024px) {
+  /* Show hamburger on tablet + mobile */
+  .admin-hamburger { display: flex; }
+
+  /* Sidebar hidden by default on mobile */
+  .admin-sidebar {
+    transform: translateX(-100%) !important;
+    width: 270px !important;
+    transition: transform 0.3s ease !important;
+  }
+
+  /* Sidebar slides in when mobile-open */
+  .admin-sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Show overlay when sidebar is open */
+  .admin-mobile-overlay {
+    display: block;
+  }
+
+  /* Main content takes full width */
+  main {
+    margin-left: 0 !important;
+  }
+
+  .admin-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
   .admin-page-header { padding: 18px 16px; }
+  .admin-topbar { padding: 0 15px; }
   .admin-table { font-size: 12px; }
   .admin-table td, .admin-table th { padding: 10px 12px; }
+}
+
+@media (max-width: 640px) {
+  .admin-stat-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Music Row Item ── */
+.music-row-item {
+  display: grid;
+  grid-template-columns: 28px 50px 1fr 160px 44px 54px 160px 76px;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background 0.18s ease;
+}
+
+.music-row-item:last-child {
+  border-bottom: none;
+}
+
+.music-row-item:hover {
+  background: rgba(0,229,255,0.025);
+}
+
+.music-mini-audio {
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .music-row-item {
+    grid-template-columns: 28px 50px 1fr 120px 54px 76px;
+  }
+  .music-genre-pills { display: none !important; }
+}
+
+@media (max-width: 900px) {
+  .music-row-item {
+    grid-template-columns: 50px 1fr 76px;
+    padding: 10px 14px;
+  }
+  .music-mini-audio,
+  .music-row-item > span:first-child,
+  .music-row-item > span:nth-child(5),
+  .music-row-item > div:nth-child(6) { display: none !important; }
+}
+
+
+/* ── Modern Loader ── */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.05);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+.loader-sm {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

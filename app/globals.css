@@ -1,6 +1,6 @@
 /* ============================================================
    FX Community – Global Design System
-   Premium Dark Theme | Glassmorphism | Modern
+   Professional Dark Theme | Modern Layout
    ============================================================ */
 
 /* ── Google Font load ── */
@@ -487,11 +487,11 @@ a { color: inherit; }
 }
 
 /* ══════════════════════════════════════════
-   16. GRADIENT TEXT
+   16. BRAND TEXT
 ══════════════════════════════════════════ */
-.grad-text  { background: var(--gradient);  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.grad-text2 { background: var(--gradient2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.grad-text3 { background: var(--gradient3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.grad-text  { color: var(--primary); font-weight: 800; }
+.grad-text2 { color: var(--accent2); font-weight: 800; }
+.grad-text3 { color: var(--text); font-weight: 800; }
 
 /* ══════════════════════════════════════════
    17. DIVIDER & TOGGLE

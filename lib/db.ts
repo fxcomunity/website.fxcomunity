@@ -254,4 +254,154 @@ export async function initDB() {
     is_read BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT NOW()
   )`)
+
+  // ─── SOUNDVAULT MUSIC SCHEMA ───────────────────────────────
+
+  // Genres
+  await query(`CREATE TABLE IF NOT EXISTS genres (
+    id   SERIAL PRIMARY KEY,
+    name VARCHAR(50)  NOT NULL UNIQUE,
+    slug VARCHAR(60)  NOT NULL UNIQUE
+  )`)
+
+  // Songs — dengan search_vector GENERATED ALWAYS
+  await query(`CREATE TABLE IF NOT EXISTS songs (
+    id           SERIAL PRIMARY KEY,
+    user_id      INTEGER      REFERENCES users(id) ON DELETE SET NULL,
+    title        VARCHAR(200) NOT NULL,
+    artist       VARCHAR(150),
+    album        VARCHAR(150),
+    file_url     VARCHAR(500) NOT NULL,
+    media_data   BYTEA        NULL,
+    media_mimetype VARCHAR(100) NULL,
+    media_filename VARCHAR(255) NULL,
+    media_size   BIGINT       NULL,
+    cover_url    VARCHAR(500),
+    duration_sec INTEGER      DEFAULT 0 CHECK (duration_sec >= 0),
+    file_size    BIGINT       DEFAULT 0 CHECK (file_size >= 0),
+    mime_type    VARCHAR(50),
+    status       TEXT         NOT NULL DEFAULT 'active'
+                   CHECK (status IN ('processing', 'active', 'private', 'deleted')),
+    play_count   INTEGER      NOT NULL DEFAULT 0 CHECK (play_count >= 0),
+    uploaded_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+  )`)
+
+  // Tambah search_vector jika belum ada (Neon supports GENERATED ALWAYS)
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'songs' AND column_name = 'search_vector'
+        AND table_schema = 'public'
+      ) THEN
+        ALTER TABLE songs ADD COLUMN search_vector TSVECTOR
+          GENERATED ALWAYS AS (
+            to_tsvector('english',
+              COALESCE(title,  '') || ' ' ||
+              COALESCE(artist, '') || ' ' ||
+              COALESCE(album,  '')
+            )
+          ) STORED;
+      END IF;
+    END $$;
+  `)
+
+  // Migrate: tambah kolom yang mungkin belum ada
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS file_size BIGINT DEFAULT 0`)
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS mime_type VARCHAR(50)`)
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS duration_sec INTEGER DEFAULT 0`)
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS play_count INTEGER DEFAULT 0`)
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active'`)
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS media_data BYTEA NULL`)
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS media_mimetype VARCHAR(100) NULL`)
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS media_filename VARCHAR(255) NULL`)
+  await query(`ALTER TABLE songs ADD COLUMN IF NOT EXISTS media_size BIGINT NULL`)
+
+  // Indexes
+  await query(`CREATE INDEX IF NOT EXISTS idx_songs_user_id  ON songs(user_id)`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_songs_status   ON songs(status)`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_songs_uploaded ON songs(uploaded_at DESC)`)
+  await query(`
+    DO $$ BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'songs' AND column_name = 'search_vector'
+        AND table_schema = 'public'
+      ) THEN
+        EXECUTE 'CREATE INDEX IF NOT EXISTS idx_songs_fts ON songs USING GIN(search_vector)';
+      END IF;
+    END $$;
+  `)
+
+  // Song genres
+  await query(`CREATE TABLE IF NOT EXISTS song_genres (
+    song_id  INTEGER NOT NULL REFERENCES songs(id)  ON DELETE CASCADE,
+    genre_id INTEGER NOT NULL REFERENCES genres(id) ON DELETE CASCADE,
+    PRIMARY KEY (song_id, genre_id)
+  )`)
+
+  // Playlists
+  await query(`CREATE TABLE IF NOT EXISTS playlists (
+    id         SERIAL       PRIMARY KEY,
+    user_id    INTEGER      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name       VARCHAR(150) NOT NULL,
+    is_public  BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+  )`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_playlists_user ON playlists(user_id)`)
+
+  // Playlist songs
+  await query(`CREATE TABLE IF NOT EXISTS playlist_songs (
+    playlist_id INTEGER     NOT NULL REFERENCES playlists(id) ON DELETE CASCADE,
+    song_id     INTEGER     NOT NULL REFERENCES songs(id)     ON DELETE CASCADE,
+    position    SMALLINT    NOT NULL DEFAULT 0,
+    added_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (playlist_id, song_id)
+  )`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_ps_position ON playlist_songs(playlist_id, position)`)
+
+  // Auto-update updated_at trigger
+  await query(`
+    CREATE OR REPLACE FUNCTION set_updated_at()
+    RETURNS TRIGGER AS $$
+    BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
+    $$ LANGUAGE plpgsql
+  `)
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger WHERE tgname = 'trg_playlists_updated'
+      ) THEN
+        CREATE TRIGGER trg_playlists_updated
+          BEFORE UPDATE ON playlists
+          FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+      END IF;
+    END $$;
+  `)
+
+  // Seed genres (ONLY if table is empty to allow manual SQL changes)
+  const genreCount = await query(`SELECT COUNT(*) FROM genres`)
+  if (parseInt(genreCount.rows[0].count) === 0) {
+    await query(`
+      INSERT INTO genres (name, slug) VALUES
+        ('Pop',        'pop'),
+        ('Rock',       'rock'),
+        ('Hip-Hop',    'hip-hop'),
+        ('R&B',        'rnb'),
+        ('Jazz',       'jazz'),
+        ('Classical',  'classical'),
+        ('Electronic', 'electronic'),
+        ('Indie',      'indie'),
+        ('Metal',      'metal'),
+        ('Lo-Fi',      'lo-fi'),
+        ('Dangdut',    'dangdut'),
+        ('Campursari', 'campursari'),
+        ('Keroncong',  'keroncong'),
+        ('Gambus',     'gambus'),
+        ('Tarling',    'tarling'),
+        ('DJ',         'dj'),
+        ('Daerah',     'daerah')
+    `)
+  }
 }

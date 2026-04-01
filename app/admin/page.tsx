@@ -24,9 +24,19 @@ interface AdminRequest {
   created_at: string
   updated_at: string
 }
+interface Music {
+  id: number
+  title: string
+  artist: string
+  album: string
+  file_url: string
+  cover_url: string
+  genres: { id: number; name: string }[]
+}
+
 
 const CATS = ['fx-basic', 'fx-advanced', 'fx-technical', 'fx-psychology']
-const THUMBS = ['📊', '📈', '📉', '🧠', '📚', '💰', '⚖️', '🔧', '🌍', '⚠️', '🎯', '💧', '✅', '🔨', '⚡', '📦', '🌊', '🏗️', '🎁', '📍', '🔐', '🕯️', '🎨', '💼', '📖', '🚀', '💎', '📄']
+const THUMBS = ['📊', '📈', '📉', '📈', '📚', '💰', '⚖️', '🔧', '🌍', '⚠️', '🎯', '💧', '✅', '🔨', '⚡', '📦', '🌊', '🏗️', '🎁', '📍', '🔐', '🕯️', '🎨', '💼', '📖', '🚀', '💎', '📄']
 
 const COLORS = ['#4488ff', '#C720E6', '#28c864', '#FF6B35', '#7aadff', '#e070ff']
 
@@ -59,6 +69,10 @@ const MENU_ITEMS = [
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
   },
   {
+    key: 'music-sql', label: 'Music SQL Runner',
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7v10M9 7v10M14 7v10M19 7v10M5 12h14"/><path d="M12 19l-2 2-2-2M12 5l-2-2-2 2"/></svg>
+  },
+  {
     key: 'notifications', label: 'Notifikasi',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
   },
@@ -81,6 +95,7 @@ export default function AdminPage() {
   const [me, setMe] = useState<any>(null)
   const [activeMenu, setActiveMenu] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [pdfs, setPdfs] = useState<PDF[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -99,10 +114,13 @@ export default function AdminPage() {
   const [sendingNotif, setSendingNotif] = useState(false)
   const [reports, setReports] = useState<any[]>([])
   const [reportFilter, setReportFilter] = useState<{ type: string; status: string }>({ type: 'all', status: 'all' })
-  const [musicList, setMusicList] = useState<any[]>([])
+  const [musicList, setMusicList] = useState<Music[]>([])
   const [genres, setGenres] = useState<{ id: number; name: string; slug: string }[]>([])
-  const [musicForm, setMusicForm] = useState({ title: '', artist: '', album: '', file_url: '', cover_url: '', genre_id: '' })
-  const [addingMusic, setAddingMusic] = useState(false)
+  const [musicForm, setMusicForm] = useState({ id: 0, title: '', artist: '', album: '', file_url: '', cover_url: '', genre_ids: [] as number[] })
+  const [musicModal, setMusicModal] = useState<null | 'add' | 'edit'>(null)
+  const [editingMusic, setEditingMusic] = useState(false)
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -113,16 +131,21 @@ export default function AdminPage() {
     })
   }, [])
 
+  // Re-load data when switching tabs to ensure freshness
+  useEffect(() => {
+    if (me) loadAll()
+  }, [activeMenu])
+
   async function loadAll() {
     setLoading(true)
     const [pRes, uRes, sRes, reqRes, repRes, mRes, gRes] = await Promise.all([
-      fetch('/api/pdfs').then(r => r.json()),
-      fetch('/api/users').then(r => r.json()),
-      fetch('/api/admin/settings').then(r => r.json()),
-      fetch('/api/admin/admin-requests').then(r => r.json()).catch(() => ({ success: false, data: [] })),
-      fetch('/api/report').then(r => r.json()).catch(() => ({ success: false, data: [] })),
-      fetch('/api/music').then(r => r.json()).catch(() => ({ success: false, data: [] })),
-      fetch('/api/music/genres').then(r => r.json()).catch(() => ({ success: false, data: [] }))
+      fetch('/api/pdfs', { next: { revalidate: 0 } }).then(r => r.json()),
+      fetch('/api/users', { next: { revalidate: 0 } }).then(r => r.json()),
+      fetch('/api/admin/settings', { next: { revalidate: 0 } }).then(r => r.json()),
+      fetch('/api/admin/admin-requests', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
+      fetch('/api/report', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
+      fetch('/api/music', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
+      fetch('/api/music/genres', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] }))
     ])
     if (pRes.success) setPdfs(pRes.data)
     if (uRes.success) setUsers(uRes.data)
@@ -161,22 +184,61 @@ export default function AdminPage() {
       showToast('⚠️ Error koneksi saat hapus')
     }
   }
-  async function addMusic() {
-    if (!musicForm.title.trim() || !musicForm.file_url.trim()) { showToast('⚠️ Judul dan URL audio wajib diisi'); return }
-    setAddingMusic(true)
+  async function saveMusic() {
+    const isEdit = musicModal === 'edit'
+    setEditingMusic(true)
+
     try {
-      const res = await fetch('/api/music', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...musicForm, genre_id: musicForm.genre_id || null })
-      })
+      let res: Response
+      if (isEdit) {
+        // --- EDIT MODE ---
+        if (!musicForm.title.trim() || !musicForm.file_url.trim()) {
+          showToast('⚠️ Judul dan URL audio wajib diisi')
+          setEditingMusic(false)
+          return
+        }
+        res = await fetch(`/api/music/${musicForm.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(musicForm)
+        })
+      } else {
+        // --- ADD MODE (FILE UPLOAD) ---
+        if (!uploadFile) {
+          showToast('⚠️ Silakan pilih file audio untuk diunggah')
+          setEditingMusic(false)
+          return
+        }
+        const formData = new FormData()
+        formData.append('audioFile', uploadFile)
+        musicForm.genre_ids.forEach(id => formData.append('genre_ids[]', String(id)))
+        
+        res = await fetch('/api/music', {
+          method: 'POST',
+          body: formData,
+        })
+      }
+
       const data = await res.json()
       if (data.success) {
-        setMusicList(p => [data.data, ...p])
-        setMusicForm({ title: '', artist: '', album: '', file_url: '', cover_url: '', genre_id: genres[0]?.id?.toString() || '' })
-        showToast('✅ Lagu berhasil ditambahkan!')
-      } else showToast('⚠️ ' + data.error)
-    } catch { showToast('⚠️ Error saat menambahkan lagu') }
-    finally { setAddingMusic(false) }
+        if (isEdit) {
+          setMusicList(p => p.map(m => m.id === musicForm.id ? data.data : m))
+          showToast('✅ Lagu berhasil diperbarui!')
+        } else {
+          setMusicList(p => [data.data, ...p])
+          showToast('✅ Lagu berhasil diunggah & diproses!')
+        }
+        setMusicModal(null)
+        // Refresh loadAll after success to ensure everything is synced
+        loadAll()
+      } else {
+        showToast(`⚠️ ${data.error || 'Terjadi kesalahan'}`)
+      }
+    } catch (err) {
+      showToast('⚠️ Error saat menyimpan lagu')
+    } finally {
+      setEditingMusic(false)
+    }
   }
 
   async function deleteMusic(id: number, title: string) {
@@ -186,6 +248,35 @@ export default function AdminPage() {
     if (data.success) { setMusicList(p => p.filter(m => m.id !== id)); showToast('🗑️ Musik dihapus') }
     else showToast('⚠️ Gagal hapus musik')
   }
+
+  function openMusicAdd() {
+    setMusicForm({ id: 0, title: '', artist: '', album: '', file_url: '', cover_url: '', genre_ids: [] })
+    setUploadFile(null)
+    setMusicModal('add')
+  }
+
+  function openMusicEdit(song: Music) {
+    setMusicForm({
+      id: song.id,
+      title: song.title,
+      artist: song.artist || '',
+      album: song.album || '',
+      file_url: song.file_url,
+      cover_url: song.cover_url || '',
+      genre_ids: song.genres?.map(g => g.id) || []
+    })
+    setMusicModal('edit')
+  }
+
+  function handleGenreChange(genreId: number) {
+    setMusicForm(f => {
+      const newGenreIds = f.genre_ids.includes(genreId)
+        ? f.genre_ids.filter(id => id !== genreId)
+        : [...f.genre_ids, genreId];
+      return { ...f, genre_ids: newGenreIds };
+    });
+  }
+
 
   async function toggleMaintenance() {
     if (!confirm(maintenance ? 'Matikan Mode Maintenance?' : 'Aktifkan Mode Maintenance? Semua user biasa tidak akan bisa akses web.')) return
@@ -386,7 +477,7 @@ async function sendNotification() {
 
   if (!me) return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: '48px' }} className="spin">⚙️</div>
+      <div className="loader"></div>
     </div>
   )
 
@@ -394,15 +485,23 @@ async function sendNotification() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex' }}>
       {toast && <div className="toast success">{toast}</div>}
 
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div
+          className="admin-mobile-overlay"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="admin-sidebar" style={{ 
+      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''} ${mobileOpen ? 'mobile-open' : ''}`} style={{ 
         width: sidebarOpen ? '256px' : '72px', 
         display: 'flex', 
         flexDirection: 'column',
-        transition: 'width 0.28s ease',
+        transition: 'all 0.28s ease',
         position: 'fixed',
         height: '100vh',
-        zIndex: 100,
+        zIndex: 200,
         overflowX: 'hidden',
       }}>
         {/* Logo */}
@@ -440,7 +539,9 @@ async function sendNotification() {
               key={item.key}
               onClick={() => {
                 if (item.key === 'crypto') router.push('/crypto')
+                else if (item.key === 'music-sql') router.push('/admin/music-sql')
                 else setActiveMenu(item.key)
+                setMobileOpen(false)
               }}
               className={`admin-nav-item ${activeMenu === item.key ? 'active' : ''}`}
               style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '11px 14px' : '11px 0' }}
@@ -511,6 +612,14 @@ async function sendNotification() {
       }}>
         {/* Topbar */}
         <header className="admin-topbar">
+          {/* Hamburger — mobile only */}
+          <button
+            className="admin-hamburger"
+            onClick={() => setMobileOpen(o => !o)}
+            aria-label="Toggle Menu"
+          >
+            <span /><span /><span />
+          </button>
           <div className="admin-topbar-title">
             <div className="admin-topbar-icon">
               {MENU_ITEMS.find(m => m.key === activeMenu)?.icon ?? '⚙️'}
@@ -786,107 +895,147 @@ async function sendNotification() {
                     </div>
                   </div>
                   <button className="btn btn-primary" onClick={sendNotification} disabled={sendingNotif} style={{ marginTop: '10px' }}>
-                    {sendingNotif ? 'Mengirim...' : '🚀 Kirim Notifikasi'}
+                    {sendingNotif ? 'Mengirim...' : '🔔 Kirim Notifikasi'}
                   </button>
                 </div>
               </div>
             </div>
           ) : activeMenu === 'music' ? (
-            /* MUSIC MANAGEMENT */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Add Song Form */}
-              <div className="card" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>🎵</span> Tambah Lagu Baru
-                </h3>
-                {/* Row 1: title, artist, album, genre */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '12px' }}>
-                  <div>
-                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>JUDUL *</label>
-                    <input className="input" placeholder="Nama lagu..." value={musicForm.title}
-                      onChange={e => setMusicForm(f => ({ ...f, title: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>ARTIS</label>
-                    <input className="input" placeholder="Nama artis..." value={musicForm.artist}
-                      onChange={e => setMusicForm(f => ({ ...f, artist: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>ALBUM</label>
-                    <input className="input" placeholder="Nama album..." value={musicForm.album}
-                      onChange={e => setMusicForm(f => ({ ...f, album: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>GENRE</label>
-                    <select className="input" value={musicForm.genre_id}
-                      onChange={e => setMusicForm(f => ({ ...f, genre_id: e.target.value }))}>
-                      <option value="">— Pilih Genre —</option>
-                      {genres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                    </select>
-                  </div>
+              {/* Header */}
+              <div className="admin-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <h2 style={{ fontSize: '22px', letterSpacing: '-0.5px' }}>🎵 Kelola Musik</h2>
+                  <p>Upload dan kelola koleksi lagu di SoundVault.</p>
                 </div>
-                {/* Row 2: file_url */}
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
-                    URL AUDIO * <span style={{ fontWeight: 400, color: 'var(--text3)' }}>(Google Drive: /uc?export=download&id=XXX · atau URL MP3 publik)</span>
-                  </label>
-                  <input className="input" placeholder="https://..." value={musicForm.file_url}
-                    onChange={e => setMusicForm(f => ({ ...f, file_url: e.target.value }))} />
-                </div>
-                {/* Row 3: cover_url */}
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
-                    URL COVER <span style={{ fontWeight: 400, color: 'var(--text3)' }}>(opsional — URL gambar untuk album art)</span>
-                  </label>
-                  <input className="input" placeholder="https://... (jpg/png/webp)" value={musicForm.cover_url}
-                    onChange={e => setMusicForm(f => ({ ...f, cover_url: e.target.value }))} />
-                </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <button className="btn btn-primary" onClick={addMusic} disabled={addingMusic}>
-                    {addingMusic ? <><span className="spin">⚙️</span> Menambahkan...</> : '🎵 Simpan Lagu'}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button className="btn btn-secondary" onClick={loadAll} style={{ padding: '11px 18px', borderRadius: '12px', gap: '8px', display: 'flex', alignItems: 'center' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    Refresh
                   </button>
-                  <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Total: {musicList.length} lagu</span>
+                  <button className="btn btn-primary" onClick={openMusicAdd} style={{ padding: '11px 22px', borderRadius: '12px', gap: '8px', display: 'flex', alignItems: 'center', boxShadow: '0 6px 20px rgba(0,229,255,0.22)' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Upload Lagu
+                  </button>
                 </div>
               </div>
 
-              {/* Song List */}
+              {/* Stats ribbon */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                {[
+                  { label: 'Total Lagu', val: musicList.length, icon: '🎵', c: '#00E5FF', bg: 'rgba(0,229,255,0.06)' },
+                  { label: 'Total Plays', val: musicList.reduce((a: number, m: any) => a + (m.play_count || 0), 0), icon: '▶️', c: '#A855F7', bg: 'rgba(168,85,247,0.06)' },
+                  { label: 'Genre', val: genres.length, icon: '🏷️', c: '#10B981', bg: 'rgba(16,185,129,0.06)' },
+                ].map(s => (
+                  <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.c}18`, borderRadius: '14px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <span style={{ fontSize: '26px' }}>{s.icon}</span>
+                    <div>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: s.c, lineHeight: 1 }}>{s.val.toLocaleString()}</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginTop: '3px', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Song list */}
               {musicList.length === 0 ? (
-                <div className="card" style={{ padding: '48px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎵</div>
-                  <p style={{ color: 'var(--text2)' }}>Belum ada lagu. Upload lagu pertama!</p>
+                <div className="admin-empty" style={{ padding: '80px 20px' }}>
+                  <div className="admin-empty-icon" style={{ width: '80px', height: '80px', borderRadius: '24px' }}>
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="1.5" strokeLinecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  </div>
+                  <h3>Belum Ada Lagu</h3>
+                  <p>Klik tombol Upload Lagu untuk mulai mengisi library SoundVault Anda.</p>
+                  <button className="btn btn-primary" onClick={openMusicAdd} style={{ marginTop: '16px', gap: '8px', display: 'flex', alignItems: 'center' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Upload Sekarang
+                  </button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {musicList.map((m, i) => {
-                    const genreNames = (m.genres || []).map((g: any) => g.name).join(', ')
-                    return (
-                      <div key={m.id} className="card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '13px', color: 'var(--text3)', fontWeight: 600, width: '24px', textAlign: 'center', flexShrink: 0 }}>{i + 1}</span>
-                        {/* Cover */}
-                        <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                          {m.cover_url
-                            ? <img src={m.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <span style={{ fontSize: '22px' }}>🎵</span>}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.title}</div>
-                          <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
-                            {m.artist || 'Unknown'}{m.album ? ` · ${m.album}` : ''}{genreNames ? ` · ${genreNames}` : ''}
+                <div className="admin-card" style={{ overflow: 'hidden' }}>
+                  {/* Table Header */}
+                  <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
+                      Menampilkan <span style={{ color: '#00E5FF' }}>{musicList.filter((m: any) => !search || m.title.toLowerCase().includes(search.toLowerCase()) || m.artist?.toLowerCase().includes(search.toLowerCase())).length}</span> lagu
+                    </span>
+                    <div className="admin-search-wrap" style={{ width: '240px' }}>
+                      <span className="admin-search-icon">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                      </span>
+                      <input type="text" placeholder="Cari judul atau artis..." className="admin-search" style={{ height: '38px', borderRadius: '10px', fontSize: '12px' }}
+                        value={search} onChange={e => setSearch(e.target.value)} />
+                    </div>
+                  </div>
+
+                  {/* Song rows */}
+                  <div style={{ overflowX: 'auto' }}>
+                    {musicList
+                      .filter((m: any) => !search || m.title.toLowerCase().includes(search.toLowerCase()) || m.artist?.toLowerCase().includes(search.toLowerCase()))
+                      .map((m: any, i: number) => {
+                        const genreNames: string[] = (m.genres || []).map((g: any) => g.name)
+                        const dur = m.duration_sec || 0
+                        const durStr = dur > 0 ? `${Math.floor(dur/60)}:${String(dur%60).padStart(2,'0')}` : '--:--'
+                        return (
+                          <div key={m.id} className="music-row-item">
+                            {/* Number */}
+                            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.15)', fontWeight: 800, minWidth: '28px', textAlign: 'center' }}>
+                              {String(i + 1).padStart(2, '0')}
+                            </span>
+
+                            {/* Cover */}
+                            <div style={{ width: '50px', height: '50px', borderRadius: '12px', flexShrink: 0, overflow: 'hidden', position: 'relative', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
+                              {m.cover_url
+                                ? <img src={m.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a2744,#0d1424)' }}>
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,229,255,0.4)" strokeWidth="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                                  </div>}
+                            </div>
+
+                            {/* Title + Artist */}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 700, fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#fff' }}>{m.title}</div>
+                              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.38)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                                {m.artist || <span style={{ fontStyle: 'italic', opacity: 0.5 }}>Unknown Artist</span>}
+                              </div>
+                            </div>
+
+                            {/* Genres */}
+                            <div className="music-genre-pills" style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', maxWidth: '160px' }}>
+                              {(m.genres && m.genres.length > 0) ? m.genres.map((g: any) => (
+                                <span key={g.id || g.name} style={{ fontSize: '9px', fontWeight: 800, padding: '3px 8px', borderRadius: '20px', background: 'rgba(168,85,247,0.1)', color: '#C084FC', border: '1px solid rgba(168,85,247,0.18)', letterSpacing: '0.5px' }}>{g.name}</span>
+                              )) : <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>—</span>}
+                            </div>
+
+                            {/* Duration */}
+                            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontWeight: 700, minWidth: '42px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{durStr}</span>
+
+                            {/* Play count */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.28)', fontSize: '12px', minWidth: '50px' }}>
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                              {(m.play_count || 0).toLocaleString()}
+                            </div>
+
+                            {/* Audio mini player */}
+                            <div className="music-mini-audio">
+                              <audio controls src={m.file_url} style={{ height: '30px', width: '100%', opacity: 0.65 }} />
+                            </div>
+
+                            {/* Actions */}
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', flexShrink: 0 }}>
+                              <button onClick={() => openMusicEdit(m)} className="admin-btn-icon" title="Edit" style={{ width: '34px', height: '34px', borderRadius: '10px' }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                              </button>
+                              <button onClick={() => deleteMusic(m.id, m.title)} className="admin-btn-icon danger" title="Hapus" style={{ width: '34px', height: '34px', borderRadius: '10px' }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        <span style={{ fontSize: '11px', color: 'var(--text3)', flexShrink: 0 }}>▶ {m.play_count || 0}x</span>
-                        <audio controls src={m.file_url} style={{ height: '32px', maxWidth: '200px', flexShrink: 0 }} />
-                        <button onClick={() => deleteMusic(m.id, m.title)}
-                          style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: '8px', padding: '6px 12px', color: '#F87171', cursor: 'pointer', fontSize: '12px', fontWeight: 700, flexShrink: 0 }}>
-                          🗑️ Hapus
-                        </button>
-                      </div>
-                    )
-                  })}
+                        )
+                      })}
+                  </div>
                 </div>
               )}
             </div>
-
           ) : activeMenu === 'reports' ? (
             /* REPORTS MANAGEMENT */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -980,46 +1129,72 @@ async function sendNotification() {
             </div>
           ) : activeMenu === 'settings' ? (
             /* SETTINGS */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div className="card" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>⚙️ Pengaturan Sistem</h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg4)', borderRadius: '10px' }}>
-                    <div>
-                      <p style={{ fontWeight: 600 }}>Mode Maintenance</p>
-                      <p style={{ color: 'var(--text3)', fontSize: '12px' }}>Nonaktifkan akses untuk user biasa</p>
-                    </div>
-                    <button 
-                      onClick={toggleMaintenance}
-                      style={{
-                        padding: '10px 20px',
-                        background: maintenance ? 'rgba(255,50,50,0.2)' : 'rgba(50,255,50,0.2)',
-                        border: `1px solid ${maintenance ? 'rgba(255,50,50,0.3)' : 'rgba(50,255,50,0.3)'}`,
-                        color: maintenance ? '#ff5555' : '#55ff55',
-                        borderRadius: '8px',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {maintenance ? '🚧 AKTIF' : '🌐 MATI'}
-                    </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div className="admin-page-header">
+                <h2>Pengaturan Sistem</h2>
+                <p>Kontrol konfigurasi platform, maintenance mode, statistik, dan info sistem</p>
+              </div>
+              <div className="admin-card" style={{ padding: '22px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '9px', background: maintenance ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)', border: `1px solid ${maintenance ? 'rgba(248,113,113,0.2)' : 'rgba(74,222,128,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: maintenance ? '#F87171' : '#4ADE80' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                   </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: '14px' }}>Mode Maintenance</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Nonaktifkan akses user biasa ke seluruh platform</div>
+                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: 700, padding: '4px 12px', borderRadius: '20px', background: maintenance ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)', color: maintenance ? '#F87171' : '#4ADE80', border: `1px solid ${maintenance ? 'rgba(248,113,113,0.2)' : 'rgba(74,222,128,0.2)'}` }}>{maintenance ? 'AKTIF' : 'MATI'}</span>
+                  <button onClick={toggleMaintenance} className={`btn btn-sm ${maintenance ? 'btn-danger' : 'btn-secondary'}`}>{maintenance ? 'Matikan' : 'Aktifkan'}</button>
+                </div>
+                {maintenance && (
+                  <div style={{ marginTop: '12px', padding: '11px 14px', borderRadius: '10px', background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.15)', fontSize: '13px', color: '#F87171', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Maintenance aktif — semua user biasa tidak dapat mengakses platform
+                  </div>
+                )}
+              </div>
+              <div className="admin-card" style={{ padding: '22px' }}>
+                <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  Statistik Platform
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+                  {[
+                    { label: 'Total PDF', val: pdfs.length, sub: `${pdfs.filter(p => p.is_active).length} aktif` },
+                    { label: 'Total User', val: users.length, sub: `${users.filter(u => u.role === 'Admin' || u.role === 'Owner').length} admin/owner` },
+                    { label: 'Total Musik', val: musicList.length, sub: `${musicList.reduce((a: number, m: any) => a + (m.play_count || 0), 0)} plays` },
+                    { label: 'Total Download', val: pdfs.reduce((a, p) => a + p.downloads, 0), sub: 'semua waktu' },
+                  ].map(s => (
+                    <div key={s.label} style={{ padding: '14px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 800, color: '#00E5FF', marginBottom: '2px' }}>{s.val.toLocaleString()}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{s.label}</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>{s.sub}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              <div className="card" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>🔗 Quick Links</h3>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <Link href="/dashboard" style={{ textDecoration: 'none' }}>
-                    <button className="btn btn-secondary">📊 Dashboard User</button>
-                  </Link>
-                  <Link href="/library" style={{ textDecoration: 'none' }}>
-                    <button className="btn btn-secondary">📚 Library</button>
-                  </Link>
-                  <Link href="/profile" style={{ textDecoration: 'none' }}>
-                    <button className="btn btn-secondary">👤 Profil</button>
-                  </Link>
+              <div className="admin-card" style={{ padding: '22px' }}>
+                <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '14px' }}>Navigasi Cepat</div>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  {[{ href: '/dashboard', label: 'Dashboard User' }, { href: '/library', label: 'Library' }, { href: '/music', label: 'Music Player' }, { href: '/profile', label: 'Profil' }, { href: '/admin/banners-manage', label: 'Banner Manager' }].map(l => (
+                    <Link key={l.href} href={l.href} style={{ textDecoration: 'none' }}>
+                      <button className="btn btn-secondary" style={{ fontSize: '12px', padding: '8px 14px' }}>{l.label}</button>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <div className="admin-card" style={{ padding: '22px' }}>
+                <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A855F7" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Info Sistem
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+                  {[{ k: 'Platform', v: 'FX Community' }, { k: 'Framework', v: 'Next.js App Router' }, { k: 'Database', v: 'PostgreSQL (Neon)' }, { k: 'Music Schema', v: 'SoundVault v1' }, { k: 'Role Anda', v: me?.role || '-' }, { k: 'Username', v: me?.username || '-' }].map(r => (
+                    <div key={r.k} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', fontSize: '12px' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.4)' }}>{r.k}</span>
+                      <span style={{ fontWeight: 700, color: '#fff' }}>{r.v}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1067,6 +1242,150 @@ async function sendNotification() {
                   {saving ? <><span className="spin">⚙️</span> Menyimpan...</> : `💾 ${modal === 'edit' ? 'Simpan Perubahan' : 'Tambahkan PDF'}`}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Music Modal */}
+      {musicModal && (
+        <div className="modal-overlay" onClick={() => setMusicModal(null)} style={{ backdropFilter: 'blur(12px)', background: 'rgba(0,0,0,0.65)' }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ padding: '0', maxWidth: '560px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 30px 60px -10px rgba(0,0,0,0.7)', overflow: 'hidden' }}>
+            {/* Modal Header */}
+            <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg,rgba(0,229,255,0.04),transparent)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '17px', fontWeight: 900, letterSpacing: '-0.3px', margin: 0 }}>{musicModal === 'edit' ? 'Edit Lagu' : 'Upload Lagu Baru'}</h3>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>{musicModal === 'edit' ? 'Perbarui informasi lagu' : 'Tambah ke koleksi SoundVault'}</p>
+                </div>
+              </div>
+              <button className="admin-btn-icon" onClick={() => setMusicModal(null)} style={{ width: '36px', height: '36px', borderRadius: '10px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: '18px', maxHeight: '75vh', overflowY: 'auto' }}>
+
+              {/* Quick Save Button at Top (for Edit mode) */}
+              {musicModal === 'edit' && (
+                <div style={{ padding: '12px', background: 'rgba(0,229,255,0.05)', borderRadius: '14px', border: '1px solid rgba(0,229,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>Cepat simpan perubahan:</span>
+                  <button className="btn btn-primary" onClick={saveMusic} disabled={editingMusic} style={{ padding: '6px 16px', fontSize: '12px', height: 'auto', borderRadius: '8px' }}>
+                    {editingMusic ? '...' : '💾 Simpan Sekarang'}
+                  </button>
+                </div>
+              )}
+
+              {/* File upload zone (add mode) */}
+              {musicModal === 'add' && (
+                <div>
+                  <label className="admin-field-label" style={{ marginBottom: '10px', display: 'block' }}>File Audio <span style={{ color: '#F87171' }}>*</span></label>
+                  <label
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      gap: '12px', padding: '28px 20px', borderRadius: '16px', cursor: 'pointer',
+                      border: uploadFile ? '2px solid rgba(0,229,255,0.4)' : '2px dashed rgba(255,255,255,0.1)',
+                      background: uploadFile ? 'rgba(0,229,255,0.04)' : 'rgba(255,255,255,0.02)',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {uploadFile ? (
+                      <>
+                        <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(0,229,255,0.12)', border: '1px solid rgba(0,229,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontWeight: 700, fontSize: '13px', color: '#fff', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uploadFile.name}</div>
+                          <div style={{ fontSize: '11px', color: '#00E5FF', marginTop: '4px', fontWeight: 600 }}>{(uploadFile.size / (1024*1024)).toFixed(2)} MB · {uploadFile.type.split('/')[1]?.toUpperCase()}</div>
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '20px' }}>Klik untuk ganti file</span>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontWeight: 700, fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>Klik untuk pilih file audio</div>
+                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>MP3, WAV, FLAC · Maks 50MB</div>
+                        </div>
+                      </>
+                    )}
+                    <input type="file" accept="audio/*" style={{ display: 'none' }} onChange={e => setUploadFile(e.target.files?.[0] || null)} />
+                  </label>
+                </div>
+              )}
+
+              {/* Edit mode: metadata fields */}
+              {musicModal === 'edit' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <label className="admin-field-label">Judul Lagu <span style={{ color: '#F87171' }}>*</span></label>
+                    <input className="input" placeholder="Judul lagu" value={musicForm.title} onChange={e => setMusicForm(f => ({ ...f, title: e.target.value }))} style={{ height: '42px', marginTop: '6px' }}/>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label className="admin-field-label">Artis</label>
+                      <input className="input" placeholder="Nama artis" value={musicForm.artist} onChange={e => setMusicForm(f => ({ ...f, artist: e.target.value }))} style={{ height: '42px', marginTop: '6px' }}/>
+                    </div>
+                    <div>
+                      <label className="admin-field-label">Album</label>
+                      <input className="input" placeholder="Nama album" value={musicForm.album} onChange={e => setMusicForm(f => ({ ...f, album: e.target.value }))} style={{ height: '42px', marginTop: '6px' }}/>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="admin-field-label">URL Cover</label>
+                    <input className="input" placeholder="https://..." value={musicForm.cover_url} onChange={e => setMusicForm(f => ({ ...f, cover_url: e.target.value }))} style={{ height: '42px', marginTop: '6px' }}/>
+                  </div>
+                </div>
+              )}
+
+              {/* Genres */}
+              <div>
+                <label className="admin-field-label" style={{ marginBottom: '10px', display: 'block' }}>Genre</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {genres.map(g => {
+                    const isSelected = musicForm.genre_ids.includes(g.id)
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => handleGenreChange(g.id)}
+                        style={{
+                          padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', border: 'none',
+                          background: isSelected ? 'rgba(168,85,247,0.2)' : 'rgba(255,255,255,0.04)',
+                          color: isSelected ? '#C084FC' : 'rgba(255,255,255,0.4)',
+                          boxShadow: isSelected ? '0 0 0 1px rgba(168,85,247,0.4)' : '0 0 0 1px rgba(255,255,255,0.07)',
+                        }}
+                      >
+                        {isSelected && '✓ '}{g.name}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ padding: '16px 28px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '10px' }}>
+              <button className="btn btn-secondary" onClick={() => setMusicModal(null)} style={{ flex: 1, height: '44px', borderRadius: '12px' }}>Batal</button>
+              <button
+                className="btn btn-primary"
+                onClick={saveMusic}
+                disabled={editingMusic || (musicModal === 'add' && !uploadFile)}
+                style={{ flex: 2, height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                {editingMusic
+                  ? <><span className="loader-sm"></span> Memproses...</>
+                  : musicModal === 'edit'
+                    ? <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Simpan Perubahan</>
+                    : <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload Sekarang</>
+                }
+              </button>
             </div>
           </div>
         </div>

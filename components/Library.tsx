@@ -15,9 +15,9 @@ const CATS = [
   { key: 'favorit', label: 'Favorit', icon: '❤️' },
   { key: 'publik', label: 'Public', icon: <PublicFolderIcon /> },
   { key: 'fx-basic', label: 'Basic FX', icon: '🎓' },
-  { key: 'fx-advanced', label: 'Advanced', icon: '🚀' },
+  { key: 'fx-advanced', label: 'Advanced', icon: '📈' },
   { key: 'fx-technical', label: 'Technical', icon: '📊' },
-  { key: 'fx-psychology', label: 'Psychology', icon: '🧠' },
+  { key: 'fx-psychology', label: 'Psychology', icon: '🎯' },
 ]
 
 function PublicFolderIcon() {
