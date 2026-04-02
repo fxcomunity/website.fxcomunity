@@ -21,10 +21,11 @@ const GENRES_AGG = `
 `
 
 // ─── GET — detail lagu tunggal ────────────────────────────────
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await initDB()
-    const id  = parseInt(params.id)
+    const { id: idStr } = await params
+    const id = parseInt(idStr)
     const res = await query(`
       SELECT ${SONG_COLS}, ${GENRES_AGG}
       FROM songs s WHERE s.id = $1
@@ -35,28 +36,31 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     }
     return NextResponse.json({ success: true, data: res.rows[0] })
   } catch (e) {
-    console.error(`GET /api/music/${params.id} error:`, e)
+    const { id: idStr } = await params
+    console.error(`GET /api/music/${idStr} error:`, e)
     return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 })
   }
 }
 
 // ─── PATCH — increment play_count ────────────────────────────
-export async function PATCH(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await initDB()
-    const id = parseInt(params.id)
+    const { id: idStr } = await params
+    const id = parseInt(idStr)
     await query(`
       UPDATE songs SET play_count = play_count + 1 WHERE id = $1
     `, [id])
     return NextResponse.json({ success: true })
   } catch (e) {
-    console.error(`PATCH /api/music/${params.id} error:`, e)
+    const { id: idStr } = await params
+    console.error(`PATCH /api/music/${idStr} error:`, e)
     return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 })
   }
 }
 
 // ─── PUT — edit metadata lagu (admin/owner only) ──────────────
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = getToken(req)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -67,7 +71,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     await initDB()
-    const id = parseInt(params.id)
+    const { id: idStr } = await params
+    const id = parseInt(idStr)
     const { title, artist, album, file_url, cover_url, genre_ids } = await req.json()
 
     if (!title?.trim() || !file_url?.trim()) {
@@ -118,14 +123,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     return NextResponse.json({ success: true, data: full.rows[0] })
   } catch (e) {
-    console.error(`PUT /api/music/${params.id} error:`, e)
+    const { id: idStr } = await params
+    console.error(`PUT /api/music/${idStr} error:`, e)
     return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 })
   }
 }
 
 // ─── DELETE — hapus lagu (admin/owner only) ───────────────────
 // song_genres akan terhapus otomatis oleh ON DELETE CASCADE
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = getToken(req)
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -136,7 +142,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   try {
     await initDB()
-    const id  = parseInt(params.id)
+    const { id: idStr } = await params
+    const id = parseInt(idStr)
     // CASCADE di schema: song_genres + playlist_songs terhapus otomatis
     const res = await query('DELETE FROM songs WHERE id = $1', [id])
 
@@ -145,7 +152,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
     return NextResponse.json({ success: true, message: 'Song deleted' })
   } catch (e) {
-    console.error(`DELETE /api/music/${params.id} error:`, e)
+    const { id: idStr } = await params
+    console.error(`DELETE /api/music/${idStr} error:`, e)
     return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 })
   }
 }

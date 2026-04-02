@@ -10,6 +10,12 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: shouldUseSSL ? { rejectUnauthorized: false } : false,
   max: 10,
+  connectionTimeoutMillis: 15000, // Wait 15s for connection
+  idleTimeoutMillis: 30000,
+})
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err)
 })
 
 export async function query(text: string, params?: any[]) {
