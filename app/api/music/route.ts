@@ -8,10 +8,15 @@ import * as mm from 'music-metadata'
 import { promises as fs } from 'fs'
 import path from 'path'
 
+let isDbInitialized = false
+
 // ─── GET — semua lagu aktif beserta genre ────────────────────
 export async function GET() {
   try {
-    await initDB() // Ensure schema is up to date
+    if (!isDbInitialized) {
+      await initDB()
+      isDbInitialized = true
+    }
     const res = await query(`
       SELECT
         s.id, s.title, s.artist, s.album,

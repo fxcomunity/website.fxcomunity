@@ -8,10 +8,12 @@ const shouldUseSSL = Boolean(
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: shouldUseSSL ? { rejectUnauthorized: false } : false,
+  ssl: {
+    rejectUnauthorized: false
+  },
   max: 10,
-  connectionTimeoutMillis: 15000, // Wait 15s for connection
   idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 })
 
 pool.on('error', (err) => {
@@ -19,9 +21,12 @@ pool.on('error', (err) => {
 })
 
 export async function query(text: string, params?: any[]) {
-  const client = await pool.connect()
-  try { return await client.query(text, params) }
-  finally { client.release() }
+  try {
+    return await pool.query(text, params)
+  } catch (err: any) {
+    console.error('Database query error:', err.message)
+    throw err
+  }
 }
 
 export async function initDB() {

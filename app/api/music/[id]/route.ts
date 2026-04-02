@@ -4,6 +4,8 @@ import { getToken, verifyToken } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
+let isDbInitialized = false
+
 // Kolom yang aman di-SELECT (search_vector adalah GENERATED ALWAYS — skip di SELECT *)
 const SONG_COLS = `
   s.id, s.title, s.artist, s.album,
@@ -23,7 +25,10 @@ const GENRES_AGG = `
 // ─── GET — detail lagu tunggal ────────────────────────────────
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await initDB()
+    if (!isDbInitialized) {
+      await initDB()
+      isDbInitialized = true
+    }
     const { id: idStr } = await params
     const id = parseInt(idStr)
     const res = await query(`
@@ -45,7 +50,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 // ─── PATCH — increment play_count ────────────────────────────
 export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await initDB()
+    if (!isDbInitialized) {
+      await initDB()
+      isDbInitialized = true
+    }
     const { id: idStr } = await params
     const id = parseInt(idStr)
     await query(`
@@ -70,7 +78,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   try {
-    await initDB()
+    if (!isDbInitialized) {
+      await initDB()
+      isDbInitialized = true
+    }
     const { id: idStr } = await params
     const id = parseInt(idStr)
     const { title, artist, album, file_url, cover_url, genre_ids } = await req.json()
@@ -141,7 +152,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
 
   try {
-    await initDB()
+    if (!isDbInitialized) {
+      await initDB()
+      isDbInitialized = true
+    }
     const { id: idStr } = await params
     const id = parseInt(idStr)
     // CASCADE di schema: song_genres + playlist_songs terhapus otomatis
