@@ -249,6 +249,19 @@ export default function AuthPage() {
           .auth-heading { font-size: 30px; }
           .logo-mark { margin-bottom: 24px; }
         }
+
+        @media (max-width: 768px) {
+          .auth-card { width: 90%; max-width: 400px; padding: 44px 32px; }
+          .auth-heading { font-size: 32px; }
+          .logo-mark { margin-bottom: 28px; }
+          .form-field { margin-bottom: 18px; }
+          .field-input { padding: 14px 16px; font-size: 15px; }
+          .btn-submit { padding: 15px; font-size: 15px; }
+        }
+
+        @media (min-width: 769px) {
+          .auth-card { width: 420px; }
+        }
       `}</style>
 
       <div className="auth-root">

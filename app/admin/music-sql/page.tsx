@@ -137,7 +137,7 @@ export default function MusicSQLPage() {
                       <tr key={rowIndex}>
                         {result.fields.map(field => {
                           const cellData = row[field.name];
-                          let displayData: string;
+                          let displayData: React.ReactNode;
 
                           if (cellData === null) {
                             displayData = <span style={{ color: 'var(--text3)' }}>NULL</span>;
