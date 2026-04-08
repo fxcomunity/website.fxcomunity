@@ -4,7 +4,7 @@ import Notification from './Notification'
 
 export default function GlobalNavbar() {
   return (
-    <nav style={{
+    <div style={{
       height: '60px',
       background: '#0c0d14',
       borderBottom: '1px solid rgba(255,255,255,0.05)',
@@ -55,6 +55,6 @@ export default function GlobalNavbar() {
           Login
         </Link>
       </div>
-    </nav>
-  )
+    </div>
+  );
 }
