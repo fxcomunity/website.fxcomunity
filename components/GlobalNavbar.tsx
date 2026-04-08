@@ -41,4 +41,20 @@ export default function GlobalNavbar() {
       </Link>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <Notification />
         <Link href="/login" style={{
+          color: '#00E5FF',
+          textDecoration: 'none',
+          fontWeight: 700,
+          fontSize: '14px',
+          padding: '6px 16px',
+          border: '1px solid rgba(0,229,255,0.35)',
+          borderRadius: '8px',
+          transition: 'all 0.2s',
+        }}>
+          Login
+        </Link>
+      </div>
+    </nav>
+  )
+}
