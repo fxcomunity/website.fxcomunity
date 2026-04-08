@@ -227,21 +227,10 @@ export default function UserDashboard() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {reports.length === 0 ? (
-                <>
-                  <div style={{ textAlign: 'center', padding: '18px 0', color: 'var(--text3)', fontSize: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px', opacity: 0.3 }}><IconClip /></div>
-                    Belum ada laporan
-                  </div>
-                  <Link href="/report" style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-                    padding: '10px', borderRadius: '10px', textDecoration: 'none',
-                    background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(168,85,247,0.1))',
-                    border: '1px solid rgba(168,85,247,0.25)', color: '#C4B5FD',
-                    fontSize: '12px', fontWeight: 700,
-                  }}>
-                    <IconSend /> Kirim Laporan
-                  </Link>
-                </>
+                <div style={{ textAlign: 'center', padding: '18px 0', color: 'var(--text3)', fontSize: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px', opacity: 0.3 }}><IconClip /></div>
+                  Belum ada laporan
+                </div>
               ) : reports.map((r: any) => (
                 <div key={r.id} style={{ padding: '11px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>

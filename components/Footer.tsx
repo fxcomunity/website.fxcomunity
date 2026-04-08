@@ -75,7 +75,18 @@ export default function Footer() {
           {/* Brand */}
           <div style={{ gridColumn: 'span 1' }}>
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <img src="/logo.png" alt="FXCOMUNITY" style={{ width: '44px', height: '44px', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(0,229,255,0.3))' }} />
+              <img 
+                src="/logo.png" 
+                alt="FXC Logo" 
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '12px',
+                  objectFit: 'cover',
+                  boxShadow: '0 6px 24px rgba(0, 229, 255, 0.4)',
+                  filter: 'drop-shadow(0 0 12px rgba(0, 229, 255, 0.3))',
+                }}
+              />
               <div>
                 <div style={{ fontWeight: 900, fontSize: '15px', color: '#fff', letterSpacing: '1px' }}>FXCOMUNITY</div>
                 <div style={{ fontSize: '10px', color: 'var(--primary, #00E5FF)', fontWeight: 600, letterSpacing: '1.5px' }}>TRADING EDUCATION</div>

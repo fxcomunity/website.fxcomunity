@@ -147,6 +147,13 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     { name: 'Favorites', path: '/favorites', icon: <IconFavorites /> },
   ]
 
+  const MOBILE_BOTTOM_NAV = [
+    { name: 'HOME',          path: '/dashboard', icon: <IconHome /> },
+    { name: 'POPULAR',       path: '/popular',   icon: <IconPopular /> },
+    { name: 'MUSIC',         path: '/music',     icon: <IconMusic /> },
+    { name: 'LAPORAN',       path: '/report',    icon: <IconReport /> },
+  ]
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#080B14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -181,27 +188,37 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
             className="hide-desktop hdr-btn"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Menu"
+            style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
+              border: '1px solid rgba(255,255,255,0.12)',
+              background: isMenuOpen ? 'rgba(0,229,255,0.1)' : 'rgba(255,255,255,0.04)',
+              color: '#fff',
+              transition: 'background 0.2s ease, transform 0.2s ease',
+            }}
           >
             <span style={{ fontSize: '20px' }}>{isMenuOpen ? '✕' : '☰'}</span>
           </button>
 
           {/* Logo */}
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <img
-              src="/logo.png"
-              alt="FXCOMUNITY Logo"
+            <img 
+              src="/logo.png" 
+              alt="FXC Logo" 
               style={{
                 width: '38px',
                 height: '38px',
-                objectFit: 'contain',
-                background: 'transparent',
-                filter: 'drop-shadow(0 0 6px rgba(0,229,255,0.4))',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                boxShadow: '0 4px 18px rgba(0, 229, 255, 0.35)',
               }}
             />
-            <div className="hide-tablet" style={{
-              fontWeight: 900, fontSize: '16px', letterSpacing: '1.5px',
-              background: 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            <div style={{
+              fontWeight: 900, fontSize: '15px', letterSpacing: '1px',
+              color: '#fff',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
             }}>
               FXCOMMUNITY
             </div>
@@ -542,37 +559,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           })}
 
           {/* Report links in sidebar */}
-          <Link
-            href="/report"
-            onClick={() => setIsMenuOpen(false)}
-            style={{
-              textDecoration: 'none', color: 'var(--text)',
-              padding: '11px 13px', borderRadius: '10px',
-              background: pathname === '/report' ? 'rgba(124,58,237,0.1)' : 'transparent',
-              border: pathname === '/report' ? '1px solid rgba(124,58,237,0.25)' : '1px solid transparent',
-              fontSize: '14px', fontWeight: 600,
-              display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s',
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', color: pathname === '/report' ? 'rgba(124,58,237,0.9)' : 'var(--text3)' }}><IconReport /></span>
-            Kirim Laporan
-          </Link>
-          <Link
-            href="/report?tab=riwayat"
-            onClick={() => setIsMenuOpen(false)}
-            style={{
-              textDecoration: 'none', color: 'var(--text)',
-              padding: '11px 13px', borderRadius: '10px',
-              background: 'transparent', border: '1px solid transparent',
-              fontSize: '14px', fontWeight: 600,
-              display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s',
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', color: 'var(--text3)' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            </span>
-            Riwayat Laporan
-          </Link>
+          {/* Removed - now in bottom navigator */}
 
           <div style={{ height: '1px', background: 'var(--border)', margin: '10px 0' }} />
 
@@ -616,30 +603,91 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* ── Main Content ── */}
-      <main>
+      <main style={{ paddingBottom: '80px' }}>
         {children}
       </main>
 
-      {/* ── Floating Report Button (desktop only) ── */}
+      {/* ── Bottom Navigation (Mobile & Tablet Only) ── */}
+      <div className="mobile-bottom-nav">
+        {MOBILE_BOTTOM_NAV.map(link => {
+          const isActive = pathname === link.path
+          return (
+            <Link
+              key={link.path}
+              href={link.path}
+              className={`mnav-item${isActive ? ' mnav-active' : ''}`}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textDecoration: 'none',
+                flex: '1 1 0',
+                position: 'relative',
+                gap: '4px',
+                padding: '6px 0 8px',
+                minWidth: 0,
+                color: isActive ? '#00E5FF' : 'rgba(255,255,255,0.4)',
+                transition: 'color 0.2s',
+              }}
+            >
+              {isActive && (
+                <span style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '30px',
+                  height: '2.5px',
+                  background: 'linear-gradient(90deg, #00B8D4, #00E5FF)',
+                  borderRadius: '0 0 4px 4px',
+                  boxShadow: '0 0 8px rgba(0,229,255,0.8)',
+                }} />
+              )}
+              <span style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '24px',
+                height: '24px',
+                flexShrink: 0,
+                transition: 'transform 0.2s, filter 0.2s',
+                transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                filter: isActive ? 'drop-shadow(0 0 5px rgba(0,229,255,0.6))' : 'none',
+              }}>
+                {link.icon && typeof link.icon === 'object' && 'type' in link.icon ? (
+                  <link.icon.type {...link.icon.props} width="22" height="22" />
+                ) : link.icon}
+              </span>
+              <span style={{
+                fontSize: '9px',
+                fontWeight: isActive ? 700 : 500,
+                textTransform: 'uppercase',
+                letterSpacing: '0.4px',
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+              }}>
+                {link.name}
+              </span>
+            </Link>
+          )
+        })}
+      </div>
+
+      {/* ── Floating Report Button (Desktop Only) ── */}
       <Link
         href="/report"
-        className="hide-mobile-tablet"
-        title="Kirim laporan / bug report"
-        style={{
-          position: 'fixed', bottom: '28px', right: '24px',
-          display: 'flex', alignItems: 'center', gap: '8px',
-          background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
-          color: '#fff', textDecoration: 'none',
-          padding: '10px 18px', borderRadius: '50px',
-          fontWeight: 800, fontSize: '13px',
-          boxShadow: '0 8px 28px rgba(124,58,237,0.45)',
-          zIndex: 95,
-          transition: 'transform 0.2s, box-shadow 0.2s',
-        }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 36px rgba(124,58,237,0.55)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 28px rgba(124,58,237,0.45)' }}
+        className="float-report-btn hide-mobile-tablet"
+        title="Kirim laporan atau saran"
       >
-        📬 <span>Kirim Laporan</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>Laporan</span>
       </Link>
 
 
@@ -667,6 +715,121 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           from { opacity: 0; transform: translateY(-8px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0)  scale(1); }
         }
+
+        /* ── Floating Report Button (Desktop) ── */
+        .float-report-btn {
+          position: fixed;
+          bottom: 32px;
+          right: 28px;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding: 10px 18px;
+          border-radius: 10px;
+          background: rgba(15, 18, 30, 0.92);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          color: rgba(255, 255, 255, 0.75);
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 0.2px;
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255,255,255,0.05) inset;
+          z-index: 95;
+          transition: all 0.2s ease;
+        }
+        .float-report-btn:hover {
+          background: rgba(25, 30, 50, 0.96);
+          border-color: rgba(0, 229, 255, 0.3);
+          color: #00E5FF;
+          box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0,229,255,0.1);
+          transform: translateY(-1px);
+        }
+        .float-report-btn:hover svg {
+          stroke: #00E5FF;
+        }
+
+        /* ── Bottom Nav (Mobile & Tablet) ── */
+        .mobile-bottom-nav {
+          display: none;
+        }
+
+        @media (max-width: 1024px) {
+          .mobile-bottom-nav {
+            display: flex !important;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 62px;
+            background: rgba(8, 11, 20, 0.98);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.6);
+            z-index: 500;
+            overflow: hidden;
+          }
+          .mnav-item {
+            flex: 1 1 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.4);
+            transition: color 0.2s;
+            position: relative;
+            gap: 4px;
+            padding: 6px 0 8px;
+            min-width: 0;
+          }
+          .mnav-item.mnav-active {
+            color: #00E5FF;
+          }
+          /* top indicator bar */
+          .mnav-bar {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 2.5px;
+            background: linear-gradient(90deg, #00B8D4, #00E5FF);
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 0 8px rgba(0,229,255,0.8);
+          }
+          /* icon */
+          .mnav-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            transition: transform 0.2s, filter 0.2s;
+          }
+          .mnav-item.mnav-active .mnav-icon {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 5px rgba(0,229,255,0.6));
+          }
+          /* label */
+          .mnav-label {
+            font-size: 9px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            line-height: 1;
+            white-space: nowrap;
+          }
+          .mnav-item.mnav-active .mnav-label {
+            font-weight: 700;
+          }
+        }
+
+        /* ── Existing Visibility Classes ── */
         @media (min-width: 1025px) { .hide-desktop { display: none !important; } }
         @media (max-width: 1024px) {
           .hide-tablet { display: none !important; }

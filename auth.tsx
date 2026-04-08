@@ -1,6 +1,7 @@
  'use client'
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from 'next/navigation'
+import PremiumLoader from "@/components/PremiumLoader";
 
 type AuthMode = "login" | "register" | "forgot";
 
@@ -166,30 +167,43 @@ export default function AuthPage() {
         .auth-card {
           position: relative;
           z-index: 10;
-          width: 420px;
+          width: 440px;
           max-width: calc(100vw - 32px);
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 24px;
-          padding: 48px 44px;
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset, 0 40px 80px rgba(0,0,0,0.5), 0 0 120px rgba(99,60,180,0.08);
-          animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
+          background: rgba(13, 17, 32, 0.7);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 28px;
+          padding: 56px 48px;
+          backdrop-filter: blur(30px);
+          -webkit-backdrop-filter: blur(30px);
+          box-shadow: 
+            0 0 0 1px rgba(255,255,255,0.05) inset, 
+            0 40px 100px rgba(0,0,0,0.6), 
+            0 0 150px rgba(124,58,237,0.1);
+          animation: cardIn 0.8s cubic-bezier(0.16,1,0.3,1) both;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .auth-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 
+            0 0 0 1px rgba(255,255,255,0.08) inset, 
+            0 45px 120px rgba(0,0,0,0.7), 
+            0 0 160px rgba(124,58,237,0.12);
         }
         @keyframes cardIn {
           from { opacity: 0; transform: translateY(24px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        .logo-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; }
+        .logo-mark { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
         .logo-icon {
-          width: 36px; height: 36px; border-radius: 10px;
-          background: linear-gradient(135deg, #7c3aed, #3b82f6);
-          display: flex; align-items: center; justify-content: center; font-size: 18px;
-          box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+          width: 40px; height: 40px; border-radius: 12px;
+          background: linear-gradient(135deg, #00E5FF, #7C3AED);
+          display: flex; align-items: center; justify-content: center; font-size: 20px;
+          box-shadow: 0 8px 24px rgba(0,229,255,0.3);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: #fff;
         }
-        .logo-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 0.5px; }
+        .logo-text { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(90deg, #fff, rgba(255,255,255,0.6)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .auth-heading {
           font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: #fff;
@@ -218,7 +232,10 @@ export default function AuthPage() {
         }
         .field-input:focus { border-color: rgba(124,58,237,0.5); background: rgba(255,255,255,0.08); box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
         .field-input.has-error { border-color: rgba(248,113,113,0.5); box-shadow: 0 0 0 3px rgba(248,113,113,0.1); }
-        .toggle-pass { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; display: flex; align-items: center; }
+        
+        .field-wrap { position: relative; }
+        .toggle-pass { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; display: flex; align-items: center; font-size: 16px; padding: 4px; transition: color 0.2s; }
+        .toggle-pass:hover { color: rgba(255,255,255,0.6); }
 
         .btn-submit {
           width: 100%; padding: 13px; margin-top: 8px; background: linear-gradient(135deg, #7c3aed, #4f46e5);
@@ -265,6 +282,7 @@ export default function AuthPage() {
       `}</style>
 
       <div className="auth-root">
+        {loading && <PremiumLoader />}
         <div className="orb orb-1" />
         <div className="orb orb-2" />
         <div className="orb orb-3" />
@@ -273,7 +291,7 @@ export default function AuthPage() {
           {/* Logo */}
           <div className="logo-mark">
             <div className="logo-icon">✦</div>
-            <span className="logo-text">Nexora</span>
+            <span className="logo-text">FXCOMMUNITY</span>
           </div>
 
           {/* Heading */}
@@ -388,15 +406,11 @@ export default function AuthPage() {
                 disabled={loading}
               >
                 <span className="btn-inner">
-                  {loading && <span className="spinner" />}
-                  {!loading && (
-                    mode === "login"
-                      ? "Masuk Sekarang"
-                      : mode === "register"
-                      ? "Buat Akun"
-                      : "Kirim OTP"
-                  )}
-                  {loading && "Memproses..."}
+                  {mode === "login"
+                    ? "Masuk Sekarang"
+                    : mode === "register"
+                    ? "Buat Akun"
+                    : "Kirim OTP"}
                 </span>
               </button>
               {submitError && <div className="field-error" style={{ marginTop: 10 }}>⚠ {submitError}</div>}

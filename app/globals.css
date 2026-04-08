@@ -697,7 +697,7 @@ a { color: inherit; }
 
 @media (max-width: 640px) {
   .hide-mobile  { display: none !important; }
-  .hide-desktop { display: block !important; }
+  /* do NOT set hide-desktop to block here — grid-based components will lose their grid layout */
 
   .modal-box { max-width: 100%; border-radius: var(--radius-xl) var(--radius-xl) 0 0; margin-top: auto; }
   .modal-overlay { align-items: flex-end; padding: 0; }
@@ -710,7 +710,20 @@ a { color: inherit; }
   .library-grid { gap: 10px; }
   .library-header-top { padding: 24px 12px 16px !important; }
 
+  /* toast above bottom nav */
   .toast { bottom: 80px; right: 12px; left: 12px; max-width: unset; }
+}
+
+/* Light mode: mobile bottom nav */
+[data-theme="light"] .mobile-bottom-nav {
+  background: rgba(240, 244, 248, 0.97) !important;
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .mobile-nav-item {
+  color: rgba(0, 0, 0, 0.4) !important;
+}
+[data-theme="light"] .mobile-nav-item.active {
+  color: #0099BB !important;
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {

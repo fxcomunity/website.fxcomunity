@@ -243,11 +243,6 @@ export default function ReportPage() {
                     <div style={{ textAlign: 'right', fontSize: '11px', color: 'var(--text3)', marginTop: '3px' }}>{description.length}/2000</div>
                   </div>
 
-                  <button type="submit" disabled={status === 'loading'} className="btn btn-primary" style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: 800, borderRadius: '12px' }}>
-                    {status === 'loading'
-                      ? <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><span className="spin">⚙️</span> Mengirim...</span>
-                      : `${selectedType.icon} Kirim Laporan`}
-                  </button>
                   <p style={{ textAlign: 'center', marginTop: '12px', fontSize: '12px', color: 'var(--text3)' }}>🔒 Hanya dapat dilihat oleh Admin / Owner</p>
                 </form>
               )
