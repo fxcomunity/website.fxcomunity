@@ -75,7 +75,7 @@ function addSecurityHeaders(res: NextResponse): NextResponse {
 
 // ─── JWT verify ─────────────────────────────────────────────────────────────
 const PUBLIC = ['/', '/login', '/register', '/forgot-password', '/reset-password',
-  '/api/auth/login', '/api/auth/register', '/api/auth/request-otp', '/api/auth/reset-password', '/api/init',
+  '/api/auth/login', '/api/auth/register', '/api/auth/request-otp', '/api/auth/reset-password',
   '/api/pdfs', '/api/stats', '/api/music', '/api/banners']
 
 async function verifyJWT(token: string) {
