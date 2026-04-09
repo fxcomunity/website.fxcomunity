@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { query } from '@/lib/db'
+import { query, initDB } from '@/lib/db'
 import { getToken, verifyToken } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   try {
+    // Ensure DB and seed data are initialized
+    await initDB()
+
     const { searchParams } = new URL(req.url)
     const search = searchParams.get('search') || ''
     const folder = searchParams.get('folder') || ''
