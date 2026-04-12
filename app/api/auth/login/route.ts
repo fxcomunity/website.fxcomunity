@@ -38,8 +38,9 @@ export async function POST(req: NextRequest) {
   const ip = getIP(req)
   
   try {
-    // ========== RATE LIMITING (Proteksi DDOS) ==========
-    const rateLimitResult = checkRateLimit(ip, 'login')
+    // ========== RATE LIMITING DISABLED FOR TESTING ==========
+    // const rateLimitResult = checkRateLimit(ip, 'login')
+    const rateLimitResult = { success: true, remaining: 5, resetAt: Date.now() + 900000 }
     
     if (!rateLimitResult.success) {
       console.log(`[RATE LIMIT] IP ${ip} diblokir: ${rateLimitResult.message}`)

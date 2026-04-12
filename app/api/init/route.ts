@@ -12,16 +12,16 @@ export async function GET() {
     await seedPDFs()
 
     // Check if owner user exists
-    const existingOwner = await query('SELECT id FROM users WHERE email = $1', ['owner@fxcomunity.com'])
+    const existingOwner = await query('SELECT id FROM users WHERE email = $1', ['aqsholhalqi2@gmail.com'])
 
     if (existingOwner.rows.length === 0) {
       // Create default owner user
       const hashedPassword = await bcrypt.hash('owner123', 12)
       await query(
         'INSERT INTO users (username, email, password, role, status, email_verified) VALUES ($1, $2, $3, $4, $5, $6)',
-        ['owner', 'owner@fxcomunity.com', hashedPassword, 'Owner', 'Aktif', true]
+        ['owner', 'aqsholhalqi2@gmail.com', hashedPassword, 'Owner', 'Aktif', true]
       )
-      console.log('Default owner user created: owner@fxcomunity.com / owner123')
+      console.log('Default owner user created: aqsholhalqi2@gmail.com / owner123')
     } else {
       console.log('Owner user already exists')
     }
