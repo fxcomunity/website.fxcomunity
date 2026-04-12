@@ -33,7 +33,7 @@ async function main() {
     process.exit(1)
   }
   const hashed = await bcrypt.hash(newPassword, 12)
-  const email = 'owner@fxcomunity.com'
+  const email = 'aqsholhalq2@gmail.com'
   const r = await pool.query('UPDATE users SET password=$1 WHERE email=$2 RETURNING id,username,email', [hashed, email])
   if (r.rowCount) {
     console.log('Password owner berhasil diubah untuk:', r.rows[0])

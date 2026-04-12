@@ -1,6 +1,6 @@
 node_modules/
 .next/
-.next-dev/
+.nexct-dev/
 .next-dev-v2/
 .next-runtime/
 dist/
