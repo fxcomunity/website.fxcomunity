@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     // ========== RATE LIMITING DISABLED FOR TESTING ==========
     // const rateLimitResult = checkRateLimit(ip, 'login')
-    const rateLimitResult = { success: true, remaining: 5, resetAt: Date.now() + 900000, message: 'Rate limiting disabled for testing' }
+    const rateLimitResult = { success: true, remaining: 5, resetAt: Date.now() + 900000, message: 'Rate limiting disabled for testing', blockedUntil: undefined }
     
     if (!rateLimitResult.success) {
       console.log(`[RATE LIMIT] IP ${ip} diblokir: ${rateLimitResult.message}`)
