@@ -438,7 +438,7 @@ async function sendNotification() {
   }
 
   const filteredPdfs = pdfs.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
-  const filteredUsers = users.filter(u => u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
+  const filteredUsers = users.filter(u => (u.first_name || u.username || u.email || '').toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
   const filteredAdminRequests = adminRequests.filter(r =>
     r.username.toLowerCase().includes(search.toLowerCase()) ||
     r.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -521,11 +521,11 @@ async function sendNotification() {
         <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div className="admin-avatar" style={{ width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0 }}>
-              {me.username[0].toUpperCase()}
+              {(me.first_name || me.username || me.email || '?')[0].toUpperCase()}
             </div>
             {sidebarOpen && (
               <div style={{ overflow: 'hidden', flex: 1 }}>
-                <p style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fff' }}>{me.username}</p>
+                <p style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fff' }}>{me.first_name || me.username || me.email}</p>
                 <span className={`badge ${me.role === 'Owner' ? 'badge-orange' : 'badge-purple'}`} style={{ fontSize: '9px', padding: '2px 7px' }}>{me.role}</span>
               </div>
             )}
@@ -633,10 +633,10 @@ async function sendNotification() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>Selamat datang</div>
-              <div style={{ fontSize: '13px', color: '#fff', fontWeight: 700 }}>{me.username}</div>
+              <div style={{ fontSize: '13px', color: '#fff', fontWeight: 700 }}>{me.first_name || me.username || me.email}</div>
             </div>
             <div className="admin-avatar" style={{ width: '34px', height: '34px', borderRadius: '9px', fontSize: '13px' }}>
-              {me.username[0].toUpperCase()}
+              {(me.first_name || me.username || me.email || '?')[0].toUpperCase()}
             </div>
           </div>
         </header>
