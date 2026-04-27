@@ -35,7 +35,7 @@ export async function POST(req: Request) {
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         session?.id ?? null,
-        session?.username ?? session?.first_name ?? 'Tamu',
+        (session as any)?.username ?? (session as any)?.first_name ?? 'Tamu',
         session?.email ?? null,
         type || 'bug',
         title.trim(),
