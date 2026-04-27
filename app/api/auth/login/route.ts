@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { query } from '@/lib/db'
 import { signToken } from '@/lib/auth'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { checkRateLimit, checkIPBan, incrementFailedAttempts, resetIPBan } from '@/lib/rate-limit'
 
 // Validasi email dengan regex untuk mencegah SQL Injection
 const validateEmail = (email: string): boolean => {
@@ -38,9 +38,21 @@ export async function POST(req: NextRequest) {
   const ip = getIP(req)
   
   try {
-    // ========== RATE LIMITING DISABLED FOR TESTING ==========
-    // const rateLimitResult = checkRateLimit(ip, 'login')
-    const rateLimitResult = { success: true, remaining: 5, resetAt: Date.now() + 900000, message: 'Rate limiting disabled for testing', blockedUntil: undefined }
+    // 1. Cek IP Ban dari Database (Banned 1 hari / Permanen)
+    const ipBanResult = await checkIPBan(ip)
+    if (ipBanResult) {
+      return NextResponse.json(
+        { 
+          error: ipBanResult.message,
+          isPermanent: ipBanResult.isPermanent,
+          retryAfter: ipBanResult.blockedUntil 
+        }, 
+        { status: 403 }
+      )
+    }
+
+    // 2. Cek Rate Limit (In-memory protection)
+    const rateLimitResult = checkRateLimit(ip, 'login')
     
     if (!rateLimitResult.success) {
       console.log(`[RATE LIMIT] IP ${ip} diblokir: ${rateLimitResult.message}`)
@@ -107,6 +119,7 @@ export async function POST(req: NextRequest) {
     
     if (!user) {
       console.log(`[LOGIN] User tidak ditemukan: ${normalizedEmail}`)
+      await incrementFailedAttempts(ip)
       await query(
         `INSERT INTO login_logs (email, ip_address, status, keterangan) VALUES ($1, $2, 'Failed', 'User tidak ditemukan')`,
         [normalizedEmail, ip]
@@ -151,6 +164,7 @@ export async function POST(req: NextRequest) {
     
     if (!ok) {
       console.log(`[LOGIN] Password salah untuk user: ${normalizedEmail}`)
+      await incrementFailedAttempts(ip)
       await query(
         `INSERT INTO login_logs (user_id, email, ip_address, status, keterangan) VALUES ($1, $2, $3, 'Failed', 'Password salah')`,
         [user.id, normalizedEmail, ip]
@@ -173,10 +187,11 @@ export async function POST(req: NextRequest) {
     }
     
     // ========== LOGIN BERHASIL ==========
-    console.log(`[LOGIN] Login berhasil untuk user: ${normalizedEmail}`)
+    console.log(`[LOGIN] Login berhasil for user: ${normalizedEmail}`)
     
-    // Reset rate limit setelah login berhasil
-    // resetRateLimit(ip, 'login')
+    // Reset rate limit and IP ban after successful login
+    resetRateLimit(ip, 'login')
+    await resetIPBan(ip)
     
     // Generate JWT token
     const token = await signToken({ 

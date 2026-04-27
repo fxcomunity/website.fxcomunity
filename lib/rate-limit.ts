@@ -1,3 +1,5 @@
+import { query } from './db';
+
 // Rate Limiter untuk proteksi DDOS
 // Menggunakan in-memory store (untuk production gunakan Redis)
 
@@ -45,12 +47,108 @@ export interface RateLimitResult {
   resetAt: number;
   blockedUntil?: number;
   message?: string;
+  isPermanent?: boolean;
 }
 
 /**
- * Cek apakah request diizinkan berdasarkan rate limiting
- * @param identifier - Identifier unik (biasanya IP address)
- * @param type - Tipe rate limit (login, register, otp, general)
+ * Cek apakah IP sedang diblokir di database (untuk login)
+ */
+export async function checkIPBan(ip: string): Promise<RateLimitResult | null> {
+  try {
+    const result = await query(
+      'SELECT failed_attempts, banned_until, is_permanent FROM banned_ips WHERE ip_address = $1',
+      [ip]
+    );
+
+    if (result.rows.length === 0) return null;
+
+    const { failed_attempts, banned_until, is_permanent } = result.rows[0];
+
+    if (is_permanent) {
+      return {
+        success: false,
+        remaining: 0,
+        resetAt: 0,
+        isPermanent: true,
+        message: 'IP Anda telah diblokir secara permanen karena terlalu banyak percobaan login yang gagal.'
+      };
+    }
+
+    if (banned_until && new Date() < new Date(banned_until)) {
+      return {
+        success: false,
+        remaining: 0,
+        resetAt: new Date(banned_until).getTime(),
+        blockedUntil: new Date(banned_until).getTime(),
+        message: `Terlalu banyak percobaan. IP diblokir hingga ${new Date(banned_until).toLocaleString('id-ID')}.`
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error checking IP ban:', error);
+    return null;
+  }
+}
+
+/**
+ * Update percobaan gagal di database
+ */
+export async function incrementFailedAttempts(ip: string): Promise<void> {
+  try {
+    // Cari status IP saat ini
+    const result = await query(
+      'SELECT failed_attempts FROM banned_ips WHERE ip_address = $1',
+      [ip]
+    );
+
+    let attempts = 1;
+    if (result.rows.length > 0) {
+      attempts = result.rows[0].failed_attempts + 1;
+    }
+
+    let bannedUntil = null;
+    let isPermanent = false;
+
+    // Aturan Banning:
+    // 5 kali salah -> Ban 1 hari
+    // 10 kali salah (5 kali lagi setelah ban 1 hari berakhir) -> Ban Permanen
+    if (attempts >= 10) {
+      isPermanent = true;
+    } else if (attempts === 5) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      bannedUntil = tomorrow;
+    }
+
+    await query(
+      `INSERT INTO banned_ips (ip_address, failed_attempts, banned_until, is_permanent, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (ip_address) DO UPDATE SET
+       failed_attempts = $2,
+       banned_until = $3,
+       is_permanent = $4,
+       updated_at = NOW()`,
+      [ip, attempts, bannedUntil, isPermanent]
+    );
+  } catch (error) {
+    console.error('Error incrementing failed attempts:', error);
+  }
+}
+
+/**
+ * Reset percobaan gagal setelah login berhasil
+ */
+export async function resetIPBan(ip: string): Promise<void> {
+  try {
+    await query('DELETE FROM banned_ips WHERE ip_address = $1 AND is_permanent = FALSE', [ip]);
+  } catch (error) {
+    console.error('Error resetting IP ban:', error);
+  }
+}
+
+/**
+ * Cek apakah request diizinkan berdasarkan rate limiting (in-memory)
  */
 export function checkRateLimit(identifier: string, type: RateLimitType = 'general'): RateLimitResult {
   const now = Date.now();
@@ -171,5 +269,4 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000);
 
-export default { checkRateLimit, resetRateLimit, getRateLimitStatus };
-
+export default { checkRateLimit, resetRateLimit, getRateLimitStatus, checkIPBan, incrementFailedAttempts, resetIPBan };
