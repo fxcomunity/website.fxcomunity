@@ -187,7 +187,7 @@ export default function ReportPage() {
               onClick={() => setTab(t.key)}
               style={{
                 flex: 1, padding: '11px 14px', borderRadius: '11px',
-                border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700,
+                cursor: 'pointer', fontSize: '13px', fontWeight: 700,
                 background: tab === t.key ? 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(139,92,246,0.2))' : 'transparent',
                 color: tab === t.key ? '#C4B5FD' : 'var(--text3)',
                 transition: 'all 0.25s ease',
