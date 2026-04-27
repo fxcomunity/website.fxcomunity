@@ -99,11 +99,11 @@ export async function POST(req: NextRequest) {
     
     if (channel === 'email') {
       const normalizedEmail = sanitizeInput(email).toLowerCase().trim()
-      user = await query('SELECT id, username, email FROM users WHERE LOWER(email)=$1', [normalizedEmail])
+      user = await query('SELECT id, first_name, email FROM users WHERE LOWER(email)=$1', [normalizedEmail])
       contact = normalizedEmail
     } else {
       const normalizedPhone = sanitizeInput(phone).replace(/\s+/g, '')
-      user = await query('SELECT id, username, email, phone_number FROM users WHERE phone_number=$1', [normalizedPhone])
+      user = await query('SELECT id, first_name, email, phone_number FROM users WHERE phone_number=$1', [normalizedPhone])
       contact = normalizedPhone
     }
 
@@ -145,10 +145,10 @@ export async function POST(req: NextRequest) {
     if (user?.rows?.length) {
       try {
         if (channel === 'email') {
-          await sendOTP(contact, otp, user.rows[0].username, type)
+          await sendOTP(contact, otp, user.rows[0].first_name || 'User', type)
           console.log(`[OTP-${type.toUpperCase()}] Email sent to ${contact}`)
         } else {
-          await sendWhatsAppOTP(user.rows[0].phone_number || contact, otp, user.rows[0].username)
+          await sendWhatsAppOTP(user.rows[0].phone_number || contact, otp, user.rows[0].first_name || 'User')
           console.log(`[OTP-${type.toUpperCase()}] WhatsApp sent to ${contact}`)
         }
       } catch (error) {

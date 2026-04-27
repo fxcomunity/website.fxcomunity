@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
       end_date,
       Number(form.get('priority') || 0),
       String(form.get('is_active') || 'true') !== 'false',
-      user.username
+      user.username || user.email
     ])
     return NextResponse.json({ success: true, data: r.rows[0] }, { status: 201 })
   } catch (e) { return NextResponse.json({ error: 'Server error' }, { status: 500 }) }

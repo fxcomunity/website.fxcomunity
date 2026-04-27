@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const token = getToken(req)
   const user = token ? await verifyToken(token) : null
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const r = await query('SELECT id,username,email,phone_number,role,status,created_at,email_verified FROM users WHERE id=$1', [user.id])
+  const r = await query('SELECT id,first_name,last_name,email,role,status,created_at,email_verified FROM users WHERE id=$1', [user.id])
   if (!r.rows.length) return NextResponse.json({ error: 'User not found' }, { status: 404 })
   return NextResponse.json({ success: true, data: r.rows[0] })
 }
@@ -18,17 +18,11 @@ export async function PUT(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { username, email, phone_number } = body
+    const { first_name, last_name, email } = body
 
     // Validate inputs
-    if (!username || !email) {
-      return NextResponse.json({ error: 'Username dan email wajib diisi' }, { status: 400 })
-    }
-
-    // Check if username already taken by another user
-    if (username !== user.username) {
-      const check = await query('SELECT id FROM users WHERE username=$1 AND id!=$2', [username, user.id])
-      if (check.rows.length) return NextResponse.json({ error: 'Username sudah digunakan' }, { status: 400 })
+    if (!email) {
+      return NextResponse.json({ error: 'Email wajib diisi' }, { status: 400 })
     }
 
     // Check if email already taken by another user
@@ -39,8 +33,8 @@ export async function PUT(req: NextRequest) {
 
     // Update user
     const r = await query(
-      'UPDATE users SET username=$1, email=$2, phone_number=$3 WHERE id=$4 RETURNING id,username,email,phone_number,role,status,created_at,email_verified',
-      [username, email, phone_number, user.id]
+      'UPDATE users SET first_name=$1, last_name=$2, email=$3 WHERE id=$4 RETURNING id,first_name,last_name,email,role,status,created_at,email_verified',
+      [first_name || null, last_name || null, email, user.id]
     )
 
     return NextResponse.json({ success: true, data: r.rows[0] })

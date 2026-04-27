@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import UserLayout from '@/components/UserLayout'
 
-interface User { id: number; username: string; email: string; phone_number?: string; role: string; status: string; created_at: string; email_verified: boolean }
+interface User { id: number; first_name: string | null; last_name: string | null; email: string; role: string; status: string; created_at: string; email_verified: boolean }
 interface PDF { id: number; name: string; url: string; category: string; thumbnail: string; views: number; downloads: number; is_active: boolean }
 
 export default function ProfilePage() {
@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const [favPdfs, setFavPdfs] = useState<PDF[]>([])
   const [loading, setLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
-  const [form, setForm] = useState({ username: '', email: '', phone_number: '' })
+  const [form, setForm] = useState({ first_name: '', last_name: '', email: '' })
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState('')
 
@@ -26,7 +26,7 @@ export default function ProfilePage() {
     }).then(d => {
       if (d?.data) {
         setUser(d.data)
-        setForm({ username: d.data.username, email: d.data.email, phone_number: d.data.phone_number || '' })
+        setForm({ first_name: d.data.first_name || '', last_name: d.data.last_name || '', email: d.data.email })
         loadFavorites()
       } else router.push('/login')
     }).catch(() => router.push('/login'))
@@ -46,13 +46,13 @@ export default function ProfilePage() {
   }
 
   async function saveProfile() {
-    if (!form.username || !form.email) { showToast('⚠️ Username dan email wajib diisi'); return }
+    if (!form.email) { showToast('⚠️ Email wajib diisi'); return }
     setSaving(true)
     try {
       const res = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: form.username, email: form.email, phone_number: form.phone_number })
+        body: JSON.stringify({ first_name: form.first_name, last_name: form.last_name, email: form.email })
       })
       const data = await res.json()
       if (data.success) {
@@ -91,10 +91,10 @@ export default function ProfilePage() {
         <div className="card glass-panel" style={{ padding: '24px', marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px', flexWrap: 'wrap' }}>
             <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', fontWeight: 900, boxShadow: 'var(--shadow)' }}>
-              {user.username[0].toUpperCase()}
+              {(user.first_name || user.email)[0].toUpperCase()}
             </div>
             <div style={{ flex: 1 }}>
-              <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '4px' }}>{user.username}</h1>
+              <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '4px' }}>{[user.first_name, user.last_name].filter(Boolean).join(' ') || user.email}</h1>
               <p style={{ color: 'var(--text2)', fontSize: '14px', marginBottom: '10px' }}>{user.email}</p>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className={`badge ${user.role === 'Owner' || user.role === 'Admin' ? 'badge-purple' : 'badge-blue'}`}>{user.role}</span>
@@ -111,19 +111,21 @@ export default function ProfilePage() {
           {editMode && (
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>USERNAME</label>
-                  <input className="input" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>NAMA DEPAN</label>
+                    <input className="input" value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} placeholder="Nama depan" />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>NAMA BELAKANG</label>
+                    <input className="input" value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} placeholder="Nama belakang" />
+                  </div>
                 </div>
                 <div>
                   <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>EMAIL</label>
                   <input className="input" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                 </div>
-                <div>
-                  <label style={{ display: 'block', color: 'var(--text2)', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>WHATSAPP NUMBER</label>
-                  <input className="input" type="tel" placeholder="081234567890" value={form.phone_number} onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))} />
-                  <small style={{ color: 'var(--text3)', fontSize: '11px' }}>Used for OTP verification</small>
-                </div>
+
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button className="btn btn-ghost" onClick={() => setEditMode(false)} style={{ flex: 1 }}>Cancel</button>
                   <button className="btn btn-primary" onClick={saveProfile} disabled={saving} style={{ flex: 1 }}>

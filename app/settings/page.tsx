@@ -255,7 +255,7 @@ export default function SettingsPage() {
                   <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Account Info</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px', fontSize: '14px' }}>
                     <span style={{ color: 'var(--text2)' }}>Username:</span>
-                    <span style={{ fontWeight: 600 }}>{user.username}</span>
+                    <span style={{ fontWeight: 600 }}>{user.first_name || user.username || user.email}</span>
                     <span style={{ color: 'var(--text2)' }}>Email:</span>
                     <span style={{ fontWeight: 600 }}>{user.email}</span>
                     <span style={{ color: 'var(--text2)' }}>Role:</span>

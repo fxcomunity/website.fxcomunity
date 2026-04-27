@@ -339,7 +339,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                     padding: '14px 16px 10px',
                     borderBottom: '1px solid rgba(255,255,255,0.06)',
                   }}>
-                    <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>{user.username}</div>
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>{user.first_name || user.username || user.email}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>{user.role}</div>
                   </div>
 
@@ -522,12 +522,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
             borderRadius: '12px', border: '1px solid rgba(0,229,255,0.12)',
           }}>
             <img
-              src={`https://ui-avatars.com/api/?name=${user.username}&background=random`}
+              src={`https://ui-avatars.com/api/?name=${user.first_name || user.username || user.email}&background=random`}
               alt="avatar"
               style={{ width: '34px', height: '34px', borderRadius: '50%', border: '2px solid rgba(0,229,255,0.4)' }}
             />
             <div>
-              <div style={{ fontWeight: 700, fontSize: '13px' }}>{user.username}</div>
+              <div style={{ fontWeight: 700, fontSize: '13px' }}>{user.first_name || user.username || user.email}</div>
               <div style={{ fontSize: '11px', color: 'var(--text3)' }}>{user.role}</div>
             </div>
           </div>
@@ -674,21 +674,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         })}
       </div>
 
-      {/* ── Floating Report Button (Desktop Only) ── */}
-      <Link
-        href="/report"
-        className="float-report-btn hide-mobile-tablet"
-        title="Kirim laporan atau saran"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10 9 9 9 8 9"/>
-        </svg>
-        <span>Laporan</span>
-      </Link>
+
 
 
 
@@ -716,39 +702,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           to   { opacity: 1; transform: translateY(0)  scale(1); }
         }
 
-        /* ── Floating Report Button (Desktop) ── */
-        .float-report-btn {
-          position: fixed;
-          bottom: 32px;
-          right: 28px;
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          padding: 10px 18px;
-          border-radius: 10px;
-          background: rgba(15, 18, 30, 0.92);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          color: rgba(255, 255, 255, 0.75);
-          text-decoration: none;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 0.2px;
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255,255,255,0.05) inset;
-          z-index: 95;
-          transition: all 0.2s ease;
-        }
-        .float-report-btn:hover {
-          background: rgba(25, 30, 50, 0.96);
-          border-color: rgba(0, 229, 255, 0.3);
-          color: #00E5FF;
-          box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0,229,255,0.1);
-          transform: translateY(-1px);
-        }
-        .float-report-btn:hover svg {
-          stroke: #00E5FF;
-        }
+
 
         /* ── Bottom Nav (Mobile & Tablet) ── */
         .mobile-bottom-nav {

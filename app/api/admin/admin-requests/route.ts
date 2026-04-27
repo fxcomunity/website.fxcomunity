@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   const r = user.role === 'Owner'
     ? await query(
       `SELECT ar.id, ar.requester_id, ar.username, ar.email, ar.requested_role, ar.status, ar.owner_note, ar.created_at, ar.updated_at,
-              req.username AS requester_username, own.username AS owner_username
+              req.first_name AS requester_name, own.first_name AS owner_name
        FROM admin_requests ar
        LEFT JOIN users req ON req.id=ar.requester_id
        LEFT JOIN users own ON own.id=ar.approved_by
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     )
     : await query(
       `SELECT ar.id, ar.requester_id, ar.username, ar.email, ar.requested_role, ar.status, ar.owner_note, ar.created_at, ar.updated_at,
-              req.username AS requester_username, own.username AS owner_username
+              req.first_name AS requester_name, own.first_name AS owner_name
        FROM admin_requests ar
        LEFT JOIN users req ON req.id=ar.requester_id
        LEFT JOIN users own ON own.id=ar.approved_by
@@ -61,10 +61,10 @@ export async function PUT(req: NextRequest) {
   const reqRow = r.rows[0]
 
   if (action === 'approve') {
-    const exist = await query('SELECT id FROM users WHERE email=$1 OR username=$2 LIMIT 1', [reqRow.email, reqRow.username])
-    if (exist.rows.length) return NextResponse.json({ error: 'Email/username sudah terpakai saat approval' }, { status: 400 })
+    const exist = await query('SELECT id FROM users WHERE email=$1 LIMIT 1', [reqRow.email])
+    if (exist.rows.length) return NextResponse.json({ error: 'Email sudah terpakai saat approval' }, { status: 400 })
     await query(
-      "INSERT INTO users (username,email,password,role,status,email_verified) VALUES ($1,$2,$3,'Admin','Aktif',true)",
+      "INSERT INTO users (first_name,email,password,role,status,email_verified) VALUES ($1,$2,$3,'Admin','Aktif',true)",
       [reqRow.username, reqRow.email, reqRow.password_hash]
     )
     await query(

@@ -1,19 +1,21 @@
- 'use client'
-import { useState, useRef, useEffect } from "react";
+'use client'
+import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation'
 import PremiumLoader from "@/components/PremiumLoader";
 
-type AuthMode = "login" | "register" | "forgot";
+type AuthMode = "login" | "register";
 
 interface FormState {
-  name: string;
+  fname: string;
+  lname: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
 
 const initialForm: FormState = {
-  name: "",
+  fname: "",
+  lname: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -23,35 +25,33 @@ export default function AuthPage() {
   const router = useRouter()
   const [mode, setMode] = useState<AuthMode>("login");
   const [form, setForm] = useState<FormState>(initialForm);
-  const [showPass, setShowPass] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [submitError, setSubmitError] = useState("");
-  const panelRef = useRef<HTMLDivElement>(null);
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const modeParam = new URLSearchParams(window.location.search).get('mode')
     if (modeParam === 'register') setMode('register')
-    if (modeParam === 'forgot') setMode('forgot')
   }, [])
 
   useEffect(() => {
     setForm(initialForm);
     setErrors({});
-    setShowPass(false);
-    setShowConfirm(false);
     setSubmitError('');
   }, [mode]);
 
   const validate = (): boolean => {
     const errs: Partial<FormState> = {};
     if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) errs.email = "Email tidak valid";
-    if (mode === "register" && !form.name.trim()) errs.name = "Nama wajib diisi";
-    if (mode !== "forgot") {
-      if (form.password.length < 6) errs.password = "Min. 6 karakter";
-      if (mode === "register" && form.password !== form.confirmPassword)
-        errs.confirmPassword = "Kata sandi tidak cocok";
+    if (mode === "register") {
+      if (!form.fname.trim()) errs.fname = "Nama depan wajib diisi";
+      if (!form.lname.trim()) errs.lname = "Nama belakang wajib diisi";
+      if (form.password.length < 8) errs.password = "Min. 8 karakter";
+      if (form.password !== form.confirmPassword) errs.confirmPassword = "Kata sandi tidak cocok";
+    } else {
+      if (!form.password) errs.password = "Kata sandi wajib diisi";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -71,24 +71,15 @@ export default function AuthPage() {
         if (!data.success) { setSubmitError(data.error || 'Login gagal'); return }
         if (['Owner', 'Admin'].includes(data.data.role)) window.location.href = '/admin'
         else window.location.href = '/library'
-      } else if (mode === 'register') {
+      } else {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: form.name.trim(), email: form.email, password: form.password })
+          body: JSON.stringify({ first_name: form.fname.trim(), last_name: form.lname.trim(), email: form.email, password: form.password })
         })
         const data = await res.json()
         if (!data.success) { setSubmitError(data.error || 'Registrasi gagal'); return }
         router.push(`/verify-email?email=${encodeURIComponent(form.email)}`)
-      } else {
-        const res = await fetch('/api/auth/request-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: form.email, method: 'email', type: 'reset_password' })
-        })
-        const data = await res.json()
-        if (!data.success) { setSubmitError(data.error || 'Gagal kirim OTP'); return }
-        router.push('/reset-password')
       }
     } catch {
       setSubmitError('Koneksi gagal')
@@ -103,335 +94,571 @@ export default function AuthPage() {
     if (submitError) setSubmitError('');
   };
 
-  const titles: Record<AuthMode, { heading: string; sub: string }> = {
-    login: { heading: "Selamat Datang", sub: "Masuk ke akun Anda" },
-    register: { heading: "Buat Akun", sub: "Bergabung dengan kami hari ini" },
-    forgot: { heading: "Lupa Password", sub: "Kami kirim OTP ke email kamu" },
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSubmit();
   };
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        .auth-root {
-          font-family: 'Outfit', sans-serif;
+        .auth-page {
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #0a0a0f;
+          padding: 24px 16px;
+          background: #05060f;
           position: relative;
           overflow: hidden;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        .auth-root::before {
+        /* Background effects */
+        .auth-page::before {
           content: '';
-          position: fixed;
-          inset: 0;
-          background:
-            radial-gradient(ellipse 70% 50% at 15% 50%, rgba(99,60,180,0.18) 0%, transparent 65%),
-            radial-gradient(ellipse 50% 70% at 85% 30%, rgba(20,120,200,0.12) 0%, transparent 65%),
-            radial-gradient(ellipse 40% 40% at 60% 80%, rgba(200,50,100,0.08) 0%, transparent 60%);
+          position: absolute;
+          top: -200px;
+          left: -100px;
+          width: 500px;
+          height: 500px;
+          background: radial-gradient(circle, rgba(0,229,255,0.06), transparent 70%);
           pointer-events: none;
         }
-
-        .auth-root::after {
+        .auth-page::after {
           content: '';
-          position: fixed;
-          inset: 0;
-          background-image:
-            linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-          background-size: 60px 60px;
+          position: absolute;
+          bottom: -150px;
+          right: -100px;
+          width: 400px;
+          height: 400px;
+          background: radial-gradient(circle, rgba(124,58,237,0.06), transparent 70%);
           pointer-events: none;
-        }
-
-        .orb {
-          position: fixed;
-          border-radius: 50%;
-          filter: blur(80px);
-          pointer-events: none;
-          animation: floatOrb 8s ease-in-out infinite;
-        }
-        .orb-1 { width: 300px; height: 300px; background: rgba(99,60,180,0.15); top: 10%; left: 5%; animation-delay: 0s; }
-        .orb-2 { width: 200px; height: 200px; background: rgba(20,120,200,0.12); bottom: 15%; right: 8%; animation-delay: -3s; }
-        .orb-3 { width: 150px; height: 150px; background: rgba(200,50,100,0.1); top: 60%; left: 60%; animation-delay: -5s; }
-        @keyframes floatOrb {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-30px) scale(1.05); }
         }
 
         .auth-card {
+          width: 100%;
+          max-width: 440px;
+          background: rgba(10, 14, 28, 0.95);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 24px;
+          overflow: hidden;
+          box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset;
           position: relative;
-          z-index: 10;
-          width: 440px;
-          max-width: calc(100vw - 32px);
-          background: rgba(13, 17, 32, 0.7);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 28px;
-          padding: 56px 48px;
-          backdrop-filter: blur(30px);
-          -webkit-backdrop-filter: blur(30px);
-          box-shadow: 
-            0 0 0 1px rgba(255,255,255,0.05) inset, 
-            0 40px 100px rgba(0,0,0,0.6), 
-            0 0 150px rgba(124,58,237,0.1);
-          animation: cardIn 0.8s cubic-bezier(0.16,1,0.3,1) both;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .auth-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 
-            0 0 0 1px rgba(255,255,255,0.08) inset, 
-            0 45px 120px rgba(0,0,0,0.7), 
-            0 0 160px rgba(124,58,237,0.12);
-        }
-        @keyframes cardIn {
-          from { opacity: 0; transform: translateY(24px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
+          z-index: 1;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
         }
 
-        .logo-mark { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
-        .logo-icon {
-          width: 40px; height: 40px; border-radius: 12px;
-          background: linear-gradient(135deg, #00E5FF, #7C3AED);
-          display: flex; align-items: center; justify-content: center; font-size: 20px;
-          box-shadow: 0 8px 24px rgba(0,229,255,0.3);
-          border: 1px solid rgba(255,255,255,0.2);
+        /* Card top glow */
+        .card-glow {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 200px;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(0,229,255,0.5), rgba(124,58,237,0.5), transparent);
+        }
+
+        /* Header */
+        .auth-header {
+          padding: 32px 32px 0;
+          text-align: center;
+        }
+        .auth-logo {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          object-fit: cover;
+          margin: 0 auto 12px;
+          display: block;
+          border: 2px solid rgba(0,229,255,0.2);
+          box-shadow: 0 4px 16px rgba(0,229,255,0.15);
+        }
+        .auth-brand {
+          font-size: 14px;
+          font-weight: 800;
           color: #fff;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          margin-bottom: 4px;
         }
-        .logo-text { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(90deg, #fff, rgba(255,255,255,0.6)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        .auth-heading {
-          font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: #fff;
-          line-height: 1.15; margin-bottom: 6px; letter-spacing: -0.3px;
+        .auth-subtitle {
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 1.5px;
+          background: linear-gradient(90deg, #00E5FF, #A855F7);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-transform: uppercase;
         }
-        .auth-heading em {
-          font-style: italic; background: linear-gradient(90deg, #a78bfa, #60a5fa);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+
+        /* Tab Switcher */
+        .tab-row {
+          display: flex;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 14px;
+          padding: 4px;
+          margin: 24px 32px 0;
+          gap: 4px;
         }
-        .auth-sub { font-size: 13.5px; color: rgba(255,255,255,0.38); margin-bottom: 32px; font-weight: 300; letter-spacing: 0.2px; }
-
-        .auth-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; margin-bottom: 28px; }
-        .auth-tab {
-          flex: 1; padding: 8px 12px; border: none; border-radius: 9px; background: transparent;
-          color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 400;
-          cursor: pointer; transition: all 0.2s ease;
+        .tab-btn {
+          flex: 1;
+          padding: 10px 16px;
+          border: none;
+          border-radius: 11px;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+          background: transparent;
+          color: rgba(255,255,255,0.35);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
         }
-        .auth-tab.active { background: rgba(124,58,237,0.35); color: #fff; font-weight: 500; box-shadow: 0 1px 8px rgba(124,58,237,0.25); }
-
-        .form-field { margin-bottom: 16px; animation: fieldIn 0.4s cubic-bezier(0.16,1,0.3,1) both; }
-        @keyframes fieldIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
-        .field-label { display: block; font-size: 11.5px; font-weight: 500; color: rgba(255,255,255,0.45); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 7px; }
-        .field-input {
-          width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; outline: none; transition: all 0.2s ease;
+        .tab-btn:hover {
+          color: rgba(255,255,255,0.6);
         }
-        .field-input:focus { border-color: rgba(124,58,237,0.5); background: rgba(255,255,255,0.08); box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
-        .field-input.has-error { border-color: rgba(248,113,113,0.5); box-shadow: 0 0 0 3px rgba(248,113,113,0.1); }
-        
-        .field-wrap { position: relative; }
-        .toggle-pass { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; display: flex; align-items: center; font-size: 16px; padding: 4px; transition: color 0.2s; }
-        .toggle-pass:hover { color: rgba(255,255,255,0.6); }
-
-        .btn-submit {
-          width: 100%; padding: 13px; margin-top: 8px; background: linear-gradient(135deg, #7c3aed, #4f46e5);
-          border: none; border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 14.5px;
-          font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+        .tab-btn.active {
+          background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(124,58,237,0.12));
+          color: #fff;
+          border: 1px solid rgba(0,229,255,0.15);
+          box-shadow: 0 2px 12px rgba(0,229,255,0.08);
         }
-        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(124,58,237,0.45); }
-        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .forgot-link {
-          display: block; text-align: right; font-size: 12px; color: rgba(255,255,255,0.4);
-          text-decoration: none; margin: -8px 0 24px; transition: color 0.2s; background: none; border: none; cursor: pointer; font-family: 'Outfit', sans-serif;
+        /* Form Body */
+        .form-body {
+          padding: 24px 32px 32px;
         }
-        .forgot-link:hover { color: #a78bfa; }
 
-        .auth-footer { margin-top: 20px; text-align: center; font-size: 13px; color: rgba(255,255,255,0.28); }
-        .auth-footer button { background: none; border: none; color: rgba(167,139,250,0.8); cursor: pointer; font-family: 'Outfit', sans-serif; margin-left: 4px; transition: color 0.2s; }
-        .auth-footer button:hover { color: #a78bfa; }
+        /* Error banner */
+        .error-banner {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 14px;
+          background: rgba(239,68,68,0.08);
+          border: 1px solid rgba(239,68,68,0.2);
+          border-radius: 12px;
+          margin-bottom: 20px;
+          font-size: 13px;
+          color: #F87171;
+          font-weight: 600;
+          animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
 
-        .success-box { text-align: center; padding: 12px 0 4px; animation: fieldIn 0.5s ease both; }
-        .success-icon { width: 56px; height: 56px; border-radius: 50%; background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px; }
-        .success-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #fff; margin-bottom: 8px; }
-        .success-text { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; margin-bottom: 24px; }
-        .back-link { background: none; border: none; color: rgba(167,139,250,0.8); cursor: pointer; font-family: 'Outfit', sans-serif; transition: color 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        /* Fields */
+        .field {
+          margin-bottom: 16px;
+        }
+        .field label {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.45);
+          margin-bottom: 7px;
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+        }
+        .field-input-wrap {
+          position: relative;
+        }
+        .field input {
+          width: 100%;
+          padding: 12px 16px;
+          font-family: inherit;
+          font-size: 14px;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px;
+          background: rgba(255,255,255,0.03);
+          color: #fff;
+          outline: none;
+          transition: all 0.25s ease;
+        }
+        .field input:focus {
+          border-color: rgba(0,229,255,0.4);
+          background: rgba(0,229,255,0.03);
+          box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+        }
+        .field input::placeholder {
+          color: rgba(255,255,255,0.2);
+        }
+        .field-error {
+          font-size: 11px;
+          color: #F87171;
+          margin-top: 4px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
 
+        /* Password toggle */
+        .pass-toggle {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: rgba(255,255,255,0.3);
+          cursor: pointer;
+          padding: 4px;
+          display: flex;
+          align-items: center;
+          transition: color 0.2s;
+        }
+        .pass-toggle:hover {
+          color: rgba(255,255,255,0.6);
+        }
+
+        /* Name row */
+        .name-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+
+        /* Forgot link */
+        .forgot {
+          display: block;
+          text-align: right;
+          font-size: 12px;
+          color: #00E5FF;
+          margin-top: -10px;
+          margin-bottom: 16px;
+          cursor: pointer;
+          text-decoration: none;
+          font-weight: 600;
+          transition: opacity 0.2s;
+        }
+        .forgot:hover {
+          opacity: 0.8;
+          text-decoration: underline;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+          width: 100%;
+          padding: 14px;
+          background: linear-gradient(135deg, #00B8D4, #00E5FF);
+          color: #000;
+          border: none;
+          border-radius: 14px;
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          box-shadow: 0 4px 16px rgba(0,229,255,0.2);
+          letter-spacing: 0.3px;
+        }
+        .submit-btn:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0,229,255,0.35);
+        }
+        .submit-btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        .submit-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        /* Divider */
+        .auth-divider {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 20px 0;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+          content: '';
+          flex: 1;
+          height: 1px;
+          background: rgba(255,255,255,0.06);
+        }
+        .auth-divider span {
+          font-size: 11px;
+          color: rgba(255,255,255,0.25);
+          font-weight: 600;
+        }
+
+        /* Switch text */
+        .switch-text {
+          font-size: 13px;
+          color: rgba(255,255,255,0.35);
+          text-align: center;
+          margin-top: 20px;
+        }
+        .switch-text a {
+          color: #00E5FF;
+          cursor: pointer;
+          font-weight: 700;
+          text-decoration: none;
+          transition: opacity 0.2s;
+        }
+        .switch-text a:hover {
+          opacity: 0.8;
+          text-decoration: underline;
+        }
+
+        /* Terms */
+        .terms {
+          font-size: 11px;
+          color: rgba(255,255,255,0.3);
+          text-align: center;
+          margin-top: 16px;
+          line-height: 1.7;
+        }
+        .terms a {
+          color: #00E5FF;
+          cursor: pointer;
+          text-decoration: none;
+        }
+        .terms a:hover {
+          text-decoration: underline;
+        }
+
+        /* Security badge */
+        .security-badge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          margin-top: 20px;
+          font-size: 11px;
+          color: rgba(255,255,255,0.2);
+          font-weight: 500;
+        }
+
+        /* Back button */
+        .back-link {
+          position: absolute;
+          top: 24px;
+          left: 24px;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: rgba(255,255,255,0.35);
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 8px 14px;
+          border-radius: 10px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.06);
+          transition: all 0.2s;
+        }
+        .back-link:hover {
+          background: rgba(255,255,255,0.08);
+          color: rgba(255,255,255,0.6);
+          border-color: rgba(255,255,255,0.1);
+        }
+
+        /* Responsive */
         @media (max-width: 480px) {
-          .auth-card { padding: 40px 24px; border-radius: 20px; }
-          .auth-heading { font-size: 30px; }
-          .logo-mark { margin-bottom: 24px; }
+          .auth-header { padding: 28px 24px 0; }
+          .tab-row { margin: 20px 24px 0; }
+          .form-body { padding: 20px 24px 28px; }
+          .auth-card { border-radius: 20px; }
+          .name-row { grid-template-columns: 1fr; gap: 0; }
         }
 
-        @media (max-width: 768px) {
-          .auth-card { width: 90%; max-width: 400px; padding: 44px 32px; }
-          .auth-heading { font-size: 32px; }
-          .logo-mark { margin-bottom: 28px; }
-          .form-field { margin-bottom: 18px; }
-          .field-input { padding: 14px 16px; font-size: 15px; }
-          .btn-submit { padding: 15px; font-size: 15px; }
+        /* Spinner */
+        @keyframes authSpin {
+          to { transform: rotate(360deg); }
         }
-
-        @media (min-width: 769px) {
-          .auth-card { width: 420px; }
+        .auth-spinner {
+          width: 18px;
+          height: 18px;
+          border: 2px solid rgba(0,0,0,0.2);
+          border-top-color: #000;
+          border-radius: 50%;
+          animation: authSpin 0.6s linear infinite;
         }
       `}</style>
 
-      <div className="auth-root">
-        {loading && <PremiumLoader />}
-        <div className="orb orb-1" />
-        <div className="orb orb-2" />
-        <div className="orb orb-3" />
+      <div className="auth-page">
+        {/* Back to home */}
+        <a href="/" className="back-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Beranda
+        </a>
 
-        <div className="auth-card" ref={panelRef}>
-          {/* Logo */}
-          <div className="logo-mark">
-            <div className="logo-icon">✦</div>
-            <span className="logo-text">FXCOMMUNITY</span>
+        <div className="auth-card">
+          <div className="card-glow" />
+
+          {/* Header */}
+          <div className="auth-header">
+            <img className="auth-logo" src="/logo.png" alt="FXCommunity Logo" />
+            <div className="auth-brand">FXCOMMUNITY</div>
+            <div className="auth-subtitle">Trading Education</div>
           </div>
 
-          {/* Heading */}
-          <h1 className="auth-heading">
-            {mode === "login" && <><em>Masuk</em> ke Akun</>}
-            {mode === "register" && <>Buat <em>Akun</em> Baru</>}
-            {mode === "forgot" && <>Reset <em>Password</em></>}
-          </h1>
-          <p className="auth-sub">{titles[mode].sub}</p>
+          {/* Tab Switcher */}
+          <div className="tab-row">
+            <button className={`tab-btn ${mode === 'login' ? 'active' : ''}`} onClick={() => setMode('login')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/></svg>
+              Masuk
+            </button>
+            <button className={`tab-btn ${mode === 'register' ? 'active' : ''}`} onClick={() => setMode('register')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              Daftar
+            </button>
+          </div>
 
-          {/* Tab switcher for login/register */}
-          {mode !== "forgot" && (
-            <div className="auth-tabs">
-              <button
-                className={`auth-tab ${mode === "login" ? "active" : ""}`}
-                onClick={() => setMode("login")}
-              >
-                Masuk
-              </button>
-              <button
-                className={`auth-tab ${mode === "register" ? "active" : ""}`}
-                onClick={() => setMode("register")}
-              >
-                Daftar
-              </button>
-            </div>
-          )}
+          {/* Form */}
+          <div className="form-body">
 
-          <>
-              {/* Name field — register only */}
-              {mode === "register" && (
-                <div className="form-field" style={{ animationDelay: "0ms" }}>
-                  <label className="field-label">Nama Lengkap</label>
-                  <div className="field-wrap">
-                    <input
-                      className={`field-input${errors.name ? " has-error" : ""}`}
-                      placeholder="John Doe"
-                      value={form.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
-                    />
-                  </div>
-                  {errors.name && <div className="field-error">⚠ {errors.name}</div>}
-                </div>
-              )}
-
-              {/* Email */}
-              <div className="form-field" style={{ animationDelay: "40ms" }}>
-                <label className="field-label">Alamat Email</label>
-                <div className="field-wrap">
-                  <input
-                    className={`field-input${errors.email ? " has-error" : ""}`}
-                    type="email"
-                    placeholder="nama@email.com"
-                    value={form.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                  />
-                </div>
-                {errors.email && <div className="field-error">⚠ {errors.email}</div>}
+            {/* Submit error */}
+            {submitError && (
+              <div className="error-banner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                {submitError}
               </div>
+            )}
 
-              {/* Password */}
-              {mode !== "forgot" && (
-                <div className="form-field" style={{ animationDelay: "80ms" }}>
-                  <label className="field-label">Kata Sandi</label>
-                  <div className="field-wrap">
-                    <input
-                      className={`field-input has-icon${errors.password ? " has-error" : ""}`}
-                      type={showPass ? "text" : "password"}
-                      placeholder="Minimal 6 karakter"
-                      value={form.password}
-                      onChange={(e) => handleChange("password", e.target.value)}
-                    />
-                    <button className="toggle-pass" onClick={() => setShowPass((v) => !v)} type="button">
-                      {showPass ? "🙈" : "👁"}
-                    </button>
-                  </div>
-                  {errors.password && <div className="field-error">⚠ {errors.password}</div>}
+            {/* ── LOGIN ── */}
+            {mode === 'login' && (
+              <div onKeyDown={handleKeyDown}>
+                <div className="field">
+                  <label>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    Email
+                  </label>
+                  <input type="email" placeholder="nama@email.com" value={form.email} onChange={(e) => handleChange('email', e.target.value)} autoComplete="email" />
+                  {errors.email && <div className="field-error">{errors.email}</div>}
                 </div>
-              )}
-              {mode === "login" && (
-                <button className="forgot-link" onClick={() => setMode("forgot")} type="button">
-                  Lupa kata sandi?
-                </button>
-              )}
-
-              {/* Confirm Password */}
-              {mode === "register" && (
-                <div className="form-field" style={{ animationDelay: "120ms" }}>
-                  <label className="field-label">Konfirmasi Kata Sandi</label>
-                  <div className="field-wrap">
-                    <input
-                      className={`field-input has-icon${errors.confirmPassword ? " has-error" : ""}`}
-                      type={showConfirm ? "text" : "password"}
-                      placeholder="Ulangi kata sandi"
-                      value={form.confirmPassword}
-                      onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                    />
-                    <button className="toggle-pass" onClick={() => setShowConfirm((v) => !v)} type="button">
-                      {showConfirm ? "🙈" : "👁"}
+                <div className="field">
+                  <label>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Kata Sandi
+                  </label>
+                  <div className="field-input-wrap">
+                    <input type={showPass ? 'text' : 'password'} placeholder="••••••••" value={form.password} onChange={(e) => handleChange('password', e.target.value)} autoComplete="current-password" />
+                    <button type="button" className="pass-toggle" onClick={() => setShowPass(v => !v)} tabIndex={-1}>
+                      {showPass ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      )}
                     </button>
                   </div>
-                  {errors.confirmPassword && (
-                    <div className="field-error">⚠ {errors.confirmPassword}</div>
+                  {errors.password && <div className="field-error">{errors.password}</div>}
+                </div>
+                <a className="forgot" href="/forgot-password">Lupa kata sandi?</a>
+                <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
+                  {loading ? <><div className="auth-spinner" /> Memproses...</> : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/></svg>
+                      Masuk
+                    </>
                   )}
-                </div>
-              )}
-
-              {/* Submit */}
-              <button
-                className="btn-submit"
-                onClick={handleSubmit}
-                disabled={loading}
-              >
-                <span className="btn-inner">
-                  {mode === "login"
-                    ? "Masuk Sekarang"
-                    : mode === "register"
-                    ? "Buat Akun"
-                    : "Kirim OTP"}
-                </span>
-              </button>
-              {submitError && <div className="field-error" style={{ marginTop: 10 }}>⚠ {submitError}</div>}
-
-
-
-              {/* Footer */}
-              <div className="auth-footer">
-                {mode === "login" && (
-                  <>Belum punya akun?<button onClick={() => setMode("register")}>Daftar</button></>
-                )}
-                {mode === "register" && (
-                  <>Sudah punya akun?<button onClick={() => setMode("login")}>Masuk</button></>
-                )}
-                {mode === "forgot" && (
-                  <>Ingat sandi?<button onClick={() => setMode("login")}>Kembali masuk</button></>
-                )}
+                </button>
+                <p className="switch-text">Belum punya akun? <a onClick={() => setMode('register')}>Daftar sekarang</a></p>
               </div>
-          </>
+            )}
+
+            {/* ── REGISTER ── */}
+            {mode === 'register' && (
+              <div onKeyDown={handleKeyDown}>
+                <div className="name-row">
+                  <div className="field">
+                    <label>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Nama Depan
+                    </label>
+                    <input type="text" placeholder="Budi" value={form.fname} onChange={(e) => handleChange('fname', e.target.value)} autoComplete="given-name" />
+                    {errors.fname && <div className="field-error">{errors.fname}</div>}
+                  </div>
+                  <div className="field">
+                    <label>Nama Belakang</label>
+                    <input type="text" placeholder="Santoso" value={form.lname} onChange={(e) => handleChange('lname', e.target.value)} autoComplete="family-name" />
+                    {errors.lname && <div className="field-error">{errors.lname}</div>}
+                  </div>
+                </div>
+                <div className="field">
+                  <label>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    Email
+                  </label>
+                  <input type="email" placeholder="nama@email.com" value={form.email} onChange={(e) => handleChange('email', e.target.value)} autoComplete="email" />
+                  {errors.email && <div className="field-error">{errors.email}</div>}
+                </div>
+                <div className="field">
+                  <label>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Kata Sandi
+                  </label>
+                  <div className="field-input-wrap">
+                    <input type={showPass ? 'text' : 'password'} placeholder="Min. 8 karakter" value={form.password} onChange={(e) => handleChange('password', e.target.value)} autoComplete="new-password" />
+                    <button type="button" className="pass-toggle" onClick={() => setShowPass(v => !v)} tabIndex={-1}>
+                      {showPass ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      )}
+                    </button>
+                  </div>
+                  {errors.password && <div className="field-error">{errors.password}</div>}
+                </div>
+                <div className="field">
+                  <label>Konfirmasi Kata Sandi</label>
+                  <div className="field-input-wrap">
+                    <input type={showConfirm ? 'text' : 'password'} placeholder="Ulangi kata sandi" value={form.confirmPassword} onChange={(e) => handleChange('confirmPassword', e.target.value)} autoComplete="new-password" />
+                    <button type="button" className="pass-toggle" onClick={() => setShowConfirm(v => !v)} tabIndex={-1}>
+                      {showConfirm ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      )}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <div className="field-error">{errors.confirmPassword}</div>}
+                </div>
+                <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
+                  {loading ? <><div className="auth-spinner" /> Membuat akun...</> : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                      Buat Akun
+                    </>
+                  )}
+                </button>
+                <p className="terms">Dengan mendaftar, kamu menyetujui <a href="/terms">Syarat & Ketentuan</a> serta <a href="/privacy">Kebijakan Privasi</a> kami.</p>
+                <p className="switch-text">Sudah punya akun? <a onClick={() => setMode('login')}>Masuk di sini</a></p>
+              </div>
+            )}
+
+            {/* Security footer */}
+            <div className="security-badge">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Data terenkripsi & aman
+            </div>
+          </div>
         </div>
       </div>
+
+      {loading && <PremiumLoader />}
     </>
   );
 }

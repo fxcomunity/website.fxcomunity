@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const r = await query('SELECT id,username,email,role,status,created_at FROM users WHERE id=$1', [payload.id])
+  const r = await query('SELECT id,first_name,last_name,email,role,status,created_at FROM users WHERE id=$1', [payload.id])
   if (!r.rows.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json({ data: r.rows[0], maintenance: isMaint })
 }

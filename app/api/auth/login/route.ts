@@ -133,8 +133,17 @@ export async function POST(req: NextRequest) {
     
     let ok = false
     try {
-      ok = await bcrypt.compare(password, user.password)
-      console.log(`[LOGIN] Hasil bcrypt.compare: ${ok}`)
+      if (typeof user.password === 'string' && user.password.startsWith('$2')) {
+        ok = await bcrypt.compare(password, user.password)
+      } else {
+        ok = user.password === password
+        if (ok) {
+          const hashed = await bcrypt.hash(password, 12)
+          await query('UPDATE users SET password=$1 WHERE id=$2', [hashed, user.id])
+          console.log(`[LOGIN] Password plain upgrade dilakukan untuk user ID: ${user.id}`)
+        }
+      }
+      console.log(`[LOGIN] Hasil password compare: ${ok}`)
     } catch (bcryptError) {
       console.error(`[LOGIN] Error bcrypt.compare:`, bcryptError)
       return NextResponse.json({ error: 'Email atau password salah' }, { status: 401 })
@@ -172,7 +181,7 @@ export async function POST(req: NextRequest) {
     // Generate JWT token
     const token = await signToken({ 
       id: user.id, 
-      username: user.username, 
+      username: user.first_name || user.email, 
       email: user.email, 
       role: user.role 
     })
@@ -188,7 +197,7 @@ export async function POST(req: NextRequest) {
       success: true, 
       data: { 
         id: user.id, 
-        username: user.username, 
+        username: user.first_name || user.email, 
         email: user.email, 
         role: user.role 
       }

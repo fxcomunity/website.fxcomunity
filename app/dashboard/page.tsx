@@ -107,7 +107,7 @@ export default function UserDashboard() {
           {/* Avatar */}
           <div className="profile-avatar" style={{ position: 'relative', flexShrink: 0 }}>
             <img
-              src={`https://ui-avatars.com/api/?name=${user.username}&background=random&size=80&bold=true`}
+              src={`https://ui-avatars.com/api/?name=${user.first_name || user.username || user.email}&background=random&size=80&bold=true`}
               alt="avatar"
               style={{ width: '78px', height: '78px', borderRadius: '50%', border: '3px solid rgba(0,229,255,0.45)', boxShadow: '0 0 20px rgba(0,229,255,0.18)', display: 'block' }}
             />
@@ -127,7 +127,7 @@ export default function UserDashboard() {
           {/* Info */}
           <div className="profile-info" style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>
-              Halo, {user.username}!
+              Halo, {user.first_name || user.username || user.email}!
             </h1>
             <p style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>

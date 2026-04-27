@@ -18,8 +18,8 @@ export async function GET() {
       // Create default owner user
       const hashedPassword = await bcrypt.hash('owner123', 12)
       await query(
-        'INSERT INTO users (username, email, password, role, status, email_verified) VALUES ($1, $2, $3, $4, $5, $6)',
-        ['owner', 'aqsholhalqi2@gmail.com', hashedPassword, 'Owner', 'Aktif', true]
+        'INSERT INTO users (first_name, last_name, username, email, password, role, status, email_verified) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+        ['Owner', 'User', 'owner', 'aqsholhalqi2@gmail.com', hashedPassword, 'Owner', 'Aktif', true]
       )
       console.log('Default owner user created: aqsholhalqi2@gmail.com / owner123')
     } else {
