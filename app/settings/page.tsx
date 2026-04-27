@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import UserLayout from '@/components/UserLayout'
 
-interface User { id: number; username: string; email: string; role: string; status: string; created_at: string; email_verified: boolean }
+interface User { id: number; username?: string; first_name?: string; last_name?: string; email: string; role: string; status: string; created_at: string; email_verified: boolean }
 
 export default function SettingsPage() {
   const router = useRouter()

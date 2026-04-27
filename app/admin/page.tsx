@@ -8,7 +8,7 @@ import {
 } from 'recharts'
 import './admin.css'
 
-interface User { id: number; username: string; email: string; role: string; status: string; created_at: string }
+interface User { id: number; username?: string; first_name?: string; last_name?: string; email: string; role: string; status: string; created_at: string }
 interface PDF { id: number; name: string; url: string; category: string; thumbnail: string; views: number; downloads: number; is_active: boolean }
 interface Stats { totalPdf: number; activePdf: number; totalUser: number; totalDownload: number; totalViews: number }
 interface AdminRequest {
