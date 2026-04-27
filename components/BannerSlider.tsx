@@ -34,14 +34,36 @@ const FALLBACK_BANNERS: Banner[] = [
 export default function BannerSlider({ variant = 'grid' }: { variant?: 'grid' | 'hero' }) {
   const [banners, setBanners] = useState<Banner[]>([])
   const [paused, setPaused] = useState(false)
-  useEffect(() => {
-    fetch('/api/banners', { cache: 'no-store' })
-      .then(r => r.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : Array.isArray(data?.banners) ? data.banners : Array.isArray(data?.data) ? data.data : []
-        setBanners(list.length ? list : FALLBACK_BANNERS)
+
+  async function fetchBanners() {
+    try {
+      const r = await fetch('/api/banners', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
       })
-      .catch(() => setBanners(FALLBACK_BANNERS))
+      const data = await r.json()
+      const list = Array.isArray(data) ? data : Array.isArray(data?.banners) ? data.banners : Array.isArray(data?.data) ? data.data : []
+      setBanners(list.length ? list : FALLBACK_BANNERS)
+    } catch {
+      setBanners(prev => prev.length ? prev : FALLBACK_BANNERS)
+    }
+  }
+
+  useEffect(() => {
+    // Fetch langsung saat load
+    fetchBanners()
+
+    // Polling setiap 30 detik supaya real-time
+    const interval = setInterval(fetchBanners, 30_000)
+
+    // Refresh saat user kembali ke tab
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchBanners() }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
   if (!banners.length) return null
   const loopBanners = [...banners, ...banners]
