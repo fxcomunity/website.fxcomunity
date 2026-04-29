@@ -102,6 +102,24 @@ export async function DELETE(req: Request) {
     }
     const { id } = await req.json()
     if (!id) return NextResponse.json({ success: false, message: 'ID wajib diisi' }, { status: 400 })
+
+    // Fetch report info before deleting to send notification
+    const reportRes = await query('SELECT user_id, title FROM reports WHERE id = $1', [id])
+    if (reportRes.rows.length > 0) {
+      const report = reportRes.rows[0]
+      if (report.user_id) {
+        await query(
+          'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+          [
+            report.user_id,
+            'Laporan Diproses',
+            `Laporan Anda mengenai "${report.title}" telah diperiksa dan dihapus oleh admin.`,
+            'info'
+          ]
+        )
+      }
+    }
+
     await query(`DELETE FROM reports WHERE id = $1`, [id])
     return NextResponse.json({ success: true, message: 'Laporan berhasil dihapus' })
   } catch (error: any) {

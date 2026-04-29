@@ -34,7 +34,19 @@ export async function query(text: string, params?: any[]) {
   }
 }
 
-export async function initDB() {
+let initPromise: Promise<void> | null = null;
+
+export function initDB() {
+  if (!initPromise) {
+    initPromise = doInitDB().catch(e => {
+      initPromise = null;
+      throw e;
+    });
+  }
+  return initPromise;
+}
+
+async function doInitDB() {
   await query(`CREATE TABLE IF NOT EXISTS banned_ips (
     ip_address VARCHAR(50) PRIMARY KEY,
     failed_attempts INTEGER DEFAULT 0,
@@ -174,9 +186,8 @@ export async function initDB() {
     END;
     $$ LANGUAGE plpgsql;
   `)
-  await query(`DROP TRIGGER IF EXISTS trg_banner_updated_at ON event_banners`)
   await query(`
-    CREATE TRIGGER trg_banner_updated_at
+    CREATE OR REPLACE TRIGGER trg_banner_updated_at
     BEFORE UPDATE ON event_banners
     FOR EACH ROW
     EXECUTE FUNCTION fn_set_banner_updated_at()
@@ -194,72 +205,4 @@ export async function initDB() {
     WHERE is_active = TRUE AND start_date <= NOW() AND end_date >= NOW()
     ORDER BY priority DESC, created_at DESC
   `)
-  const bcount = await query(`SELECT COUNT(*)::int AS total FROM event_banners`)
-  if ((bcount.rows[0]?.total || 0) === 0) {
-    await query(`
-      INSERT INTO event_banners
-        (title, description, media_type, media_url, media_data, media_mimetype, media_filename, media_size, thumbnail_url, alt_text,
-         target_url, target_blank, start_date, end_date, priority, is_active, created_by)
-      VALUES
-      (
-        'Promo Lebaran 2025',
-        'Diskon hingga 50% untuk semua produk',
-        'image',
-        'https://cdn.example.com/banners/lebaran-2025.jpg',
-        decode('', 'hex'),
-        'image/jpeg',
-        'lebaran-2025.jpg',
-        0,
-        NULL,
-        'Banner promo Lebaran 2025',
-        'https://example.com/promo/lebaran',
-        TRUE,
-        '2025-03-20 00:00:00+07',
-        '2025-04-10 23:59:59+07',
-        10,
-        TRUE,
-        'admin'
-      ),
-      (
-        'Video Launching Produk Baru',
-        NULL,
-        'video',
-        'https://cdn.example.com/banners/launch-video.mp4',
-        decode('', 'hex'),
-        'video/mp4',
-        'launch-video.mp4',
-        0,
-        'https://cdn.example.com/banners/launch-thumb.jpg',
-        'Video peluncuran produk baru',
-        'https://example.com/produk-baru',
-        TRUE,
-        '2025-03-25 00:00:00+07',
-        '2025-04-15 23:59:59+07',
-        20,
-        TRUE,
-        'admin'
-      )
-    `)
-  }
-  await query(`
-    UPDATE event_banners
-    SET start_date = NOW() - INTERVAL '1 day',
-        end_date   = NOW() + INTERVAL '30 day',
-        is_active  = TRUE
-    WHERE title IN ('Promo Lebaran 2025','Video Launching Produk Baru')
-      AND end_date < NOW()
-  `)
-  const activeCount = await query(`
-    SELECT COUNT(*)::int AS total
-    FROM event_banners
-    WHERE is_active = TRUE AND start_date <= NOW() AND end_date >= NOW()
-  `)
-  if ((activeCount.rows[0]?.total || 0) === 0) {
-    await query(`
-      INSERT INTO event_banners
-        (title, description, media_type, media_url, media_data, media_mimetype, media_filename, media_size, alt_text, target_url, target_blank, start_date, end_date, priority, is_active, created_by)
-      VALUES
-        ('Welcome Banner', 'Banner aktif default', 'image', 'https://cdn.example.com/banners/lebaran-2025.jpg', decode('', 'hex'), 'image/jpeg', 'welcome.jpg', 0, 'Welcome Banner', NULL, TRUE, NOW() - INTERVAL '1 day', NOW() + INTERVAL '30 day', 1, TRUE, 'system')
-    `)
-  }
 }

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 
-const FALLBACK_MEDIA_URL = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1d4ed8"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><rect width="1280" height="720" fill="url(#g)"/><text x="50%" y="46%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="Inter,Arial,sans-serif" font-size="58" font-weight="800">Koleksi PDF Trading</text><text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" fill="#e9d5ff" font-family="Inter,Arial,sans-serif" font-size="28">Terlengkap & Gratis</text></svg>')}`
-
 const NO_CACHE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Pragma': 'no-cache',
@@ -21,18 +19,7 @@ export async function GET() {
       thumbnail_url: b.thumb_mimetype ? `/api/banners/${b.id}/media?thumb=1` : null
     }))
     if (!data.length) {
-      return NextResponse.json([{
-        id: 0,
-        title: 'Koleksi PDF Trading Terlengkap',
-        description: 'Materi basic sampai advanced, gratis untuk member.',
-        media_type: 'image',
-        media_url: FALLBACK_MEDIA_URL,
-        thumbnail_url: null,
-        alt_text: 'Koleksi PDF Trading',
-        target_url: '/library',
-        target_blank: false,
-        priority: 0
-      }], { headers: NO_CACHE_HEADERS })
+      return NextResponse.json([], { headers: NO_CACHE_HEADERS })
     }
     return NextResponse.json(data, { headers: NO_CACHE_HEADERS })
   } catch (e) {

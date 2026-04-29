@@ -1,12 +1,312 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line
-} from 'recharts'
+import { Chart, registerables } from "chart.js"
 import './admin.css'
+
+Chart.register(...registerables)
+
+interface StatCardProps {
+  label: string;
+  value: number;
+  color: "blue" | "green" | "purple" | "orange" | "teal";
+  icon: React.ReactNode;
+}
+
+const IconPDF = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/>
+  </svg>
+)
+const IconCheck = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+)
+const IconUser = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M20 21a8 8 0 10-16 0"/>
+  </svg>
+)
+const IconDownload = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+)
+const IconEye = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+)
+
+const colorMap = {
+  blue:   { accent: "#3b82f6", light: "#60a5fa", bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.18)",  glow: "rgba(59,130,246,0.2)"  },
+  green:  { accent: "#10b981", light: "#34d399", bg: "rgba(16,185,129,0.1)",  border: "rgba(16,185,129,0.18)",  glow: "rgba(16,185,129,0.2)"  },
+  purple: { accent: "#8b5cf6", light: "#a78bfa", bg: "rgba(139,92,246,0.1)", border: "rgba(139,92,246,0.18)", glow: "rgba(139,92,246,0.2)" },
+  orange: { accent: "#f97316", light: "#fb923c", bg: "rgba(249,115,22,0.1)",  border: "rgba(249,115,22,0.18)",  glow: "rgba(249,115,22,0.2)"  },
+  teal:   { accent: "#06b6d4", light: "#22d3ee", bg: "rgba(6,182,212,0.1)",   border: "rgba(6,182,212,0.18)",   glow: "rgba(6,182,212,0.2)"   },
+}
+
+function StatCard({ label, value, color, icon }: StatCardProps) {
+  const c = colorMap[color]
+  return (
+    <div style={{
+      background: "#0d1526",
+      border: `1px solid ${c.border}`,
+      borderRadius: 16,
+      padding: "20px 20px 16px",
+      position: "relative",
+      overflow: "hidden",
+      transition: "transform 0.2s, border-color 0.2s",
+      cursor: "default",
+    }}
+      onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-3px)")}
+      onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}
+    >
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 2,
+        background: `linear-gradient(90deg, ${c.accent}, ${c.light})`,
+        borderRadius: "16px 16px 0 0",
+      }}/>
+      <div style={{
+        position: "absolute", bottom: -20, right: -10,
+        width: 90, height: 90, borderRadius: "50%",
+        background: c.accent, filter: "blur(30px)", opacity: 0.12,
+        pointerEvents: "none",
+      }}/>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+        <div>
+          <p style={{
+            fontSize: 10, letterSpacing: "1.4px", textTransform: "uppercase",
+            color: "#475569", fontWeight: 500, marginBottom: 8,
+          }}>{label}</p>
+          <p style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 32, fontWeight: 500, color: c.light, lineHeight: 1,
+          }}>{value}</p>
+        </div>
+        <div style={{
+          width: 40, height: 40, borderRadius: 11,
+          background: c.bg, color: c.light,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {icon}
+        </div>
+      </div>
+      <div style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        fontSize: 10, fontWeight: 600,
+        padding: "3px 10px", borderRadius: 20,
+        background: c.bg, color: c.light,
+        border: `1px solid ${c.border}`,
+      }}>
+        <span style={{
+          width: 5, height: 5, borderRadius: "50%",
+          background: c.light,
+          boxShadow: `0 0 6px ${c.light}`,
+          display: "inline-block",
+        }}/>
+        Live
+      </div>
+    </div>
+  )
+}
+
+interface DonutProps {
+  id: string;
+  data: number[];
+  labels: string[];
+  colors: string[];
+  total: number;
+  totalLabel: string;
+}
+
+function DonutChart({ id, data, labels, colors, total, totalLabel }: DonutProps) {
+  const ref = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    if (!ref.current) return
+    const chart = new Chart(ref.current, {
+      type: "doughnut",
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors,
+          borderColor: "#0d1526",
+          borderWidth: 3,
+          hoverOffset: 8,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "72%",
+        animation: { animateRotate: true, duration: 900 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#111c30",
+            borderColor: "rgba(99,179,237,0.15)",
+            borderWidth: 1,
+            titleColor: "#e2e8f0",
+            bodyColor: "#94a3b8",
+            padding: 12,
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.raw} (${total > 0 ? Math.round((ctx.raw as number / total) * 100) : 0}%)`,
+            },
+          },
+        },
+      },
+    })
+    return () => chart.destroy()
+  }, [data, labels, colors, total])
+
+  return (
+    <div style={{ position: "relative", width: 160, height: 160, flexShrink: 0 }}>
+      <canvas ref={ref} id={id} aria-label={`Donut chart for ${totalLabel}`}/>
+      <div style={{
+        position: "absolute", inset: 0,
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        pointerEvents: "none",
+      }}>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 26, fontWeight: 500, color: "#f0f6ff" }}>{total}</span>
+        <span style={{ fontSize: 9, color: "#334155", letterSpacing: "1px", textTransform: "uppercase", marginTop: 3 }}>{totalLabel}</span>
+      </div>
+    </div>
+  )
+}
+
+function DashboardLineChart({ monthlyData }: { monthlyData: any[] }) {
+  const ref = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    if (!ref.current) return
+    const ctx = ref.current.getContext("2d")!
+
+    const gradBlue = ctx.createLinearGradient(0, 0, 0, 220)
+    gradBlue.addColorStop(0, "rgba(59,130,246,0.25)")
+    gradBlue.addColorStop(1, "rgba(59,130,246,0)")
+
+    const gradPink = ctx.createLinearGradient(0, 0, 0, 220)
+    gradPink.addColorStop(0, "rgba(236,72,153,0.15)")
+    gradPink.addColorStop(1, "rgba(236,72,153,0)")
+
+    const chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: monthlyData.map(d => d.month),
+        datasets: [
+          {
+            label: "PDF",
+            data: monthlyData.map(d => d.pdfs),
+            borderColor: "#60a5fa",
+            backgroundColor: gradBlue,
+            borderWidth: 2.5,
+            pointBackgroundColor: "#60a5fa",
+            pointBorderColor: "#0d1526",
+            pointBorderWidth: 2.5,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            tension: 0.45,
+            fill: true,
+          },
+          {
+            label: "Users",
+            data: monthlyData.map(d => d.users),
+            borderColor: "#ec4899",
+            backgroundColor: gradPink,
+            borderWidth: 2,
+            borderDash: [6, 4],
+            pointBackgroundColor: "#ec4899",
+            pointBorderColor: "#0d1526",
+            pointBorderWidth: 2.5,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            tension: 0.45,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 1000 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#111c30",
+            borderColor: "rgba(99,179,237,0.15)",
+            borderWidth: 1,
+            titleColor: "#e2e8f0",
+            bodyColor: "#94a3b8",
+            padding: 12,
+            mode: "index",
+            intersect: false,
+          },
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(255,255,255,0.04)" },
+            ticks: { color: "#475569", font: { family: "'Outfit', sans-serif", size: 12 } },
+            border: { display: false },
+          },
+          y: {
+            grid: { color: "rgba(255,255,255,0.04)" },
+            ticks: { color: "#475569", font: { family: "'JetBrains Mono', monospace", size: 11 }, stepSize: 10 },
+            border: { display: false },
+            min: 0,
+          },
+        },
+        interaction: { mode: "index", intersect: false },
+      },
+    })
+    return () => chart.destroy()
+  }, [monthlyData])
+
+  return <canvas ref={ref} aria-label="Grafik pertumbuhan PDF dan User per bulan"/>
+}
+
+function LegendRow({ color, name, count, pct }: { color: string; name: string; count: number; pct: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ width: 10, height: 10, borderRadius: 3, background: color, flexShrink: 0 }}/>
+      <span style={{ fontSize: 12, color: "#64748b", flex: 1 }}>{name}</span>
+      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 500, color: "#94a3b8" }}>
+        {count}
+        <span style={{ fontSize: 10, color: "#334155", marginLeft: 4 }}>{pct}</span>
+      </span>
+    </div>
+  )
+}
+
+function Panel({ title, dotColor, children }: { title: string; dotColor: string; children: React.ReactNode }) {
+  return (
+    <div style={{
+      background: "#0d1526",
+      border: "1px solid rgba(99,179,237,0.08)",
+      borderRadius: 18,
+      padding: "22px 24px",
+      transition: "border-color 0.2s",
+      height: "100%",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
+        <div style={{ width: 8, height: 8, borderRadius: "50%", background: dotColor, boxShadow: `0 0 8px ${dotColor}` }}/>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", letterSpacing: 0.2 }}>{title}</span>
+      </div>
+      {children}
+    </div>
+  )
+}
 
 interface User { id: number; username?: string; first_name?: string; last_name?: string; email: string; role: string; status: string; created_at: string }
 interface PDF { id: number; name: string; url: string; category: string; thumbnail: string; views: number; downloads: number; is_active: boolean }
@@ -649,85 +949,99 @@ async function sendNotification() {
             </div>
           ) : activeMenu === 'dashboard' ? (
             /* DASHBOARD VIEW */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Page Header */}
-              <div className="admin-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-                <div>
-                  <h2>📊 Overview Dashboard</h2>
-                  <p>Ringkasan statistik dan aktivitas platform secara real-time</p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <span className="badge badge-blue">{users.length} Users</span>
-                  <span className="badge badge-green">{pdfs.filter(p => p.is_active).length} PDF Aktif</span>
-                  <span className="badge badge-orange">{musicList.length} Musik</span>
-                </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {/* ── STAT CARDS ── */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
+                <StatCard label="Total PDF" value={stats.totalPdf} color="blue" icon={<IconPDF />} />
+                <StatCard label="PDF Aktif" value={stats.activePdf} color="green" icon={<IconCheck />} />
+                <StatCard label="Total User" value={stats.totalUser} color="purple" icon={<IconUser />} />
+                <StatCard label="Total Download" value={stats.totalDownload} color="orange" icon={<IconDownload />} />
+                <StatCard label="Total View" value={stats.totalViews} color="teal" icon={<IconEye />} />
               </div>
 
-              {/* Stats Cards */}
-              <div className="admin-stat-grid">
-                {[
-                  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>, label: 'Total PDF', value: stats.totalPdf, color: '#4488ff', grad: 'linear-gradient(135deg,#1a3a8f,#1e2d5e)' },
-                  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, label: 'PDF Aktif', value: stats.activePdf, color: '#28c864', grad: 'linear-gradient(135deg,#0f3d20,#0a2415)' },
-                  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: 'Total User', value: stats.totalUser, color: '#A855F7', grad: 'linear-gradient(135deg,#3b1d7a,#231145)' },
-                  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>, label: 'Total Download', value: stats.totalDownload, color: '#FF6B35', grad: 'linear-gradient(135deg,#5c2410,#3a1608)' },
-                  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>, label: 'Total View', value: stats.totalViews, color: '#00E5FF', grad: 'linear-gradient(135deg,#0a3a42,#05222a)' },
-                ].map(s => (
-                  <div key={s.label} className="admin-stat-card" style={{ background: s.grad, border: `1px solid ${s.color}25` }}>
-                    <div className="admin-stat-value" style={{ color: s.color }}>{s.value.toLocaleString()}</div>
-                    <div className="admin-stat-label" style={{ color: s.color }}>{s.label}</div>
-                    <div className="admin-stat-icon" style={{ color: s.color, fontSize: 'inherit' }}>{s.icon}</div>
-                    <div className="admin-stat-trend" style={{ color: s.color }}>&#8599; Live</div>
+              {/* ── PIE CHARTS ROW ── */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 18 }}>
+                {/* PDF per Kategori */}
+                <Panel title="Distribusi PDF per Kategori" dotColor="#a78bfa">
+                  <div style={{ display: "flex", alignItems: "center", gap: 28, flexWrap: "wrap" }}>
+                    <DonutChart
+                      id="donutPDF"
+                      data={categoryData.map(d => d.value)}
+                      labels={categoryData.map(d => d.name)}
+                      colors={["#a855f7", "#3b82f6", "#10b981", "#f97316", "#ef4444", "#eab308", "#06b6d4"]}
+                      total={stats.totalPdf}
+                      totalLabel="Total PDF"
+                    />
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 13, minWidth: '150px' }}>
+                      {categoryData.map((d, i) => (
+                        <LegendRow 
+                          key={d.name} 
+                          color={["#a855f7", "#3b82f6", "#10b981", "#f97316", "#ef4444", "#eab308", "#06b6d4"][i % 7]} 
+                          name={d.name} 
+                          count={d.value} 
+                          pct={stats.totalPdf ? Math.round((d.value / stats.totalPdf) * 100) + "%" : "0%"} 
+                        />
+                      ))}
+                    </div>
                   </div>
-                ))}
+                </Panel>
+
+                {/* User per Role */}
+                <Panel title="Distribusi User per Role" dotColor="#60a5fa">
+                  <div style={{ display: "flex", alignItems: "center", gap: 28, flexWrap: "wrap" }}>
+                    <DonutChart
+                      id="donutUser"
+                      data={userRoleData.map(d => d.value)}
+                      labels={userRoleData.map(d => d.name)}
+                      colors={["#3b82f6", "#f97316", "#10b981", "#8b5cf6"]}
+                      total={stats.totalUser}
+                      totalLabel="Total User"
+                    />
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 13, minWidth: '150px' }}>
+                      {userRoleData.map((d, i) => (
+                        <LegendRow 
+                          key={d.name} 
+                          color={["#3b82f6", "#f97316", "#10b981", "#8b5cf6"][i % 4]} 
+                          name={d.name} 
+                          count={d.value} 
+                          pct={stats.totalUser ? Math.round((d.value / stats.totalUser) * 100) + "%" : "0%"} 
+                        />
+                      ))}
+                      <div style={{
+                        marginTop: 10, padding: "12px 14px",
+                        background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)", borderRadius: 10,
+                      }}>
+                        <p style={{ fontSize: 10, letterSpacing: "1px", textTransform: "uppercase", color: "#334155", marginBottom: 6 }}>Info</p>
+                        <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6 }}>
+                          {users.filter(u => u.role === 'Owner').length} user aktif dengan role <strong style={{ color: "#60a5fa" }}>Owner</strong> terdaftar di sistem.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Panel>
               </div>
 
-              {/* Charts Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '16px' }}>
-                {/* Category Distribution */}
-                <div className="card" style={{ padding: '20px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>📊 Distribusi PDF per Kategori</h3>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie data={categoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                        {categoryData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '8px' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
+              {/* ── LINE CHART ── */}
+              <Panel title="Pertumbuhan Users & PDF" dotColor="#60a5fa">
+                {/* Legend */}
+                <div style={{ display: "flex", gap: 20, marginBottom: 16, marginTop: -6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: "#64748b" }}>
+                    <div style={{ width: 20, height: 3, borderRadius: 2, background: "#60a5fa" }}/>
+                    PDF
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: "#64748b" }}>
+                    <div style={{
+                      width: 20, height: 3,
+                      background: "repeating-linear-gradient(90deg, #ec4899 0,#ec4899 5px,transparent 5px,transparent 9px)",
+                    }}/>
+                    Users
+                  </div>
                 </div>
 
-                {/* User Roles */}
-                <div className="card" style={{ padding: '20px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>👥 Distribusi User per Role</h3>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie data={userRoleData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({name, value}) => `${name}: ${value}`}>
-                        {userRoleData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '8px' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div style={{ position: "relative", height: 260 }}>
+                  <DashboardLineChart monthlyData={monthlyData} />
                 </div>
-              </div>
-
-              {/* Growth Chart */}
-              <div className="card" style={{ padding: '20px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>📈 Pertumbuhan Users & PDF</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" stroke="var(--text3)" />
-                    <YAxis stroke="var(--text3)" />
-                    <Tooltip contentStyle={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '8px' }} />
-                    <Line type="monotone" dataKey="users" stroke="#C720E6" strokeWidth={3} dot={{ fill: '#C720E6' }} name="Users" />
-                    <Line type="monotone" dataKey="pdfs" stroke="#4488ff" strokeWidth={3} dot={{ fill: '#4488ff' }} name="PDFs" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              </Panel>
             </div>
           ) : activeMenu === 'pdfs' ? (
             /* PDF MANAGEMENT */
@@ -739,7 +1053,7 @@ async function sendNotification() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {filteredPdfs.map(pdf => (
-                  <div key={pdf.id} className="card" style={{ padding: '16px' }}>
+                  <div key={pdf.id} className="admin-card" style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <span style={{ fontSize: '40px' }}>{pdf.thumbnail}</span>
                       <div style={{ flex: 1 }}>
@@ -763,22 +1077,41 @@ async function sendNotification() {
           ) : activeMenu === 'users' ? (
             /* USER MANAGEMENT */
             <>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
-                <input className="input" placeholder="🔍 Cari user..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: '300px' }} />
-              </div>
-
-              <div className="card" style={{ padding: '20px', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>
-                  {me?.role === 'Owner' ? '➕ Tambah Admin Baru' : '📝 Ajukan Admin Baru (Butuh Verifikasi Owner)'}
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: '10px' }}>
-                  <input className="input" placeholder="Username admin" value={adminForm.username} onChange={e => setAdminForm(f => ({ ...f, username: e.target.value }))} />
-                  <input className="input" type="email" placeholder="Email admin" value={adminForm.email} onChange={e => setAdminForm(f => ({ ...f, email: e.target.value }))} />
-                  <input className="input" type="password" placeholder="Password admin (min 6)" value={adminForm.password} onChange={e => setAdminForm(f => ({ ...f, password: e.target.value }))} />
+              <div className="admin-card" style={{ padding: '24px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(0,229,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                    {me?.role === 'Owner' ? '👑' : '📝'}
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: '#fff' }}>
+                      {me?.role === 'Owner' ? 'Tambah Admin Baru' : 'Ajukan Admin Baru'}
+                    </h3>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>
+                      {me?.role === 'Owner' ? 'Tambahkan admin langsung ke sistem.' : 'Kirim pengajuan admin untuk diverifikasi Owner.'}
+                    </p>
+                  </div>
                 </div>
-                <button className="btn btn-primary" onClick={createAdminCandidate} disabled={creatingAdmin} style={{ marginTop: '12px' }}>
-                  {creatingAdmin ? <><span className="spin">⚙️</span> Memproses...</> : me?.role === 'Owner' ? 'Tambah Admin Sekarang' : 'Ajukan ke Owner'}
-                </button>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '14px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Username</label>
+                    <input className="input" placeholder="contoh: admin123" value={adminForm.username} onChange={e => setAdminForm(f => ({ ...f, username: e.target.value }))} style={{ background: 'rgba(0,0,0,0.2)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Email</label>
+                    <input className="input" type="email" placeholder="admin@example.com" value={adminForm.email} onChange={e => setAdminForm(f => ({ ...f, email: e.target.value }))} style={{ background: 'rgba(0,0,0,0.2)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Password</label>
+                    <input className="input" type="password" placeholder="Minimal 6 karakter" value={adminForm.password} onChange={e => setAdminForm(f => ({ ...f, password: e.target.value }))} style={{ background: 'rgba(0,0,0,0.2)' }} />
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                  <button className="btn btn-primary" onClick={createAdminCandidate} disabled={creatingAdmin} style={{ padding: '10px 24px', borderRadius: '10px' }}>
+                    {creatingAdmin ? <><span className="spin" style={{ display: 'inline-block', marginRight: '8px' }}>⚙️</span> Memproses...</> : me?.role === 'Owner' ? '➕ Tambah Admin' : '📨 Ajukan ke Owner'}
+                  </button>
+                </div>
               </div>
 
               {me?.role === 'Admin' && (
@@ -788,7 +1121,7 @@ async function sendNotification() {
                 </div>
               )}
 
-              <div className="card" style={{ padding: '20px', marginBottom: '20px' }}>
+              <div className="admin-card" style={{ padding: '20px', marginBottom: '20px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>
                   {me?.role === 'Owner' ? '✅ Verifikasi Permintaan Admin' : '📨 Status Permintaan Admin Saya'}
                 </h3>
@@ -824,60 +1157,107 @@ async function sendNotification() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {filteredUsers.map(u => (
-                  <div key={u.id} className="card" style={{ padding: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '18px' }}>
-                        {u.username[0].toUpperCase()}
+              <div className="admin-card" style={{ overflow: 'hidden' }}>
+                {/* Table Header */}
+                <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
+                    Menampilkan <span style={{ color: '#00E5FF' }}>{filteredUsers.length}</span> user
+                  </span>
+                  <div className="admin-search-wrap" style={{ width: '240px' }}>
+                    <span className="admin-search-icon">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                    <input type="text" placeholder="Cari nama atau email..." className="admin-search" style={{ height: '38px', borderRadius: '10px', fontSize: '12px' }}
+                      value={search} onChange={e => setSearch(e.target.value)} />
+                  </div>
+                </div>
+
+                {/* User rows */}
+                <div style={{ overflowX: 'auto' }}>
+                  {filteredUsers.map(u => (
+                    <div key={u.id} className="user-row-item">
+                      {/* Avatar */}
+                      <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'linear-gradient(135deg, #00B8D4, #00E5FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '16px', boxShadow: '0 4px 12px rgba(0,229,255,0.2)', color: '#000' }}>
+                        {(u.username || u.first_name || u.email || '?')[0].toUpperCase()}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontWeight: 600, fontSize: '14px' }}>{u.username}</p>
-                        <p style={{ color: 'var(--text3)', fontSize: '12px' }}>{u.email}</p>
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                          <span className={`badge ${u.role === 'Owner' ? 'badge-orange' : u.role === 'Admin' ? 'badge-purple' : 'badge-blue'}`}>{u.role}</span>
-                          <span className={`badge ${u.status === 'Aktif' ? 'badge-green' : 'badge-red'}`}>{u.status}</span>
-                        </div>
+                      
+                      {/* Info */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontWeight: 700, fontSize: '14px', color: '#fff' }}>{u.username || u.first_name || 'Tanpa Nama'}</span>
+                        <p className="user-email" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', display: 'none', margin: 0 }}>{u.email}</p>
                       </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      
+                      {/* Email (Desktop) */}
+                      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {u.email}
+                      </div>
+
+                      {/* Badges */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
+                        <span className={`badge ${u.role === 'Owner' ? 'badge-orange' : u.role === 'Admin' ? 'badge-purple' : 'badge-blue'}`}>{u.role}</span>
+                        <span className={`badge ${u.status === 'Aktif' ? 'badge-green' : 'badge-red'}`} style={{ fontSize: '10px', padding: '2px 6px' }}>{u.status}</span>
+                      </div>
+
+                      {/* Actions */}
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                         {me?.role === 'Owner' ? (
                           <>
                             <button 
                               onClick={() => toggleUserStatus(u)}
-                              className="btn btn-sm" 
-                              style={{ background: u.status === 'Aktif' ? 'rgba(220,50,50,0.2)' : 'rgba(40,200,100,0.2)', color: u.status === 'Aktif' ? '#ff8080' : '#60d090' }}
+                              className="admin-btn-icon" 
+                              title={u.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}
+                              style={{ color: u.status === 'Aktif' ? '#ff8080' : '#60d090' }}
                             >
-                              {u.status === 'Aktif' ? '🚫 Nonaktifkan' : '✅ Aktifkan'}
+                              {u.status === 'Aktif' ? '🚫' : '✅'}
                             </button>
-                            <button className="btn btn-danger btn-sm" onClick={() => deleteUser(u)}>🗑️</button>
+                            <button className="admin-btn-icon danger" onClick={() => deleteUser(u)} title="Hapus User">
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                            </button>
                           </>
                         ) : me?.role === 'Admin' ? (
-                          <span style={{ color: 'var(--text3)', fontSize: '12px' }}>Tidak ada akses</span>
+                          <span style={{ color: 'var(--text3)', fontSize: '11px' }}>No access</span>
                         ) : null}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                  
+                  {filteredUsers.length === 0 && (
+                    <div className="admin-empty" style={{ padding: '40px 20px', border: 'none', background: 'transparent' }}>
+                      <div style={{ fontSize: '30px', marginBottom: '10px' }}>👥</div>
+                      <p>Tidak ada user ditemukan.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           ) : activeMenu === 'notifications' ? (
             /* NOTIFICATION MANAGEMENT */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div className="card" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>🔔 Kirim Notifikasi Baru</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>Judul Notifikasi</label>
-                    <input className="input" placeholder="Contoh: Update Chapter Baru!" value={notifForm.title} onChange={e => setNotifForm({...notifForm, title: e.target.value})} />
+              <div className="admin-card" style={{ padding: '28px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, background: 'rgba(168,85,247,0.15)', filter: 'blur(40px)', borderRadius: '50%' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(168,85,247,0.25)' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C084FC" strokeWidth="2" strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>Pesan</label>
-                    <textarea className="input" rows={3} placeholder="Isi pesan notifikasi..." value={notifForm.message} onChange={e => setNotifForm({...notifForm, message: e.target.value})} style={{ resize: 'vertical' }} />
+                    <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#fff' }}>Kirim Notifikasi Push</h3>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>Sebarkan pengumuman atau peringatan ke user secara real-time.</p>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', background: 'rgba(0,0,0,0.15)', padding: '20px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Judul Notifikasi</label>
+                    <input className="input" placeholder="Contoh: Update Chapter Baru!" value={notifForm.title} onChange={e => setNotifForm({...notifForm, title: e.target.value})} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pesan / Isi</label>
+                    <textarea className="input" rows={4} placeholder="Tuliskan isi pesan notifikasi di sini..." value={notifForm.message} onChange={e => setNotifForm({...notifForm, message: e.target.value})} style={{ resize: 'vertical', background: 'rgba(255,255,255,0.03)', padding: '14px' }} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>Tipe</label>
-                      <select className="input" value={notifForm.type} onChange={e => setNotifForm({...notifForm, type: e.target.value})}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Tipe Notifikasi</label>
+                      <select className="input" value={notifForm.type} onChange={e => setNotifForm({...notifForm, type: e.target.value})} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }}>
                         <option value="info">Info (Biru)</option>
                         <option value="success">Success (Hijau)</option>
                         <option value="warning">Warning (Kuning)</option>
@@ -885,17 +1265,19 @@ async function sendNotification() {
                       </select>
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>Target User</label>
-                      <select className="input" value={notifForm.user_id} onChange={e => setNotifForm({...notifForm, user_id: e.target.value})}>
-                        <option value="all">Semua User</option>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Target Penerima</label>
+                      <select className="input" value={notifForm.user_id} onChange={e => setNotifForm({...notifForm, user_id: e.target.value})} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }}>
+                        <option value="all">Semua User (Global)</option>
                         {users.map(u => (
                           <option key={u.id} value={u.id}>{u.username} ({u.role})</option>
                         ))}
                       </select>
                     </div>
                   </div>
-                  <button className="btn btn-primary" onClick={sendNotification} disabled={sendingNotif} style={{ marginTop: '10px' }}>
-                    {sendingNotif ? 'Mengirim...' : '🔔 Kirim Notifikasi'}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                  <button className="btn btn-primary" onClick={sendNotification} disabled={sendingNotif} style={{ padding: '12px 28px', borderRadius: '12px', background: 'linear-gradient(135deg, #9333ea, #c084fc)', boxShadow: '0 8px 20px rgba(168,85,247,0.3)' }}>
+                    {sendingNotif ? <><span className="spin" style={{ marginRight: '8px' }}>⚙️</span> Mengirim...</> : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ marginRight: '8px' }}><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Kirim Sekarang</>}
                   </button>
                 </div>
               </div>
@@ -1039,28 +1421,32 @@ async function sendNotification() {
           ) : activeMenu === 'reports' ? (
             /* REPORTS MANAGEMENT */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Filters */}
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <select className="input" value={reportFilter.type} onChange={e => setReportFilter(f => ({ ...f, type: e.target.value }))} style={{ width: 'auto' }}>
-                  <option value="all">Semua Jenis</option>
-                  <option value="bug">🐛 Bug</option>
-                  <option value="saran">💡 Saran</option>
-                  <option value="pertanyaan">❓ Pertanyaan</option>
-                  <option value="konten">📄 Konten</option>
-                  <option value="lainnya">📬 Lainnya</option>
-                </select>
-                <select className="input" value={reportFilter.status} onChange={e => setReportFilter(f => ({ ...f, status: e.target.value }))} style={{ width: 'auto' }}>
-                  <option value="all">Semua Status</option>
-                  <option value="open">🔴 Open</option>
-                  <option value="resolved">🟡 Resolved</option>
-                  <option value="closed">⚫ Closed</option>
-                </select>
-                <span style={{ fontSize: '13px', color: 'var(--text3)' }}>
-                  {reports.filter(r =>
-                    (reportFilter.type === 'all' || r.type === reportFilter.type) &&
-                    (reportFilter.status === 'all' || r.status === reportFilter.status)
-                  ).length} laporan
-                </span>
+              {/* Header & Filters */}
+              <div className="admin-card" style={{ padding: '20px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '16px', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 4px', color: '#fff' }}>Laporan User</h2>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Kelola feedback, bug, dan saran dari komunitas.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <select className="input" value={reportFilter.type} onChange={e => setReportFilter(f => ({ ...f, type: e.target.value }))} style={{ width: 'auto', background: 'transparent', border: 'none', height: '32px', padding: '0 30px 0 12px', fontSize: '12px', color: '#fff' }}>
+                      <option value="all">Semua Kategori</option>
+                      <option value="bug">Bug & Error</option>
+                      <option value="saran">Ide & Saran</option>
+                      <option value="pertanyaan">Pertanyaan</option>
+                      <option value="konten">Masalah Konten</option>
+                      <option value="lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <select className="input" value={reportFilter.status} onChange={e => setReportFilter(f => ({ ...f, status: e.target.value }))} style={{ width: 'auto', background: 'transparent', border: 'none', height: '32px', padding: '0 30px 0 12px', fontSize: '12px', color: '#fff' }}>
+                      <option value="all">Semua Status</option>
+                      <option value="open">🔴 Open</option>
+                      <option value="resolved">🟡 Resolved</option>
+                      <option value="closed">⚫ Closed</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               {/* Report List */}
@@ -1070,54 +1456,84 @@ async function sendNotification() {
                   (reportFilter.status === 'all' || r.status === reportFilter.status)
                 )
                 .length === 0 ? (
-                <div className="card" style={{ padding: '48px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '12px' }}>📭</div>
-                  <p style={{ color: 'var(--text2)' }}>Tidak ada laporan ditemukan</p>
+                <div className="admin-empty" style={{ padding: '60px 20px' }}>
+                  <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </div>
+                  <h3 style={{ margin: '0 0 6px', color: '#fff' }}>Bersih!</h3>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', margin: 0, fontSize: '13px' }}>Tidak ada laporan yang sesuai dengan filter saat ini.</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '16px' }}>
                   {reports
                     .filter(r =>
                       (reportFilter.type === 'all' || r.type === reportFilter.type) &&
                       (reportFilter.status === 'all' || r.status === reportFilter.status)
                     )
                     .map(r => {
-                      const typeIcon = r.type === 'bug' ? '🐛' : r.type === 'saran' ? '💡' : r.type === 'pertanyaan' ? '❓' : r.type === 'konten' ? '📄' : '📬'
-                      const statusColor = r.status === 'open' ? '#EF4444' : r.status === 'resolved' ? '#F59E0B' : '#6B7280'
+                      const getTypeStyle = () => {
+                        switch (r.type) {
+                          case 'bug': return { c: '#EF4444', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg> }
+                          case 'saran': return { c: '#F59E0B', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> }
+                          case 'pertanyaan': return { c: '#3B82F6', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg> }
+                          case 'konten': return { c: '#8B5CF6', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> }
+                          default: return { c: '#64748B', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> }
+                        }
+                      }
+                      const styleInfo = getTypeStyle()
+                      const statusColor = r.status === 'open' ? '#EF4444' : r.status === 'resolved' ? '#10B981' : '#64748B'
+                      
                       return (
-                        <div key={r.id} className="card" style={{ padding: '18px', borderLeft: `3px solid ${statusColor}` }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                                <span style={{ fontSize: '18px' }}>{typeIcon}</span>
-                                <span style={{ fontWeight: 700, fontSize: '14px' }}>{r.title}</span>
-                                <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '10px', background: `${statusColor}18`, color: statusColor, border: `1px solid ${statusColor}30`, fontWeight: 700, textTransform: 'uppercase' }}>
-                                  {r.status}
-                                </span>
+                        <div key={r.id} className="admin-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative', overflow: 'hidden' }}>
+                          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '3px', background: statusColor }} />
+                          
+                          {/* Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: `${styleInfo.c}20`, color: styleInfo.c, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {styleInfo.i}
                               </div>
-                              <p style={{ color: 'var(--text2)', fontSize: '13px', lineHeight: 1.6, marginBottom: '8px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{r.description}</p>
-                              <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text3)', flexWrap: 'wrap' }}>
-                                <span>👤 {r.username || 'Tamu'}</span>
-                                {r.email && <span>✉️ {r.email}</span>}
-                                <span>🕐 {new Date(r.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                              </div>
+                              <span style={{ fontWeight: 800, fontSize: '12px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{r.type}</span>
                             </div>
-                            <div style={{ display: 'flex', gap: '6px', flexShrink: 0, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '10px', padding: '4px 10px', borderRadius: '20px', background: `${statusColor}15`, color: statusColor, border: `1px solid ${statusColor}30`, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                              {r.status}
+                            </span>
+                          </div>
+                          
+                          {/* Body */}
+                          <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: '0 0 8px', fontSize: '15px', color: '#fff', fontWeight: 700 }}>{r.title}</h4>
+                            <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)' }}>{r.description}</p>
+                          </div>
+                          
+                          {/* Footer Info */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 'auto' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                {r.username || r.email || 'Anonim'}
+                              </span>
+                              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                {new Date(r.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            
+                            {/* Actions */}
+                            <div style={{ display: 'flex', gap: '6px' }}>
                               {r.status === 'open' && (
-                                <button className="btn btn-sm" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }} onClick={() => updateReportStatus(r.id, 'resolved')}>Resolve</button>
+                                <button className="admin-btn-icon" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)' }} onClick={() => updateReportStatus(r.id, 'resolved')} title="Tandai Selesai">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </button>
                               )}
                               {r.status !== 'closed' && (
-                                <button className="btn btn-sm" style={{ background: 'rgba(107,114,128,0.15)', color: '#9CA3AF' }} onClick={() => updateReportStatus(r.id, 'closed')}>Close</button>
+                                <button className="admin-btn-icon" style={{ background: 'rgba(100,116,139,0.1)', color: '#94A3B8', border: '1px solid rgba(100,116,139,0.2)' }} onClick={() => updateReportStatus(r.id, 'closed')} title="Tutup Laporan">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                </button>
                               )}
-                              {r.status === 'closed' && (
-                                <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.15)', color: '#F87171' }} onClick={() => updateReportStatus(r.id, 'open')}>Reopen</button>
-                              )}
-                              <button
-                                className="btn btn-sm"
-                                style={{ background: 'rgba(239,68,68,0.15)', color: '#F87171', border: '1px solid rgba(239,68,68,0.25)' }}
-                                onClick={() => deleteReport(r.id)}
-                                title="Hapus laporan"
-                              >🗑️ Hapus</button>
+                              <button className="admin-btn-icon danger" onClick={() => deleteReport(r.id)} title="Hapus Laporan permanently">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -1129,72 +1545,93 @@ async function sendNotification() {
             </div>
           ) : activeMenu === 'settings' ? (
             /* SETTINGS */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div className="admin-page-header">
-                <h2>Pengaturan Sistem</h2>
-                <p>Kontrol konfigurasi platform, maintenance mode, statistik, dan info sistem</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="admin-page-header" style={{ marginBottom: '4px' }}>
+                <h2 style={{ fontSize: '20px', letterSpacing: '-0.5px' }}>⚙️ Pengaturan Sistem</h2>
+                <p>Kontrol konfigurasi platform, maintenance mode, statistik, dan info sistem.</p>
               </div>
-              <div className="admin-card" style={{ padding: '22px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '9px', background: maintenance ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)', border: `1px solid ${maintenance ? 'rgba(248,113,113,0.2)' : 'rgba(74,222,128,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: maintenance ? '#F87171' : '#4ADE80' }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+
+              {/* Maintenance Toggle */}
+              <div className="admin-card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, right: 0, width: '4px', height: '100%', background: maintenance ? '#EF4444' : '#10B981' }} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: maintenance ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: maintenance ? '#EF4444' : '#10B981', border: `1px solid ${maintenance ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`, boxShadow: `0 8px 20px ${maintenance ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)'}` }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Mode Maintenance
+                        <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: maintenance ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', color: maintenance ? '#EF4444' : '#10B981', border: `1px solid ${maintenance ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'}` }}>{maintenance ? 'AKTIF' : 'NONAKTIF'}</span>
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Jika diaktifkan, semua user biasa tidak dapat mengakses website sama sekali.</p>
+                    </div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '14px' }}>Mode Maintenance</div>
-                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Nonaktifkan akses user biasa ke seluruh platform</div>
-                  </div>
-                  <span style={{ fontSize: '12px', fontWeight: 700, padding: '4px 12px', borderRadius: '20px', background: maintenance ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)', color: maintenance ? '#F87171' : '#4ADE80', border: `1px solid ${maintenance ? 'rgba(248,113,113,0.2)' : 'rgba(74,222,128,0.2)'}` }}>{maintenance ? 'AKTIF' : 'MATI'}</span>
-                  <button onClick={toggleMaintenance} className={`btn btn-sm ${maintenance ? 'btn-danger' : 'btn-secondary'}`}>{maintenance ? 'Matikan' : 'Aktifkan'}</button>
+                  <button onClick={toggleMaintenance} style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', background: maintenance ? '#EF4444' : 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', boxShadow: maintenance ? '0 4px 14px rgba(239,68,68,0.4)' : 'none' }}>
+                    {maintenance ? 'Matikan Maintenance' : 'Aktifkan Mode Ini'}
+                  </button>
                 </div>
-                {maintenance && (
-                  <div style={{ marginTop: '12px', padding: '11px 14px', borderRadius: '10px', background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.15)', fontSize: '13px', color: '#F87171', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Maintenance aktif — semua user biasa tidak dapat mengakses platform
-                  </div>
-                )}
               </div>
-              <div className="admin-card" style={{ padding: '22px' }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                  Statistik Platform
+
+              {/* Stats */}
+              <div className="admin-card" style={{ padding: '24px' }}>
+                <div style={{ fontWeight: 800, fontSize: '15px', color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 15h18v-2a4 4 0 0 0-4-4H3v6z"/><path d="M3 15v4a2 2 0 0 0 2 2h14v-4"/></svg>
+                  Sekilas Database
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                   {[
-                    { label: 'Total PDF', val: pdfs.length, sub: `${pdfs.filter(p => p.is_active).length} aktif` },
-                    { label: 'Total User', val: users.length, sub: `${users.filter(u => u.role === 'Admin' || u.role === 'Owner').length} admin/owner` },
-                    { label: 'Total Musik', val: musicList.length, sub: `${musicList.reduce((a: number, m: any) => a + (m.play_count || 0), 0)} plays` },
-                    { label: 'Total Download', val: pdfs.reduce((a, p) => a + p.downloads, 0), sub: 'semua waktu' },
+                    { label: 'File PDF', val: pdfs.length, sub: `${pdfs.filter(p => p.is_active).length} aktif`, icon: '📄', c: '#4488ff' },
+                    { label: 'Total User', val: users.length, sub: `${users.filter(u => u.role === 'Admin' || u.role === 'Owner').length} admin/owner`, icon: '👥', c: '#A855F7' },
+                    { label: 'Koleksi Musik', val: musicList.length, sub: `${musicList.reduce((a: number, m: any) => a + (m.play_count || 0), 0)} kali diputar`, icon: '🎵', c: '#00E5FF' },
+                    { label: 'File Downloaded', val: pdfs.reduce((a, p) => a + p.downloads, 0), sub: 'keseluruhan', icon: '📥', c: '#F59E0B' },
                   ].map(s => (
-                    <div key={s.label} style={{ padding: '14px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '22px', fontWeight: 800, color: '#00E5FF', marginBottom: '2px' }}>{s.val.toLocaleString()}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{s.label}</div>
-                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>{s.sub}</div>
+                    <div key={s.label} style={{ padding: '16px', borderRadius: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: '14px', alignItems: 'center' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${s.c}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                        {s.icon}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
+                        <div style={{ fontSize: '20px', fontWeight: 800, color: s.c, margin: '2px 0' }}>{s.val.toLocaleString()}</div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>{s.sub}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="admin-card" style={{ padding: '22px' }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '14px' }}>Navigasi Cepat</div>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {[{ href: '/dashboard', label: 'Dashboard User' }, { href: '/library', label: 'Library' }, { href: '/music', label: 'Music Player' }, { href: '/profile', label: 'Profil' }, { href: '/admin/banners-manage', label: 'Banner Manager' }].map(l => (
-                    <Link key={l.href} href={l.href} style={{ textDecoration: 'none' }}>
-                      <button className="btn btn-secondary" style={{ fontSize: '12px', padding: '8px 14px' }}>{l.label}</button>
-                    </Link>
-                  ))}
+
+              {/* Navigation & Info */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                <div className="admin-card" style={{ padding: '24px' }}>
+                  <div style={{ fontWeight: 800, fontSize: '15px', color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    Pintasan Navigasi
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[{ href: '/dashboard', label: 'Ke Dashboard Utama' }, { href: '/library', label: 'Buka Library PDF' }, { href: '/music', label: 'Buka Music Player' }, { href: '/admin/banners-manage', label: 'Edit Banner Promo' }].map(l => (
+                      <Link key={l.href} href={l.href} style={{ textDecoration: 'none' }}>
+                        <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#fff', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s' }} className="hover-highlight">
+                          {l.label}
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="admin-card" style={{ padding: '22px' }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A855F7" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  Info Sistem
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
-                  {[{ k: 'Platform', v: 'FX Community' }, { k: 'Framework', v: 'Next.js App Router' }, { k: 'Database', v: 'PostgreSQL (Neon)' }, { k: 'Music Schema', v: 'SoundVault v1' }, { k: 'Role Anda', v: me?.role || '-' }, { k: 'Username', v: me?.username || '-' }].map(r => (
-                    <div key={r.k} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', fontSize: '12px' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.4)' }}>{r.k}</span>
-                      <span style={{ fontWeight: 700, color: '#fff' }}>{r.v}</span>
-                    </div>
-                  ))}
+
+                <div className="admin-card" style={{ padding: '24px' }}>
+                  <div style={{ fontWeight: 800, fontSize: '15px', color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    Informasi Server
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {[{ k: 'Platform App', v: 'FX Community Admin' }, { k: 'Framework', v: 'Next.js 14 (App Router)' }, { k: 'Database System', v: 'Neon PostgreSQL Serverless' }, { k: 'Music Storage', v: 'SoundVault v1.2' }, { k: 'Hak Akses Saat Ini', v: <span style={{ color: '#F59E0B' }}>{me?.role || '-'}</span> }, { k: 'ID Sesi', v: <span style={{ fontFamily: 'monospace' }}>USR-{me?.id.toString().padStart(4, '0') || '0000'}</span> }].map(r => (
+                      <div key={r.k} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', fontSize: '12px' }}>
+                        <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{r.k}</span>
+                        <span style={{ fontWeight: 700, color: '#fff' }}>{r.v}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

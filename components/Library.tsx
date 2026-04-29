@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import BannerSlider from '@/components/BannerSlider'
+import { BookOpen, Heart, GraduationCap, TrendingUp, BarChart2, Target, HeartOff, Download, Link as LinkIcon, MessageCircle, Loader2, Search, Share2 } from 'lucide-react'
 
 interface PDF {
   id: number; name: string; url: string; category: string
@@ -11,13 +12,13 @@ interface PDF {
 interface User { id: number; username: string; email: string; role: string }
 
 const CATS = [
-  { key: 'semua', label: 'Semua', icon: '📚' },
-  { key: 'favorit', label: 'Favorit', icon: '❤️' },
+  { key: 'semua', label: 'Semua', icon: <BookOpen size={16} /> },
+  { key: 'favorit', label: 'Favorit', icon: <Heart size={16} /> },
   { key: 'publik', label: 'Public', icon: <PublicFolderIcon /> },
-  { key: 'fx-basic', label: 'Basic FX', icon: '🎓' },
-  { key: 'fx-advanced', label: 'Advanced', icon: '📈' },
-  { key: 'fx-technical', label: 'Technical', icon: '📊' },
-  { key: 'fx-psychology', label: 'Psychology', icon: '🎯' },
+  { key: 'fx-basic', label: 'Basic FX', icon: <GraduationCap size={16} /> },
+  { key: 'fx-advanced', label: 'Advanced', icon: <TrendingUp size={16} /> },
+  { key: 'fx-technical', label: 'Technical', icon: <BarChart2 size={16} /> },
+  { key: 'fx-psychology', label: 'Psychology', icon: <Target size={16} /> },
 ]
 
 function PublicFolderIcon() {
@@ -131,7 +132,7 @@ export default function Library() {
     const newFavIds = pdf.is_fav ? favIds.filter(id => id !== pdf.id) : [...favIds, pdf.id]
     localStorage.setItem('fav_pdfs', JSON.stringify(newFavIds))
     setPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, is_fav: !p.is_fav } : p))
-    showToast(pdf.is_fav ? '💔 Dihapus dari favorit' : '❤️ Ditambahkan ke favorit')
+    showToast(pdf.is_fav ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit')
   }
 
   async function handleDownload(pdf: PDF) {
@@ -140,7 +141,7 @@ export default function Library() {
     // Optimistic UI update
     setPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads || 0) + 1 } : p))
     setAllPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, downloads: (p.downloads || 0) + 1 } : p))
-    showToast('📥 Download dimulai!')
+    showToast('Download dimulai!')
   }
 
   function getShareUrl(pdf: PDF) {
@@ -149,18 +150,18 @@ export default function Library() {
   }
 
   function copyLink(pdf: PDF) {
-    navigator.clipboard.writeText(getShareUrl(pdf)).then(() => showToast('🔗 Link disalin!'))
+    navigator.clipboard.writeText(getShareUrl(pdf)).then(() => showToast('Link disalin!'))
   }
 
   function shareWA(pdf: PDF) {
-    const text = `📚 *${pdf.name}*\nMateri trading tersedia di FX Comunity!\n${getShareUrl(pdf)}`
+    const text = `*${pdf.name}*\nMateri trading tersedia di FX Comunity!\n${getShareUrl(pdf)}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }
 
   if (loading && !allPdfs.length) return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '44px', marginBottom: '16px' }} className="spin">⚙️</div>
+        <Loader2 size={48} className="spin" style={{ margin: '0 auto 16px', color: 'var(--primary)' }} />
         <p style={{ color: 'var(--text2)', fontWeight: 600 }}>Memuat materi...</p>
       </div>
     </div>
@@ -237,7 +238,7 @@ export default function Library() {
             borderRadius: '24px',
             border: '1px solid var(--border)',
           }}>
-            <div style={{ fontSize: '56px', marginBottom: '16px', opacity: 0.6 }}>🔍</div>
+            <Search size={56} style={{ opacity: 0.6, margin: '0 auto 16px' }} />
             <h3 style={{ color: 'var(--text2)', marginBottom: '8px', fontWeight: 700 }}>Tidak ada PDF ditemukan</h3>
             <p style={{ color: 'var(--text3)', fontSize: '14px' }}>Coba kata kunci atau kategori lain</p>
           </div>
@@ -320,14 +321,14 @@ export default function Library() {
           <div className="modal-box" onClick={e => e.stopPropagation()} style={{ padding: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
               <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>📤 Bagikan PDF</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}><Share2 size={20} /> Bagikan PDF</h3>
                 <p style={{ fontSize: '13px', color: 'var(--text2)' }}>{sharePdf.name}</p>
               </div>
               <button className="btn btn-ghost btn-icon" onClick={() => { setSharePdf(null); setShowQR(false) }}>✕</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <button className="btn btn-secondary" style={{ padding: '14px' }} onClick={() => { copyLink(sharePdf); setSharePdf(null) }}>🔗 Copy Link</button>
-              <button className="btn btn-secondary" style={{ padding: '14px' }} onClick={() => shareWA(sharePdf)}>💬 WhatsApp</button>
+              <button className="btn btn-secondary" style={{ padding: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => { copyLink(sharePdf); setSharePdf(null) }}><LinkIcon size={16} /> Copy Link</button>
+              <button className="btn btn-secondary" style={{ padding: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => shareWA(sharePdf)}><MessageCircle size={16} /> WhatsApp</button>
             </div>
           </div>
         </div>
@@ -368,10 +369,10 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
           background: pdf.is_fav ? 'rgba(255,50,80,0.18)' : 'rgba(255,255,255,0.05)',
           border: `1px solid ${pdf.is_fav ? 'rgba(255,50,80,0.35)' : 'rgba(255,255,255,0.1)'}`,
           borderRadius: '8px', padding: '5px 7px',
-          cursor: 'pointer', fontSize: '15px', lineHeight: 1,
+          cursor: 'pointer', fontSize: '15px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.2s ease',
         }}
-      >{pdf.is_fav ? '❤️' : '🤍'}</button>
+      >{pdf.is_fav ? <Heart size={16} fill="currentColor" color="currentColor" /> : <Heart size={16} />}</button>
 
       {/* Thumbnail */}
       <div

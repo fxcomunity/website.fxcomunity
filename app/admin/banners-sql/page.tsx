@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Wrench, Loader2, Play, AlertTriangle } from 'lucide-react'
 
 type Row = Record<string, any>
 
@@ -51,7 +52,7 @@ export default function BannerSqlEditor() {
     <div>
       <header style={{ background: 'rgba(10,10,26,0.95)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 20 }}>🛠️</span>
+          <Wrench size={22} style={{ color: '#818cf8' }} />
           <h1 style={{ fontSize: 18, fontWeight: 800 }}>SQL Editor — Banners</h1>
         </div>
         <Link href="/admin" style={{ textDecoration: 'none' }}>
@@ -76,11 +77,13 @@ export default function BannerSqlEditor() {
             style={{ width: '100%', minHeight: 140, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)', color: '#fff', padding: 12, fontFamily: 'JetBrains Mono, monospace' }}
           />
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button className="btn btn-primary" onClick={run} disabled={loading}>{loading ? <><span className="spin">⚙️</span> Menjalankan...</> : '▶ Jalankan'}</button>
+            <button className="btn btn-primary" onClick={run} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {loading ? <><Loader2 size={16} className="spin" /> Menjalankan...</> : <><Play size={16} /> Jalankan</>}
+            </button>
             <button className="btn btn-secondary" onClick={() => { setRows([]); setRowCount(0); setError('') }}>Bersihkan</button>
           </div>
           {error && (
-            <div style={{ marginTop: 10, color: '#fca5a5', fontSize: 13 }}>⚠️ {error}</div>
+            <div style={{ marginTop: 10, color: '#fca5a5', fontSize: 13, display: 'flex', alignItems: 'center', gap: '6px' }}><AlertTriangle size={16} /> {error}</div>
           )}
         </div>
 

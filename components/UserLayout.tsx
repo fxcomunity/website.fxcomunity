@@ -160,10 +160,29 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#080B14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div className="spin" style={{ fontSize: '44px', marginBottom: '16px' }}>⏳</div>
-          <p style={{ color: 'var(--text2)', fontWeight: 600, fontSize: '14px' }}>Tunggu sebentar...</p>
+      <div style={{ minHeight: '100vh', background: '#030305', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+        <style>{`
+          @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          @keyframes pulse-glow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
+        `}</style>
+        <div style={{ position: 'absolute', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(0,229,255,0.1) 0%, transparent 70%)', animation: 'pulse-glow 4s ease-in-out infinite' }} />
+        <div style={{
+          textAlign: 'center', position: 'relative', zIndex: 10,
+          background: 'rgba(20, 20, 30, 0.4)', backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '40px 60px',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.5)'
+        }}>
+          <div style={{ position: 'relative', width: '48px', height: '48px', margin: '0 auto 24px' }}>
+            <svg style={{ position: 'absolute', inset: 0, animation: 'spin-slow 2s linear infinite' }} viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(0,229,255,0.2)" strokeWidth="4" />
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#00E5FF" strokeWidth="4" strokeDasharray="30 100" strokeLinecap="round" />
+            </svg>
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '8px', height: '8px', background: '#00E5FF', borderRadius: '50%', boxShadow: '0 0 12px #00E5FF', animation: 'pulse-glow 1.5s ease-in-out infinite' }} />
+            </div>
+          </div>
+          <p style={{ color: '#fff', fontWeight: 700, fontSize: '15px', letterSpacing: '0.5px' }}>Menghubungkan ke Server</p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '8px' }}>Menyiapkan workspace kamu...</p>
         </div>
       </div>
     )
