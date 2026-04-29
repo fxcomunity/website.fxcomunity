@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { query } from '@/lib/db'
 import { signToken } from '@/lib/auth'
-import { checkRateLimit, checkIPBan, incrementFailedAttempts, resetIPBan } from '@/lib/rate-limit'
+import { checkRateLimit, checkIPBan, incrementFailedAttempts, resetIPBan, resetRateLimit } from '@/lib/rate-limit'
 
 // Validasi email dengan regex untuk mencegah SQL Injection
 const validateEmail = (email: string): boolean => {
