@@ -629,7 +629,7 @@ a { color: inherit; }
 .library-grid {
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   align-items: stretch;
 }
 @media (min-width: 480px)  { .library-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
