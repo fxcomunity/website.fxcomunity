@@ -186,7 +186,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         gap: '8px',
       }}>
         {/* LEFT: Hamburger + Logo + Desktop Nav */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 1, minWidth: 0 }}>
           {/* Hamburger (mobile/tablet) */}
           <button
             className="hide-desktop hdr-btn"
@@ -218,7 +218,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                 boxShadow: '0 4px 18px rgba(0, 229, 255, 0.35)',
               }}
             />
-            <div style={{
+            <div className="hide-mobile-xs" style={{
               fontWeight: 900, fontSize: '15px', letterSpacing: '1px',
               color: '#fff',
               textTransform: 'uppercase',
@@ -257,7 +257,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* RIGHT: Search + Theme + Notifications + Auth */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 1 }}>
 
           {/* 🔍 Search button */}
           <button
@@ -429,14 +429,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
             </div>
           ) : (
             <Link href="/login" style={{ textDecoration: 'none', marginLeft: '4px' }}>
-              <button style={{
-                background: 'transparent',
-                color: 'var(--primary)',
-                border: '1.5px solid rgba(0,229,255,0.4)',
-                padding: '6px 14px', borderRadius: '8px',
-                fontWeight: 800, fontSize: '12px',
-                cursor: 'pointer', letterSpacing: '0.5px',
-              }}>LOGIN</button>
+              <button className="login-btn-hdr">LOGIN</button>
             </Link>
           )}
         </div>
@@ -793,6 +786,23 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           .hide-mobile-tablet { display: none !important; }
         }
         @media (max-width: 768px) { .hide-mobile { display: none !important; } }
+        
+        .login-btn-hdr {
+          background: transparent;
+          color: var(--primary);
+          border: 1.5px solid rgba(0,229,255,0.4);
+          padding: 6px 14px;
+          border-radius: 8px;
+          font-weight: 800;
+          font-size: 12px;
+          cursor: pointer;
+          letter-spacing: 0.5px;
+        }
+        @media (max-width: 420px) {
+          .hide-mobile-xs { display: none !important; }
+          .hdr-btn { min-width: 32px !important; height: 32px !important; padding: 6px !important; }
+          .login-btn-hdr { padding: 4px 10px !important; font-size: 11px !important; }
+        }
       `}</style>
     </div>
   )
