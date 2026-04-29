@@ -426,7 +426,7 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
       </div>
 
       {/* Actions — 3 premium buttons */}
-      <div style={{ display: 'flex', gap: '6px', marginTop: 'auto', paddingTop: '12px' }}>
+      <div style={{ display: 'flex', gap: '6px', marginTop: 'auto', paddingTop: '12px', flexWrap: 'wrap' }}>
         {/* Lihat / View */}
         <button
           onClick={onView}

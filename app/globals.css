@@ -629,13 +629,13 @@ a { color: inherit; }
 .library-grid {
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(1, 1fr);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   align-items: stretch;
 }
-@media (min-width: 480px)  { .library-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
-@media (min-width: 641px) and (max-width: 1024px) { .library-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
-@media (min-width: 1025px) { .library-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
-@media (min-width: 1280px) { .library-grid { grid-template-columns: repeat(5, 1fr); gap: 16px; } }
+@media (min-width: 480px)  { .library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } }
+@media (min-width: 641px) and (max-width: 1024px) { .library-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
+@media (min-width: 1025px) { .library-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } }
+@media (min-width: 1280px) { .library-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; } }
 
 /* PDF Card */
 .pdf-card {

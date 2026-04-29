@@ -179,7 +179,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         borderBottom: '1px solid rgba(0, 229, 255, 0.08)',
-        position: 'sticky', top: 0, zIndex: 200,
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         display: 'flex', alignItems: 'center',
         padding: '0 16px',
         justifyContent: 'space-between',
@@ -444,8 +444,9 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
       {/* ── Search Dropdown Bar ── */}
       <div style={{
-        position: 'sticky',
+        position: 'fixed',
         top: '64px',
+        left: 0, right: 0,
         zIndex: 199,
         overflow: 'hidden',
         maxHeight: searchOpen ? '80px' : '0',
@@ -607,7 +608,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* ── Main Content ── */}
-      <main style={{ paddingBottom: '80px' }}>
+      <main style={{ paddingTop: '64px', paddingBottom: '80px' }}>
         {children}
       </main>
 
