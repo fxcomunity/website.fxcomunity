@@ -20,20 +20,19 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  // Google Search Console Verification
   verification: {
     google: 'bMcrbVkDLHds5_WoAtgFh8qu0pbqZoNqRAm1czvSgrA',
   },
   openGraph: {
     title: 'FXCOMMUNITY - Platform Edukasi Trading Terbaik',
     description: 'Belajar trading dari komunitas trader profesional. Akses materi edukatif, webinar, dan tools trading terlengkap.',
-    url: 'https://fxcommunity.com',
+    url: 'https://fxcomunity.vercel.app',
     siteName: 'FXCOMMUNITY',
     type: 'website',
     locale: 'id_ID',
     images: [
       {
-        url: '/logo.png',
+        url: 'https://fxcomunity.vercel.app/og-image.png', // ✅ URL absolut
         width: 1200,
         height: 630,
         alt: 'FXCOMMUNITY - Platform Edukasi Trading',
@@ -44,10 +43,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'FXCOMMUNITY - Platform Edukasi Trading Terbaik',
     description: 'Belajar trading dari komunitas trader profesional. Akses materi edukatif, webinar, dan tools trading terlengkap.',
-    images: ['/logo.png'],
+    images: ['https://fxcomunity.vercel.app/og-image.png'], // ✅ URL absolut
   },
   alternates: {
-    canonical: 'https://fxcommunity.com',
+    canonical: 'https://fxcomunity.vercel.app',
   },
   icons: {
     icon: '/logo.png',
