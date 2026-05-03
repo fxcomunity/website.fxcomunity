@@ -64,7 +64,7 @@ export async function PUT(req: NextRequest) {
     const exist = await query('SELECT id FROM users WHERE email=$1 LIMIT 1', [reqRow.email])
     if (exist.rows.length) return NextResponse.json({ error: 'Email sudah terpakai saat approval' }, { status: 400 })
     await query(
-      "INSERT INTO users (first_name,email,password,role,status,email_verified) VALUES ($1,$2,$3,'Admin','Aktif',true)",
+      "INSERT INTO users (username, first_name, email, password, role, status, email_verified) VALUES ($1, $1, $2, $3, 'Admin', 'Aktif', true)",
       [reqRow.username, reqRow.email, reqRow.password_hash]
     )
     await query(

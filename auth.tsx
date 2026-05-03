@@ -6,16 +6,14 @@ import PremiumLoader from "@/components/PremiumLoader";
 type AuthMode = "login" | "register";
 
 interface FormState {
-  fname: string;
-  lname: string;
+  username: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
 
 const initialForm: FormState = {
-  fname: "",
-  lname: "",
+  username: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -46,8 +44,11 @@ export default function AuthPage() {
     const errs: Partial<FormState> = {};
     if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) errs.email = "Email tidak valid";
     if (mode === "register") {
-      if (!form.fname.trim()) errs.fname = "Nama depan wajib diisi";
-      if (!form.lname.trim()) errs.lname = "Nama belakang wajib diisi";
+      if (!form.username.trim()) {
+        errs.username = "Username wajib diisi";
+      } else if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.username.trim())) {
+        errs.username = "Username 3-20 karakter, tanpa spasi (hanya huruf, angka, _)";
+      }
       if (form.password.length < 8) errs.password = "Min. 8 karakter";
       if (form.password !== form.confirmPassword) errs.confirmPassword = "Kata sandi tidak cocok";
     } else {
@@ -75,7 +76,7 @@ export default function AuthPage() {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ first_name: form.fname.trim(), last_name: form.lname.trim(), email: form.email, password: form.password })
+          body: JSON.stringify({ username: form.username.trim(), email: form.email, password: form.password })
         })
         const data = await res.json()
         if (!data.success) { setSubmitError(data.error || 'Registrasi gagal'); return }
@@ -582,20 +583,13 @@ export default function AuthPage() {
             {/* ── REGISTER ── */}
             {mode === 'register' && (
               <div onKeyDown={handleKeyDown}>
-                <div className="name-row">
-                  <div className="field">
-                    <label>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                      Nama Depan
-                    </label>
-                    <input type="text" placeholder="Budi" value={form.fname} onChange={(e) => handleChange('fname', e.target.value)} autoComplete="given-name" />
-                    {errors.fname && <div className="field-error">{errors.fname}</div>}
-                  </div>
-                  <div className="field">
-                    <label>Nama Belakang</label>
-                    <input type="text" placeholder="Santoso" value={form.lname} onChange={(e) => handleChange('lname', e.target.value)} autoComplete="family-name" />
-                    {errors.lname && <div className="field-error">{errors.lname}</div>}
-                  </div>
+                <div className="field">
+                  <label>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Username
+                  </label>
+                  <input type="text" placeholder="budi_santoso" value={form.username} onChange={(e) => handleChange('username', e.target.value)} autoComplete="username" />
+                  {errors.username && <div className="field-error">{errors.username}</div>}
                 </div>
                 <div className="field">
                   <label>

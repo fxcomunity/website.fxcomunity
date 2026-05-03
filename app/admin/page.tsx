@@ -381,6 +381,14 @@ const MENU_ITEMS = [
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   },
   {
+    key: 'banned-ips', label: 'IP Terblokir',
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+  },
+  {
+    key: 'access-codes', label: 'Kode Akses',
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3L15.5 7.5z"/></svg>
+  },
+  {
     key: 'crypto', label: 'Crypto Decoder',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
   },
@@ -420,7 +428,10 @@ export default function AdminPage() {
   const [musicModal, setMusicModal] = useState<null | 'add' | 'edit'>(null)
   const [editingMusic, setEditingMusic] = useState(false)
   const [uploadFile, setUploadFile] = useState<File | null>(null)
-
+  const [accessCodes, setAccessCodes] = useState<any[]>([])
+  const [accessForm, setAccessForm] = useState({ target_tool: 'crypto_decoder', duration_hours: '1' })
+  const [generatingCode, setGeneratingCode] = useState(false)
+  const [bannedIps, setBannedIps] = useState<any[]>([])
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -438,14 +449,16 @@ export default function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [pRes, uRes, sRes, reqRes, repRes, mRes, gRes] = await Promise.all([
+    const [pRes, uRes, sRes, reqRes, repRes, mRes, gRes, accRes, banRes] = await Promise.all([
       fetch('/api/pdfs', { next: { revalidate: 0 } }).then(r => r.json()),
       fetch('/api/users', { next: { revalidate: 0 } }).then(r => r.json()),
       fetch('/api/admin/settings', { next: { revalidate: 0 } }).then(r => r.json()),
       fetch('/api/admin/admin-requests', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
       fetch('/api/report', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
       fetch('/api/music', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
-      fetch('/api/music/genres', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] }))
+      fetch('/api/music/genres', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
+      me?.role === 'Owner' ? fetch('/api/admin/access-codes', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })) : Promise.resolve({ success: false, data: [] }),
+      me?.role === 'Owner' ? fetch('/api/admin/banned-ips', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })) : Promise.resolve({ success: false, data: [] })
     ])
     if (pRes.success) setPdfs(pRes.data)
     if (uRes.success) setUsers(uRes.data)
@@ -454,6 +467,8 @@ export default function AdminPage() {
     if (repRes.success) setReports(repRes.data || [])
     if (mRes.success) setMusicList(mRes.data || [])
     if (gRes.success) setGenres(gRes.data || [])
+    if (accRes.success) setAccessCodes(accRes.data || [])
+    if (banRes.success) setBannedIps(banRes.data || [])
     setLoading(false)
   }
 
@@ -484,6 +499,48 @@ export default function AdminPage() {
       showToast('⚠️ Error koneksi saat hapus')
     }
   }
+
+  async function generateAccessCode() {
+    setGeneratingCode(true)
+    try {
+      const res = await fetch('/api/admin/access-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(accessForm)
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast('✅ Kode akses berhasil dibuat!')
+        setAccessCodes([data.data, ...accessCodes])
+      } else {
+        showToast('⚠️ ' + data.error)
+      }
+    } catch {
+      showToast('⚠️ Gagal membuat kode akses')
+    }
+    setGeneratingCode(false)
+  }
+
+  async function unbanIp(ip: string) {
+    if (!confirm(`Cabut blokir untuk IP ${ip}?`)) return
+    try {
+      const res = await fetch('/api/admin/banned-ips', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip })
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast('✅ Blokir IP berhasil dicabut')
+        setBannedIps(prev => prev.filter(b => b.ip_address !== ip))
+      } else {
+        showToast('⚠️ ' + data.error)
+      }
+    } catch {
+      showToast('⚠️ Error koneksi saat cabut blokir IP')
+    }
+  }
+
   async function saveMusic() {
     const isEdit = musicModal === 'edit'
     setEditingMusic(true)
@@ -1572,6 +1629,146 @@ async function sendNotification() {
                   </button>
                 </div>
               </div>
+
+              {/* Security Access Codes (OWNER ONLY) */}
+              {me?.role === 'Owner' && (
+                <div className="admin-card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 0, right: 0, width: '4px', height: '100%', background: '#A855F7' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A855F7', border: '1px solid rgba(168,85,247,0.3)', boxShadow: '0 8px 20px rgba(168,85,247,0.15)' }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          Security Access Pass (Khusus Owner)
+                          <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.2)' }}>PRIVILEGE</span>
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Buat kode akses sementara untuk Admin agar bisa masuk ke tool rahasia.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '24px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase' }}>Pilih Target Tool</label>
+                      <select 
+                        className="input" 
+                        value={accessForm.target_tool} 
+                        onChange={e => setAccessForm({...accessForm, target_tool: e.target.value})}
+                        style={{ height: '40px' }}
+                      >
+                        <option value="crypto_decoder">Crypto Decoder (Enkripsi & JWT)</option>
+                      </select>
+                    </div>
+                    <div style={{ width: '150px' }}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase' }}>Durasi Akses</label>
+                      <select 
+                        className="input" 
+                        value={accessForm.duration_hours} 
+                        onChange={e => setAccessForm({...accessForm, duration_hours: e.target.value})}
+                        style={{ height: '40px' }}
+                      >
+                        <option value="1">1 Jam</option>
+                        <option value="12">12 Jam</option>
+                        <option value="24">24 Jam (1 Hari)</option>
+                      </select>
+                    </div>
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={generateAccessCode}
+                      disabled={generatingCode}
+                      style={{ height: '40px', padding: '0 24px', background: 'linear-gradient(135deg, #A855F7, #C084FC)' }}
+                    >
+                      {generatingCode ? <span className="spin">⏳</span> : '+ Buat Kode'}
+                    </button>
+                  </div>
+
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Riwayat Kode Akses</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {accessCodes.length === 0 ? (
+                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', padding: '12px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>Belum ada kode akses yang dibuat.</div>
+                      ) : (
+                        accessCodes.map(code => {
+                          const isExpired = new Date(code.expires_at) < new Date()
+                          return (
+                            <div key={code.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <div>
+                                <div style={{ fontSize: '14px', fontFamily: '"Fira Code", monospace', fontWeight: 800, color: isExpired ? 'rgba(255,255,255,0.3)' : '#00E5FF', marginBottom: '4px' }}>
+                                  {code.code}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'flex', gap: '12px' }}>
+                                  <span>Tujuan: <strong>{code.target_tool}</strong></span>
+                                  <span>Expired: <strong>{new Date(code.expires_at).toLocaleString('id-ID')}</strong></span>
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                {code.used_by_name && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)' }}>
+                                    Dipakai oleh: {code.used_by_name}
+                                  </span>
+                                )}
+                                {isExpired && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}>
+                                    EXPIRED
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Banned IPs (OWNER ONLY) */}
+              {me?.role === 'Owner' && (
+                <div className="admin-card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 0, right: 0, width: '4px', height: '100%', background: '#EF4444' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                    <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)', boxShadow: '0 8px 20px rgba(239,68,68,0.15)' }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Daftar IP Terblokir
+                        <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}>KEAMANAN</span>
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Daftar IP yang diblokir oleh sistem anti-spam. Owner bisa mencabut blokir di sini.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {bannedIps.length === 0 ? (
+                      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', padding: '16px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.05)' }}>Tidak ada IP yang terblokir saat ini. Bersih!</div>
+                    ) : (
+                      bannedIps.map(ban => (
+                        <div key={ban.ip_address} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <div>
+                            <div style={{ fontSize: '14px', fontFamily: '"Fira Code", monospace', fontWeight: 800, color: '#EF4444', marginBottom: '4px' }}>
+                              {ban.ip_address}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'flex', gap: '12px' }}>
+                              <span>Percobaan Gagal: <strong>{ban.failed_attempts}x</strong></span>
+                              <span>Terblokir Sejak: <strong>{new Date(ban.updated_at).toLocaleString('id-ID')}</strong></span>
+                            </div>
+                          </div>
+                          <button 
+                            className="btn btn-primary"
+                            onClick={() => unbanIp(ban.ip_address)}
+                            style={{ height: '32px', padding: '0 16px', background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}
+                          >
+                            ✓ Approve (Unban)
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Stats */}
               <div className="admin-card" style={{ padding: '24px' }}>

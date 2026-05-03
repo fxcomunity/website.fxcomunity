@@ -26,6 +26,12 @@ export function getToken(req: NextRequest) {
     return req.cookies.get('token')?.value || req.headers.get('authorization')?.replace('Bearer ', '') || null
 }
 
+export async function verifyAuth(req: NextRequest): Promise<JWTPayload | null> {
+    const token = getToken(req)
+    if (!token) return null
+    return verifyToken(token)
+}
+
 export async function getCurrentUser(): Promise<JWTPayload | null> {
     const t = (await cookies()).get('token')?.value
     return t ? verifyToken(t) : null

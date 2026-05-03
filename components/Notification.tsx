@@ -181,18 +181,21 @@ export default function Notification() {
 
       {/* Dropdown */}
       {open && (
-        <div style={{
-          position: 'absolute', top: '48px', right: '0',
-          width: '360px', maxHeight: '520px',
-          background: 'rgba(10,10,22,0.97)',
-          backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(0,229,255,0.12)',
-          borderRadius: '18px',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,255,0.05)',
-          overflow: 'hidden', zIndex: 1000,
-          animation: 'notifSlideDown 0.2s cubic-bezier(0.4,0,0.2,1)',
-          display: 'flex', flexDirection: 'column',
-        }}>
+        <div 
+          className="notif-dropdown"
+          style={{
+            position: 'absolute', top: '48px', right: '0',
+            maxHeight: '520px',
+            background: 'rgba(10,10,22,0.97)',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid rgba(0,229,255,0.12)',
+            borderRadius: '18px',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,255,0.05)',
+            overflow: 'hidden', zIndex: 1000,
+            animation: 'notifSlideDown 0.2s cubic-bezier(0.4,0,0.2,1)',
+            display: 'flex', flexDirection: 'column',
+          }}
+        >
 
           {/* Header */}
           <div style={{
@@ -201,19 +204,20 @@ export default function Notification() {
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             flexShrink: 0,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
               <div style={{
                 width: '30px', height: '30px', borderRadius: '9px',
                 background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00E5FF',
+                flexShrink: 0,
               }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
                 </svg>
               </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '14px', color: '#fff' }}>Notifikasi</div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginTop: '1px' }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: '14px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Notifikasi</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {unread > 0 ? `${unread} belum dibaca` : 'Semua sudah dibaca'}
                 </div>
               </div>
@@ -228,6 +232,7 @@ export default function Notification() {
                   padding: '6px 12px', borderRadius: '8px',
                   fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                   transition: 'all 0.15s ease', whiteSpace: 'nowrap',
+                  marginLeft: '8px'
                 }}
               >
                 {markingAll ? '...' : 'Tandai semua'}
@@ -362,6 +367,15 @@ export default function Notification() {
       )}
 
       <style jsx>{`
+        .notif-dropdown {
+          width: 360px;
+        }
+        @media (max-width: 480px) {
+          .notif-dropdown {
+            width: calc(100vw - 32px);
+            right: -10px !important;
+          }
+        }
         @keyframes notifSlideDown {
           from { opacity: 0; transform: translateY(-8px) scale(0.98); }
           to   { opacity: 1; transform: translateY(0) scale(1); }

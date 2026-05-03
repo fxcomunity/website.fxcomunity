@@ -2,16 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { query } from '@/lib/db'
 import { sendOTP } from '@/lib/mail'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { checkRateLimit, checkIPBan } from '@/lib/rate-limit'
 
 // Validasi email dengan regex untuk mencegah SQL Injection
 const validateEmail = (email: string): boolean => {
+  if (!email) return false
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
 
 // Validasi username
 const validateUsername = (username: string): boolean => {
+  if (!username) return false
   // Username hanya boleh huruf, angka, underscore, dan 3-20 karakter
   const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
   return usernameRegex.test(username)
@@ -56,11 +58,39 @@ export async function POST(req: NextRequest) {
     }
 
     // ========== VALIDASI INPUT ==========
-    const { username, email, password } = await req.json()
+    let body;
+    try {
+      body = await req.json()
+    } catch (e) {
+      console.error('[REGISTER] Gagal parse JSON body:', e)
+      return NextResponse.json({ error: 'Format JSON tidak valid' }, { status: 400 })
+    }
+
+    console.log(`[REGISTER] Request body from ${ip}:`, JSON.stringify(body))
+    
+    const { username, email, password, website } = body
+    
+    // Honeypot check — website field should be empty
+    if (website) {
+      console.log(`[HONEYPOT] Bot detected from IP: ${ip}`)
+      return NextResponse.json({ error: 'Permintaan tidak valid' }, { status: 400 })
+    }
     
     // Validasi semua field ada
     if (!username || !email || !password) {
+      console.log(`[REGISTER] Missing fields: username=${!!username}, email=${!!email}, password=${!!password}`)
       return NextResponse.json({ error: 'Semua field wajib diisi' }, { status: 400 })
+    }
+
+    // ========== CEK IP BAN (Owner Approval logic) ==========
+    const ipBanStatus = await checkIPBan(ip)
+    let initialStatus = 'Aktif'
+    let messageSuffix = ' Silakan cek email kamu untuk OTP verifikasi.'
+
+    if (ipBanStatus) {
+      console.log(`[REGISTER] IP ${ip} is banned. Marking user as Banned for Owner approval.`)
+      initialStatus = 'Banned'
+      messageSuffix = ' Pendaftaran kamu sedang menunggu persetujuan Owner karena IP kamu terdeteksi dalam daftar blokir.'
     }
     
     if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
@@ -107,11 +137,12 @@ export async function POST(req: NextRequest) {
     const hashed = await bcrypt.hash(password, 12)
     
     const r = await query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, role',
-      [sanitizedUsername, normalizedEmail, hashed]
+      'INSERT INTO users (username, email, password, status) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, status',
+      [sanitizedUsername, normalizedEmail, hashed, initialStatus]
     )
     
-    // Generate dan kirim OTP untuk verifikasi email
+    // Generate dan kirim OTP untuk verifikasi email (Hanya jika tidak banned?)
+    // Biarkan tetap kirim OTP, tapi status tetap Banned sampai di-approve owner
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const exp = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 jam
     
@@ -124,14 +155,11 @@ export async function POST(req: NextRequest) {
       console.log(`[REGISTER] OTP dikirim ke ${normalizedEmail}`)
     } catch (otpError) {
       console.error(`[REGISTER] Gagal kirim OTP ke ${normalizedEmail}:`, otpError)
-      // Jangan stop proses registrasi jika OTP gagal
     }
-    
-    // Reset rate limit setelah register berhasil (opsional)
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Registrasi berhasil! Silakan cek email kamu untuk OTP verifikasi.',
+      message: `Registrasi berhasil!${messageSuffix}`,
       data: r.rows[0] 
     }, { status: 201 })
     

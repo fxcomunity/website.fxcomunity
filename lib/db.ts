@@ -18,7 +18,7 @@ const pool = new Pool({
   },
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  connectionTimeoutMillis: 30000,
 })
 
 pool.on('error', (err) => {
@@ -31,6 +31,27 @@ export async function query(text: string, params?: any[]) {
   } catch (err: any) {
     console.error('Database query error:', err.message)
     throw err
+  }
+}
+
+export async function logActivity(
+  userId: number | null,
+  action: string,
+  targetType?: string,
+  targetId?: string | number,
+  details?: string,
+  req?: Request
+) {
+  try {
+    const ip = req ? (req.headers.get('x-forwarded-for') || '127.0.0.1') : null
+    const ua = req ? req.headers.get('user-agent') : null
+    
+    await query(`
+      INSERT INTO activity_logs (user_id, action, target_type, target_id, details, ip_address, user_agent)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [userId, action, targetType, targetId?.toString(), details, ip, ua])
+  } catch (err) {
+    console.error('Failed to log activity:', err)
   }
 }
 
@@ -58,14 +79,35 @@ async function doInitDB() {
   await query(`CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
     email VARCHAR(100) UNIQUE NOT NULL,
     phone_number VARCHAR(20),
     password TEXT NOT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'User' CHECK (role IN ('Owner','Admin','User')),
-    status VARCHAR(20) NOT NULL DEFAULT 'Aktif' CHECK (status IN ('Aktif','Tidak Aktif')),
+    status VARCHAR(20) NOT NULL DEFAULT 'Aktif' CHECK (status IN ('Aktif','Tidak Aktif','Banned')),
     email_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW()
   )`)
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(50)`)
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(50)`)
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50)`)
+  
+  // Update status constraint to include 'Banned'
+  await query(`
+    DO $$ 
+    BEGIN 
+      ALTER TABLE users DROP CONSTRAINT IF EXISTS users_status_check;
+      ALTER TABLE users ADD CONSTRAINT users_status_check CHECK (status IN ('Aktif','Tidak Aktif','Banned'));
+    EXCEPTION 
+      WHEN others THEN NULL; 
+    END $$;
+  `)
+  // Ensure username is unique and not null if we just added it
+  // This might be tricky if there's already data, but let's try to make it at least exist.
+  // We can't easily add UNIQUE NOT NULL to existing column without data handling,
+  // but for now let's just make sure the column exists to stop the 500 errors.
+
   await query(`CREATE TABLE IF NOT EXISTS login_logs (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
@@ -177,6 +219,75 @@ async function doInitDB() {
   `)
   await query(`CREATE INDEX IF NOT EXISTS idx_banner_active_schedule ON event_banners (is_active, start_date, end_date, priority DESC)`)
   await query(`CREATE INDEX IF NOT EXISTS idx_banner_media_type ON event_banners (media_type)`)
+
+  // Create table for admin access codes (Temporary Access)
+  await query(`CREATE TABLE IF NOT EXISTS admin_access_codes (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    target_tool VARCHAR(50) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_by INTEGER REFERENCES users(id),
+    used_by INTEGER REFERENCES users(id),
+    is_used BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`)
+
+  await query(`CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`)
+
+  // Create table for activity logs (Security Auditing)
+  await query(`CREATE TABLE IF NOT EXISTS activity_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL,
+    target_type VARCHAR(50),
+    target_id VARCHAR(50),
+    details TEXT,
+    ip_address VARCHAR(50),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`)
+
+  // Music Tables
+  await query(`CREATE TABLE IF NOT EXISTS genres (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL
+  )`)
+
+  await query(`CREATE TABLE IF NOT EXISTS songs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    title VARCHAR(255) NOT NULL,
+    artist VARCHAR(255),
+    album VARCHAR(255),
+    file_url TEXT NOT NULL,
+    cover_url TEXT,
+    duration_sec INTEGER DEFAULT 0,
+    file_size BIGINT DEFAULT 0,
+    mime_type VARCHAR(100),
+    play_count INTEGER DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'active',
+    media_data BYTEA,
+    media_mimetype VARCHAR(100),
+    media_filename VARCHAR(255),
+    media_size BIGINT,
+    uploaded_at TIMESTAMP DEFAULT NOW()
+  )`)
+
+  await query(`CREATE TABLE IF NOT EXISTS song_genres (
+    song_id INTEGER REFERENCES songs(id) ON DELETE CASCADE,
+    genre_id INTEGER REFERENCES genres(id) ON DELETE CASCADE,
+    PRIMARY KEY (song_id, genre_id)
+  )`)
+
   await query(`
     CREATE OR REPLACE FUNCTION fn_set_banner_updated_at()
     RETURNS TRIGGER AS $$

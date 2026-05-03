@@ -1,12 +1,20 @@
-# 📚 FX Comunity — WebsiteBaru (Full Stack)
+# 📚 FX Community — WebsiteBaru (Full Stack)
 
-Clone lengkap dari WebsiteBaru dengan sistem auth database penuh.
+Clone lengkap dari WebsiteBaru dengan sistem auth database penuh dan fitur keamanan tingkat tinggi.
+
+## Fitur Baru (Update Keamanan)
+- **Sistem Role & Jabatan**: Owner dapat mengubah jabatan user (Admin/User) dan memberikan notifikasi otomatis.
+- **Admin Access Code**: Fitur "Decoder Kripto" kini memerlukan kode akses yang di-generate langsung oleh Owner dengan waktu kedaluwarsa.
+- **IP Ban & Approval**: Sistem otomatis memblokir IP yang mencurigakan saat registrasi. Owner dapat menyetujui (Approve) pendaftaran dari IP yang terblokir.
+- **UI Auth Modern**: Desain baru untuk halaman Verifikasi Email, Lupa Password, dan Reset Password.
+- **Email Template Premium**: Desain email OTP yang lebih profesional dan informatif.
 
 ## Tech Stack
 - Next.js 14 App Router + TypeScript
 - PostgreSQL (Neon/Supabase)
 - bcryptjs + JWT cookies
 - Nodemailer (Gmail OTP)
+- Tailwind CSS (UI Auth Components)
 
 ## Setup
 
@@ -31,53 +39,25 @@ NEXT_PUBLIC_BASE_URL=https://domain-kamu.vercel.app
 GET /api/init
 ```
 Ini akan:
-- Buat semua tabel (users, pdfs, otp_resets, dll)
-- Seed 38 PDF data
+- Buat semua tabel (users, pdfs, otp_resets, activity_logs, admin_access_codes, dll)
+- Seed data awal
 - Buat akun owner default: owner@fxcomunity.com / owner123
 
-## Contoh .env.local (lokal)
+## Halaman Utama
+- `/login` - Login & Portal Auth
+- `/register` - Daftar akun baru
+- `/verify-email` - Verifikasi OTP pendaftaran
+- `/forgot-password` - Minta OTP reset password
+- `/reset-password` - Ganti password baru dengan OTP
+- `/library` - Perpustakaan PDF (butuh login)
+- `/admin` - Dashboard Admin & Owner (Security Overview)
+- `/crypto` - Decoder Kripto (Eksklusif Owner/Admin dengan Kode)
 
-Salin ` .env.example ` ke `.env.local` lalu sesuaikan nilai-nilainya. Contoh minimal:
-
-```bash
-cp .env.example .env.local
-# lalu edit .env.local dan isi DATABASE_URL
-```
-
-Contoh isi (singkat):
-
-```env
-DATABASE_URL=postgresql://user:password@db-host:5432/dbname
-DATABASE_SSL=true
-JWT_SECRET=isi_rahasia_panjang
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-```
-
-## Cara inisialisasi database secara lokal
-
-1. Jalankan dev server:
-
-```bash
-npm install
-npm run dev
-```
-
-2. Buka di browser atau gunakan `curl` untuk panggil endpoint init:
-
-```bash
-# di terminal
-curl -i http://localhost:3000/api/init
-```
-
-Jika semua berhasil, tabel akan dibuat dan data PDF ter-seed.
-
-## Halaman
-- `/login` - Login
-- `/register` - Daftar akun
-- `/forgot-password` - Minta OTP
-- `/reset-password` - Reset password dengan OTP
-- `/library` - Halaman utama (butuh login)
-- `/admin` - Admin panel (Owner/Admin only)
+## Fitur Owner (Eksklusif)
+1. **Generate Kode Akses**: Buat kode untuk Admin agar bisa menggunakan tools tertentu.
+2. **Manajemen Role**: Turunkan/naikkan jabatan user dengan satu klik.
+3. **Persetujuan IP Banned**: Izinkan user dari IP terblokir untuk aktif kembali.
+4. **Log Aktivitas**: Pantau semua tindakan sensitif di platform.
 
 ## Deploy ke Vercel
 1. Push ke GitHub

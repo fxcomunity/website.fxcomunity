@@ -82,7 +82,14 @@ export async function POST(req: NextRequest) {
     }
 
     // ========== VALIDASI INPUT (Proteksi SQL Injection) ==========
-    const { email, password } = await req.json()
+    const body = await req.json()
+    const { email, password, website } = body
+    
+    // Honeypot check
+    if (website) {
+      console.log(`[HONEYPOT] Bot detected login from IP: ${ip}`)
+      return NextResponse.json({ error: 'Permintaan tidak valid' }, { status: 400 })
+    }
     
     // Validasi email format
     if (!email || typeof email !== 'string') {

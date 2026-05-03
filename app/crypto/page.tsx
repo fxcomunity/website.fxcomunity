@@ -8,6 +8,11 @@ interface User { role: string }
 export default function CryptoDecryptPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const [isVerified, setIsVerified] = useState(false)
+  const [accessCode, setAccessCode] = useState('')
+  const [verifying, setVerifying] = useState(false)
+  const [verifyError, setVerifyError] = useState('')
+  
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [method, setMethod] = useState('base64')
@@ -19,14 +24,40 @@ export default function CryptoDecryptPage() {
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
-      if (d?.data && d.data.role === 'Owner') {
+      if (d?.data && (d.data.role === 'Owner' || d.data.role === 'Admin')) {
         setUser(d.data)
-        loadDbData()
+        if (d.data.role === 'Owner') {
+          setIsVerified(true)
+          loadDbData()
+        }
       } else {
         router.push('/dashboard')
       }
     }).catch(() => router.push('/login'))
   }, [router])
+
+  const handleVerifyCode = async () => {
+    if (!accessCode) return
+    setVerifying(true)
+    setVerifyError('')
+    try {
+      const res = await fetch('/api/admin/verify-access-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: accessCode, targetTool: 'Decoder Kripto' })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setIsVerified(true)
+        loadDbData()
+      } else {
+        setVerifyError(data.error || 'Kode salah atau kedaluwarsa')
+      }
+    } catch {
+      setVerifyError('Terjadi kesalahan koneksi')
+    }
+    setVerifying(false)
+  }
 
   const loadDbData = async () => {
     try {
@@ -84,10 +115,36 @@ export default function CryptoDecryptPage() {
     setLoading(false)
   }
 
-  if (!user) {
+  if (!isVerified) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="loader"></div>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div className="admin-card" style={{ maxWidth: '400px', width: '100%', padding: '32px', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
+          <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '8px', color: '#fff' }}>Akses Terbatas</h2>
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '24px' }}>
+            Alat ini memerlukan kode akses dari <strong>Owner</strong> untuk digunakan oleh Admin.
+          </p>
+          <input 
+            className="input" 
+            type="text" 
+            placeholder="Masukkan Kode Akses..." 
+            value={accessCode}
+            onChange={e => setAccessCode(e.target.value)}
+            style={{ textAlign: 'center', fontSize: '18px', letterSpacing: '2px', fontWeight: 700, marginBottom: '16px' }}
+          />
+          {verifyError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px' }}>{verifyError}</p>}
+          <button 
+            className="btn btn-primary" 
+            onClick={handleVerifyCode}
+            disabled={verifying || !accessCode}
+            style={{ width: '100%', height: '50px' }}
+          >
+            {verifying ? 'Memverifikasi...' : 'Buka Akses'}
+          </button>
+          <Link href="/admin" style={{ display: 'block', marginTop: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.3)' }}>
+            Kembali ke Panel Admin
+          </Link>
+        </div>
       </div>
     )
   }

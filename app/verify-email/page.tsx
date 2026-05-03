@@ -1,133 +1,155 @@
 'use client'
-import { Suspense, useState } from 'react'
+
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import {
+  PageShell, BrandLogo, Card, CardHeader,
+  FieldLabel, PrimaryButton, BackToLogin,
+} from '../auth-ui-components/components'
+import { OTPInput, useOTPTimer } from '../auth-ui-components/OTPInput'
+import { OTP_DIGITS, ROUTES } from '../auth-ui-components/constants'
 
 function VerifyEmailInner() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const emailFromParams = searchParams.get('email') || ''
-  
-  const [form, setForm] = useState({ email: emailFromParams, otp: '' })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const router       = useRouter()
+  const params       = useSearchParams()
+  const email        = params.get('email') ?? ''
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!form.email || !form.otp) { setError('Email dan OTP wajib diisi'); return }
-    if (form.otp.length !== 6) { setError('OTP harus 6 digit'); return }
-    
-    setLoading(true); setError('')
+  const [otp, setOtp]         = useState<string[]>(Array(OTP_DIGITS).fill(''))
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
+  const [resent, setResent]   = useState(false)
+  const { display, expired, reset } = useOTPTimer()
+
+  const maskedEmail = email.replace(/(.{2}).+(@.+)/, '$1*****$2')
+  const otpValue    = otp.join('')
+  const complete    = otpValue.length === OTP_DIGITS && otp.every(Boolean)
+
+  async function handleVerify() {
+    if (!complete) { setError('Lengkapi 6 digit kode OTP terlebih dahulu.'); return }
+    setError(''); setLoading(true)
     try {
       const res = await fetch('/api/auth/verify-email', {
-        method: 'POST', 
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, otp: form.otp })
+        body:    JSON.stringify({ email, otp: otpValue }),
       })
       const data = await res.json()
-      if (data.success) { 
-        setSuccess(data.message)
-        setTimeout(() => router.push('/login'), 2000) 
-      } else setError(data.error || 'Verifikasi gagal')
-    } catch { setError('Koneksi gagal') }
-    finally { setLoading(false) }
+      if (!res.ok) { setError(data.error || data.message || 'Kode OTP tidak valid.'); return }
+      router.push(ROUTES.dashboard)
+    } catch {
+      setError('Terjadi kesalahan. Coba lagi.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  async function requestNewOTP() {
-    if (!form.email) { setError('Masukkan email terlebih dahulu'); return }
-    setLoading(true); setError('')
+  async function handleResend() {
+    if (!expired) return
+    setResent(false)
     try {
-      const res = await fetch('/api/auth/request-otp', {
-        method: 'POST', 
+      await fetch('/api/auth/resend-otp', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, type: 'email_verification' })
+        body:    JSON.stringify({ email, type: 'email_verification' }),
       })
-      const data = await res.json()
-      if (data.success) setSuccess('✅ Kode OTP baru telah dikirim ke email kamu')
-      else setError(data.error || 'Gagal request OTP')
-    } catch { setError('Koneksi gagal') }
-    finally { setLoading(false) }
+      reset()
+      setOtp(Array(OTP_DIGITS).fill(''))
+      setError('')
+      setResent(true)
+    } catch {
+      setError('Gagal mengirim ulang kode.')
+    }
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(199,32,230,0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-100px', left: '-100px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(31,71,136,0.25) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <PageShell>
+      <BrandLogo />
 
-      <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 1 }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '52px', marginBottom: '12px' }}>✉️</div>
-          <h1 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '6px' }}><span className="grad-text">Verifikasi Email</span></h1>
-          <p style={{ color: 'var(--text2)', fontSize: '14px' }}>Kami sudah mengirim kode OTP ke email kamu</p>
-        </div>
+      <Card>
+        <CardHeader
+          icon="✉️"
+          title="Verifikasi Email"
+          subtitle={`Kami sudah mengirim kode OTP ke ${maskedEmail}`}
+        />
 
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border2)', borderRadius: '20px', padding: '32px', boxShadow: 'var(--shadow2)' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '24px' }}>Masukkan Kode OTP</h2>
-
-          {error && <div style={{ background: 'rgba(220,50,50,0.1)', border: '1px solid rgba(220,50,50,0.3)', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px', color: '#ff8080', fontSize: '14px' }}>⚠️ {error}</div>}
-          {success && <div style={{ background: 'rgba(40,200,100,0.1)', border: '1px solid rgba(40,200,100,0.3)', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px', color: '#60d090', fontSize: '14px' }}>{success}</div>}
-
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'var(--text2)', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>EMAIL</label>
-              <input 
-                className="input" 
-                type="email" 
-                placeholder="email@example.com"
-                value={form.email} 
-                onChange={e => setForm(p => ({ ...p, email: e.target.value }))} 
-                required 
-              />
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'var(--text2)', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>KODE OTP (6 DIGIT)</label>
-              <input 
-                className="input" 
-                type="text" 
-                placeholder="000000"
-                maxLength={6}
-                value={form.otp} 
-                onChange={e => setForm(p => ({ ...p, otp: e.target.value.replace(/\D/g, '') }))} 
-                required 
-                style={{ fontSize: '20px', letterSpacing: '8px', textAlign: 'center', fontWeight: 600 }}
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', marginTop: '8px' }}>
-              {loading ? <><span className="spin">⚙️</span> Verifikasi...</> : '✅ Verifikasi Email'}
-            </button>
-          </form>
-
-          <div style={{ textAlign: 'center', marginTop: '24px' }}>
-            <p style={{ color: 'var(--text2)', fontSize: '14px', marginBottom: '12px' }}>Tidak menerima kode?</p>
-            <button 
-              onClick={requestNewOTP}
-              disabled={loading}
-              style={{ 
-                background: 'transparent', 
-                border: '1px solid var(--secondary)', 
-                color: 'var(--secondary)', 
-                padding: '10px 16px', 
-                borderRadius: '8px', 
-                cursor: 'pointer', 
-                fontSize: '14px', 
-                fontWeight: 600 
+        <div className="px-8 py-7 flex flex-col gap-5">
+          {/* Email (read-only) */}
+          <div>
+            <FieldLabel>Email</FieldLabel>
+            <div
+              className="w-full px-4 py-3 rounded-xl text-sm"
+              style={{
+                background: '#13132a',
+                border:     '1px solid rgba(0,229,255,0.08)',
+                color:      '#5a5a8a',
+                fontFamily: "'Sora', sans-serif",
               }}
+            >
+              {email}
+            </div>
+          </div>
+
+          {/* OTP */}
+          <div>
+            <FieldLabel>Kode OTP (6 Digit)</FieldLabel>
+            <OTPInput value={otp} onChange={v => { setOtp(v); setError('') }} hasError={Boolean(error)} />
+          </div>
+
+          {/* Error */}
+          {error && (
+            <p className="text-xs text-center" style={{ color: '#e04040' }}>
+              ✕ {error}
+            </p>
+          )}
+
+          {/* Timer + resend inline */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs" style={{ color: '#5a5a8a', fontFamily: "'JetBrains Mono', monospace" }}>
+              <span
+                className="w-1.5 h-1.5 rounded-full inline-block"
+                style={{
+                  background: expired ? '#5a5a8a' : '#e04040',
+                  animation:  expired ? 'none' : 'pulse 1s ease infinite',
+                }}
+              />
+              {expired ? 'Kedaluwarsa' : `${display} tersisa`}
+            </div>
+            <button
+              onClick={handleResend}
+              disabled={!expired}
+              className="text-xs font-semibold transition-colors"
+              style={{ color: expired ? '#00e5ff' : '#5a5a8a', cursor: expired ? 'pointer' : 'not-allowed', background: 'none', border: 'none' }}
+            >
+              {resent ? '✓ Terkirim!' : 'Kirim ulang'}
+            </button>
+          </div>
+
+          <PrimaryButton onClick={handleVerify} loading={loading} disabled={!complete}>
+            ✅ Verifikasi Email
+          </PrimaryButton>
+
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} />
+
+          <div className="text-center">
+            <p className="text-xs mb-2" style={{ color: '#5a5a8a' }}>Tidak menerima kode?</p>
+            <button
+              onClick={handleResend}
+              disabled={!expired}
+              className="text-xs font-semibold underline underline-offset-4 transition-colors"
+              style={{ color: expired ? '#00e5ff' : '#5a5a8a', cursor: expired ? 'pointer' : 'not-allowed', background: 'none', border: 'none', fontFamily: "'Sora', sans-serif" }}
             >
               Minta Kode Baru
             </button>
           </div>
-
-          <div style={{ textAlign: 'center', marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
-            <p style={{ color: 'var(--text2)', fontSize: '14px' }}>
-              <Link href="/login" style={{ color: 'var(--secondary)', fontWeight: 700, textDecoration: 'none' }}>Kembali ke Login →</Link>
-            </p>
-          </div>
         </div>
-      </div>
-    </div>
+      </Card>
+
+      <BackToLogin />
+
+      {/* pulse keyframe */}
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}`}</style>
+    </PageShell>
   )
 }
 

@@ -70,6 +70,25 @@ function addSecurityHeaders(res: NextResponse): NextResponse {
   res.headers.set('X-XSS-Protection', '1; mode=block')
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  
+  // Strict-Transport-Security (HSTS)
+  res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+  
+  // Content-Security-Policy (CSP) - Basic strict policy
+  // Allowing self, some CDNs for images/styles if needed
+  res.headers.set('Content-Security-Policy', 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " + // unsafe-inline/eval often needed for Next.js dev/some libs
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: blob: https:; " +
+    "font-src 'self' data:; " +
+    "connect-src 'self' https:; " +
+    "media-src 'self' https: blob:; " +
+    "object-src 'none'; " +
+    "base-uri 'self'; " +
+    "form-action 'self';"
+  )
+  
   return res
 }
 

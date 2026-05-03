@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const token = getToken(req)
   const user = token ? await verifyToken(token) : null
   if (!user || !['Owner', 'Admin'].includes(user.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const r = await query('SELECT id,first_name,last_name,email,role,status,created_at FROM users ORDER BY created_at DESC')
+  const r = await query('SELECT id,username,first_name,last_name,email,role,status,created_at FROM users ORDER BY created_at DESC')
   return NextResponse.json({ success: true, data: r.rows })
 }
 
@@ -17,8 +17,20 @@ export async function PUT(req: NextRequest) {
   if (!user || !['Owner', 'Admin'].includes(user.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id, status, role } = await req.json()
   if (role && user.role !== 'Owner') return NextResponse.json({ error: 'Hanya Owner yang bisa ubah role' }, { status: 403 })
+  
+  if (role) {
+    const oldUser = await query('SELECT role FROM users WHERE id=$1', [id])
+    if (oldUser.rows.length > 0 && oldUser.rows[0].role !== role) {
+      if (role === 'Admin') {
+        await query('INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)', [id, 'Promosi Jabatan', 'Selamat! Jabatan Anda telah dinaikkan menjadi Admin oleh Owner.', 'success'])
+      } else if (role === 'User') {
+        await query('INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)', [id, 'Perubahan Jabatan', 'Jabatan Anda telah diubah menjadi User biasa.', 'info'])
+      }
+    }
+  }
+
   const r = await query(
-    'UPDATE users SET status=COALESCE($1,status), role=COALESCE($2,role) WHERE id=$3 RETURNING id,first_name,last_name,email,role,status',
+    'UPDATE users SET status=COALESCE($1,status), role=COALESCE($2,role) WHERE id=$3 RETURNING id,username,email,role,status',
     [status, role, id]
   )
   return NextResponse.json({ success: true, data: r.rows[0] })
@@ -40,7 +52,7 @@ export async function POST(req: NextRequest) {
   if (user.role === 'Owner') {
     const hashed = await bcrypt.hash(String(password), 12)
     const created = await query(
-      "INSERT INTO users (first_name,email,password,role,status,email_verified) VALUES ($1,$2,$3,'Admin','Aktif',true) RETURNING id,first_name,email,role,status,created_at",
+      "INSERT INTO users (username,email,password,role,status,email_verified) VALUES ($1,$2,$3,'Admin','Aktif',true) RETURNING id,username,email,role,status,created_at",
       [username, email, hashed]
     )
     return NextResponse.json({ success: true, mode: 'direct', data: created.rows[0] }, { status: 201 })
