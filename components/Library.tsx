@@ -1,8 +1,11 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import BannerSlider from '@/components/BannerSlider'
-import { BookOpen, Heart, GraduationCap, TrendingUp, BarChart2, Target, HeartOff, Download, Link as LinkIcon, MessageCircle, Loader2, Search, Share2 } from 'lucide-react'
+import { BookOpen, Heart, GraduationCap, TrendingUp, BarChart2, Target, HeartOff, Download, Link as LinkIcon, MessageCircle, Loader2, Search, Share2, X, Check } from 'lucide-react'
+
+const QRCode = dynamic(() => import('qrcode.react'), { ssr: false })
 
 interface PDF {
   id: number; name: string; url: string; category: string
@@ -51,6 +54,10 @@ export default function Library() {
   const [sharePdf, setSharePdf] = useState<PDF | null>(null)
   const [showQR, setShowQR] = useState(false)
   const [folderId, setFolderId] = useState<string | null>(null)
+  const [showContact, setShowContact] = useState(false)
+  const [expandedPDF, setExpandedPDF] = useState(false)
+  const [contactStep, setContactStep] = useState<'rules' | 'options'>('rules')
+  const [rulesAccepted, setRulesAccepted] = useState(false)
   const qrRef = useRef<HTMLDivElement>(null)
   const { toast, show: showToast } = useToast()
   const searchParams = useSearchParams()
@@ -65,6 +72,15 @@ export default function Library() {
       if (d?.data) setUser(d.data)
     }).catch(() => { })
     loadPDFs()
+    
+    // Listen for contact modal trigger from Footer
+    const handleContactClick = () => {
+      setContactStep('rules')
+      setShowContact(true)
+      setRulesAccepted(false)
+    }
+    window.addEventListener('openContactModal', handleContactClick)
+    return () => window.removeEventListener('openContactModal', handleContactClick)
   }, [])
 
   // Sync when header search updates the URL
@@ -179,6 +195,29 @@ export default function Library() {
       }}>
         <div style={{ margin: '0 auto', maxWidth: '1200px' }}>
           <BannerSlider variant="hero" />
+          <div style={{ textAlign: 'center', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => { setContactStep('rules'); setShowContact(true); setRulesAccepted(false) }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '10px 18px',
+                borderRadius: '9px',
+                border: '1px solid rgba(0,229,255,0.3)',
+                background: 'rgba(0,229,255,0.1)',
+                color: 'var(--primary)',
+                fontWeight: 700,
+                fontSize: '13px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,255,0.2)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,255,0.1)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
+            >
+              <span>💬</span>Hubungi Kami
+            </button>
+          </div>
         </div>
         {search && (
           <div style={{ maxWidth: '1200px', margin: '12px auto 0', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -243,18 +282,53 @@ export default function Library() {
             <p style={{ color: 'var(--text3)', fontSize: '14px' }}>Coba kata kunci atau kategori lain</p>
           </div>
         ) : (
-          <div className="library-grid">
-            {pdfs.map(pdf => (
-              <PDFCard
-                key={pdf.id}
-                pdf={pdf}
-                onView={() => setViewPdf(pdf)}
-                onDownload={() => handleDownload(pdf)}
-                onShare={() => setSharePdf(pdf)}
-                onFav={() => toggleFav(pdf)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="library-grid">
+              {(expandedPDF ? pdfs : pdfs.slice(0, 8)).map(pdf => (
+                <PDFCard
+                  key={pdf.id}
+                  pdf={pdf}
+                  onView={() => setViewPdf(pdf)}
+                  onDownload={() => handleDownload(pdf)}
+                  onShare={() => setSharePdf(pdf)}
+                  onFav={() => toggleFav(pdf)}
+                />
+              ))}
+            </div>
+            {pdfs.length > 8 && (
+              <div style={{ textAlign: 'center', marginTop: '32px', marginBottom: '32px' }}>
+                <button 
+                  onClick={() => setExpandedPDF(!expandedPDF)}
+                  style={{
+                    padding: '14px 32px',
+                    borderRadius: '50px',
+                    border: '1px solid rgba(0,229,255,0.3)',
+                    background: 'rgba(0,229,255,0.1)',
+                    color: 'var(--primary)',
+                    fontWeight: 800,
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,255,0.2)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(0,229,255,0.25)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,255,0.1)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
+                >
+                  {expandedPDF ? (
+                    <>
+                      <span>↑ Tampilkan Lebih Sedikit</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>↓ Lihat Selengkapnya ({pdfs.length - 8} lebih)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -318,7 +392,7 @@ export default function Library() {
       {/* Share Modal */}
       {sharePdf && (
         <div className="modal-overlay" onClick={() => { setSharePdf(null); setShowQR(false) }}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ padding: '28px' }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ padding: '28px', maxWidth: '520px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
               <div>
                 <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}><Share2 size={20} /> Bagikan PDF</h3>
@@ -326,10 +400,186 @@ export default function Library() {
               </div>
               <button className="btn btn-ghost btn-icon" onClick={() => { setSharePdf(null); setShowQR(false) }}>✕</button>
             </div>
+            
+            {/* Meta Description */}
+            <div style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '12px', padding: '12px', marginBottom: '20px', fontSize: '13px', color: 'var(--text2)', lineHeight: '1.5' }}>
+              <span style={{ fontWeight: 700, color: 'var(--primary)' }}>📌 Meta Description:</span><br />
+              Belajar {sharePdf.category.replace('fx-', '').toUpperCase()} bersama FX Community. Akses "{sharePdf.name}" dan tingkatkan skill trading kamu sekarang!
+            </div>
+
+            {/* QR Code Section */}
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <button 
+                onClick={() => setShowQR(!showQR)}
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: '9px',
+                  border: '1px solid rgba(0,229,255,0.3)',
+                  background: 'rgba(0,229,255,0.08)',
+                  color: 'var(--primary)',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  marginBottom: showQR ? '16px' : '0'
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,255,0.15)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,255,0.08)' }}
+              >
+                {showQR ? '🔽 Sembunyikan QR Code' : '🔼 Tampilkan QR Code'}
+              </button>
+              {showQR && (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', marginTop: '12px' }}>
+                  <QRCode value={getShareUrl(sharePdf)} size={200} level="H" includeMargin={true} 
+                    bgColor="#0D1120" fgColor="#00E5FF" />
+                </div>
+              )}
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <button className="btn btn-secondary" style={{ padding: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => { copyLink(sharePdf); setSharePdf(null) }}><LinkIcon size={16} /> Copy Link</button>
               <button className="btn btn-secondary" style={{ padding: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => shareWA(sharePdf)}><MessageCircle size={16} /> WhatsApp</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Us Modal */}
+      {showContact && (
+        <div className="modal-overlay" onClick={() => { setShowContact(false); setContactStep('rules'); setRulesAccepted(false) }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ padding: '28px', maxWidth: '520px', maxHeight: '80vh', overflowY: 'auto' }}>
+            {contactStep === 'rules' ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: 0 }}>📋 Peraturan Grup</h3>
+                  <button className="btn btn-ghost btn-icon" onClick={() => { setShowContact(false); setContactStep('rules'); setRulesAccepted(false) }}>✕</button>
+                </div>
+                
+                <div style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '12px', padding: '20px', marginBottom: '20px', fontSize: '13px', lineHeight: '1.8', color: 'var(--text2)' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--primary)', marginBottom: '12px', marginTop: 0 }}>FX COMMUNITY 📈</h4>
+                  <p style={{ marginTop: 0 }}>Tempat sharing trader Forex dari berbagai level, dari pemula sampai pro.</p>
+                  <p>Saling belajar, sharing setup, dan jaga vibe positif.</p>
+                  
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginTop: '16px', marginBottom: '8px', color: '#fff' }}>Peraturan Grup:</h4>
+                  <ol style={{ marginTop: 0, paddingLeft: '20px' }}>
+                    <li>Dilarang promosi akun, sinyal, atau grup lain tanpa izin admin.</li>
+                    <li>Jaga sopan santun & hindari debat gak penting.</li>
+                    <li>Share analisa, edukasi, atau info market yang bermanfaat.</li>
+                    <li>Hoax, spam, dan SARA = kick tanpa peringatan.</li>
+                    <li>Boleh tanya apa pun soal trading, tapi usahakan jelas & sopan.</li>
+                    <li>Gunakan bahasa yang mudah dipahami, jangan singkatan berlebihan.</li>
+                    <li>Admin berhak menegur atau mengeluarkan anggota jika melanggar.</li>
+                    <li>User tidak diperbolehkan memakai BOT Chat lagi di Grub, kami tidak menerima alasan apapun.</li>
+                    <li>User tidak diperbolehkan ngirim stiker berbasis vulgar, apabila ketahuan sama admin, admin wajib langsung kick tanpa basa-basi.</li>
+                  </ol>
+                </div>
+
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '20px', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={rulesAccepted} onChange={(e) => setRulesAccepted(e.target.checked)} 
+                    style={{ marginTop: '3px', width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--primary)' }} />
+                  <span style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: '1.5' }}>
+                    Saya telah membaca dan setuju dengan semua peraturan grup FX Community
+                  </span>
+                </label>
+
+                <button 
+                  onClick={() => rulesAccepted && setContactStep('options')}
+                  disabled={!rulesAccepted}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '9px',
+                    border: 'none',
+                    background: rulesAccepted ? 'linear-gradient(135deg, #00B8D4, #00E5FF)' : 'rgba(255,255,255,0.1)',
+                    color: rulesAccepted ? '#001020' : 'var(--text3)',
+                    fontWeight: 800,
+                    fontSize: '14px',
+                    cursor: rulesAccepted ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => rulesAccepted && ((e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)')}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = 'translateY(0)')}
+                >
+                  Lanjutkan
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: 0 }}>💬 Hubungi Kami</h3>
+                  <button className="btn btn-ghost btn-icon" onClick={() => { setShowContact(false); setContactStep('rules'); setRulesAccepted(false) }}>✕</button>
+                </div>
+
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {/* WhatsApp Personal */}
+                  <a href="https://wa.me/62895404147521" target="_blank" rel="noreferrer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, rgba(16,181,0,0.2), rgba(34,197,94,0.15))',
+                      border: '1px solid rgba(34,197,94,0.3)',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(16,181,0,0.3), rgba(34,197,94,0.25))'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(16,181,0,0.2), rgba(34,197,94,0.15))'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ fontSize: '24px', marginRight: '12px' }}>📱</div>
+                    <div>
+                      <div style={{ fontWeight: 800, color: '#86EFAC', fontSize: '14px' }}>WhatsApp Personal</div>
+                      <div style={{ fontSize: '12px', color: 'rgba(168,225,172,0.8)', marginTop: '2px' }}>Hubungi langsung via WhatsApp</div>
+                    </div>
+                  </a>
+
+                  {/* Join Group */}
+                  <a href="https://chat.whatsapp.com/KnkESJgEUKT5PEki4SpDD0" target="_blank" rel="noreferrer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(96,165,250,0.15))',
+                      border: '1px solid rgba(96,165,250,0.3)',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(96,165,250,0.25))'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(96,165,250,0.15))'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ fontSize: '24px', marginRight: '12px' }}>👥</div>
+                    <div>
+                      <div style={{ fontWeight: 800, color: '#93C5FD', fontSize: '14px' }}>Masuk Ke Grup</div>
+                      <div style={{ fontSize: '12px', color: 'rgba(147,197,253,0.8)', marginTop: '2px' }}>Bergabung dengan komunitas FX</div>
+                    </div>
+                  </a>
+                </div>
+
+                <button 
+                  onClick={() => { setContactStep('rules'); setRulesAccepted(false) }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '9px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)',
+                    color: 'var(--text2)',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    marginTop: '16px',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)' }}
+                >
+                  ← Kembali
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

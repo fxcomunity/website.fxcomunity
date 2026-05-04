@@ -67,7 +67,15 @@ export default function Footer() {
             <h4 className="footer-col-title">Legal &amp; Bantuan</h4>
             <ul className="footer-links">
               <li><Link href="/report" className="footer-link">Kirim Laporan</Link></li>
-              <li><a href="https://wa.me/62895404147521" target="_blank" rel="noreferrer" className="footer-link">Hubungi Kami</a></li>
+              <li>
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('openContactModal'))}
+                  className="footer-link"
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit', color: 'inherit' }}
+                >
+                  Hubungi Kami
+                </button>
+              </li>
             </ul>
             {/* Risk Badge */}
             <div className="footer-risk-badge">
