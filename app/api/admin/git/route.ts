@@ -17,6 +17,7 @@ const ALLOWED_COMMANDS: Record<string, string> = {
   reset_hard:  'git reset --hard HEAD',
   stash:       'git stash',
   stash_pop:   'git stash pop',
+  clone:       'git remote get-url origin',  // tampilkan URL repo untuk di-clone
 }
 
 export async function POST(req: NextRequest) {

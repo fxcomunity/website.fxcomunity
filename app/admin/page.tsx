@@ -2494,7 +2494,7 @@ export default function AdminPage() {
 
       {/* DEPLOY WEBSITE */}
       {activeMenu === 'deploy' && (
-        <div style={{ padding: '28px 20px 40px', maxWidth: 920, margin: '0 auto' }}>
+        <div style={{ padding: '28px 32px 40px' }}>
 
           {/* Header */}
           <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
@@ -2526,26 +2526,27 @@ export default function AdminPage() {
           ) : (
             <div style={{ display: 'grid', gap: 14 }}>
 
-              {/* Quick Actions 4-col */}
+              {/* Quick Actions 3x3 grid */}
               <div style={{ background: 'linear-gradient(145deg,#0d1526,#080e1c)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 18, padding: '18px 20px' }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: '#334155', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 14, margin: '0 0 14px' }}>Quick Actions</p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#334155', letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 14px' }}>Quick Actions</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                   {[
-                    { key: 'status', label: 'Status',   sub: 'Cek status',    color: '#3b82f6' },
-                    { key: 'pull',   label: 'Pull',     sub: 'Ambil update',  color: '#10b981' },
-                    { key: 'add',    label: 'Add -A',   sub: 'Stage semua',   color: '#f59e0b' },
-                    { key: 'push',   label: 'Push',     sub: 'Upload repo',   color: '#8b5cf6' },
-                    { key: 'log',    label: 'Log',      sub: '10 commit',     color: '#06b6d4' },
-                    { key: 'diff',   label: 'Diff',     sub: 'Lihat diff',    color: '#ec4899' },
-                    { key: 'stash',  label: 'Stash',    sub: 'Simpan temp',   color: '#f97316' },
-                    { key: 'stash_pop', label: 'Pop',   sub: 'Keluarkan',     color: '#84cc16' },
+                    { key: 'status',    label: 'Status',    sub: 'Cek status',    color: '#3b82f6' },
+                    { key: 'pull',      label: 'Pull',      sub: 'Ambil update',  color: '#10b981' },
+                    { key: 'add',       label: 'Add -A',    sub: 'Stage semua',   color: '#f59e0b' },
+                    { key: 'push',      label: 'Push',      sub: 'Upload repo',   color: '#8b5cf6' },
+                    { key: 'log',       label: 'Log',       sub: '10 commit',     color: '#06b6d4' },
+                    { key: 'diff',      label: 'Diff',      sub: 'Lihat diff',    color: '#ec4899' },
+                    { key: 'stash',     label: 'Stash',     sub: 'Simpan temp',   color: '#f97316' },
+                    { key: 'stash_pop', label: 'Stash Pop', sub: 'Keluarkan',     color: '#84cc16' },
+                    { key: 'clone',     label: 'Clone',     sub: 'Clone repo',    color: '#a78bfa' },
                   ].map(btn => (
                     <button key={btn.key} onClick={() => runGit(btn.key)} disabled={gitLoading}
-                      style={{ padding: '13px 6px', borderRadius: 12, border: `1px solid ${btn.color}20`, background: `${btn.color}0a`, color: btn.color, cursor: gitLoading ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, opacity: gitLoading ? 0.45 : 1, fontFamily: 'inherit' }}
+                      style={{ padding: '14px 6px', borderRadius: 12, border: `1px solid ${btn.color}20`, background: `${btn.color}0a`, color: btn.color, cursor: gitLoading ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, opacity: gitLoading ? 0.45 : 1, fontFamily: 'inherit' }}
                       onMouseEnter={e => { if (!gitLoading) { (e.currentTarget as HTMLElement).style.background = `${btn.color}18`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = `0 6px 20px ${btn.color}20` } }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${btn.color}0a`; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
                     >
-                      <span style={{ fontSize: 11, fontWeight: 800, fontFamily: '"JetBrains Mono", monospace', opacity: 0.5 }}>git</span>
+                      <span style={{ fontSize: 10, fontWeight: 800, fontFamily: '"JetBrains Mono", monospace', opacity: 0.4 }}>git</span>
                       <span style={{ fontSize: 12, fontWeight: 700 }}>{btn.label}</span>
                       <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 500 }}>{btn.sub}</span>
                     </button>
