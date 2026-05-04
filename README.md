@@ -1,32 +1,48 @@
-# 📚 FX Community — WebsiteBaru (Full Stack)
+# FX Community — Platform Edukasi Trading
 
-Clone lengkap dari WebsiteBaru dengan sistem auth database penuh dan fitur keamanan tingkat tinggi.
+Platform edukasi trading berbasis web dengan sistem auth lengkap, library PDF, musik, dan komunitas.
 
-## Fitur Baru (Update Keamanan)
-- **Sistem Role & Jabatan**: Owner dapat mengubah jabatan user (Admin/User) dan memberikan notifikasi otomatis.
-- **Admin Access Code**: Fitur "Decoder Kripto" kini memerlukan kode akses yang di-generate langsung oleh Owner dengan waktu kedaluwarsa.
-- **IP Ban & Approval**: Sistem otomatis memblokir IP yang mencurigakan saat registrasi. Owner dapat menyetujui (Approve) pendaftaran dari IP yang terblokir.
-- **UI Auth Modern**: Desain baru untuk halaman Verifikasi Email, Lupa Password, dan Reset Password.
-- **Email Template Premium**: Desain email OTP yang lebih profesional dan informatif.
+## Fitur Terbaru
+
+### UI & UX
+- **Optimistic Like (Live Technique)**: Klik favorit → UI langsung update, lalu sync ke storage secara non-blocking
+- **QR Code Share**: Modal share PDF kini menampilkan QR Code yang bisa di-scan langsung
+- **Mobile Layout**: Grid PDF card 3-tombol aksi yang sinkron di semua ukuran layar
+- **Navigasi Bersih**: Menu tanpa item redundan (Favorites & Hubungi Kami dipindah ke modal)
+
+### Keamanan & Admin
+- **Role-Based Access**: Owner dapat mengubah jabatan user (Admin/User) + notifikasi otomatis
+- **Admin Access Code**: Fitur "Decoder Kripto" memerlukan kode akses dari Owner (dengan waktu kedaluwarsa)
+- **IP Ban & Approval**: Blokir IP mencurigakan saat registrasi; Owner dapat approve unban
+- **Log Aktivitas**: Pantau semua tindakan sensitif di platform
+
+### Auth & Email
+- **OTP Verifikasi Email** + Reset Password
+- **Email Template Premium**: Desain glassmorphic profesional
+- **JWT Cookie Auth**: Secure HttpOnly cookie
 
 ## Tech Stack
-- Next.js 14 App Router + TypeScript
-- PostgreSQL (Neon/Supabase)
-- bcryptjs + JWT cookies
-- Nodemailer (Gmail OTP)
-- Tailwind CSS (UI Auth Components)
 
-## Setup
+| Layer | Teknologi |
+|---|---|
+| Framework | Next.js 15 (App Router) + TypeScript |
+| Database | PostgreSQL (Neon Serverless) |
+| Auth | bcryptjs + JWT (jose) |
+| Email | Nodemailer (Gmail OTP) |
+| UI | Vanilla CSS + Lucide Icons + qrcode.react |
+
+## Setup Lokal
 
 ```bash
 npm install
 cp .env.example .env.local
-# Isi semua ENV variables
+# Edit .env.local dengan credentials kamu
 npm run dev
 ```
 
 ## ENV Variables
-```
+
+```env
 DATABASE_URL=postgresql://...
 JWT_SECRET=secret-panjang-min-32-karakter
 GMAIL_USER=email@gmail.com
@@ -34,32 +50,33 @@ GMAIL_PASS=app-password-gmail
 NEXT_PUBLIC_BASE_URL=https://domain-kamu.vercel.app
 ```
 
-## Init Database (jalankan 1x setelah deploy)
+## Init Database (1x setelah deploy)
+
 ```
 GET /api/init
 ```
-Ini akan:
-- Buat semua tabel (users, pdfs, otp_resets, activity_logs, admin_access_codes, dll)
-- Seed data awal
-- Buat akun owner default: owner@fxcomunity.com / owner123
 
-## Halaman Utama
-- `/login` - Login & Portal Auth
-- `/register` - Daftar akun baru
-- `/verify-email` - Verifikasi OTP pendaftaran
-- `/forgot-password` - Minta OTP reset password
-- `/reset-password` - Ganti password baru dengan OTP
-- `/library` - Perpustakaan PDF (butuh login)
-- `/admin` - Dashboard Admin & Owner (Security Overview)
-- `/crypto` - Decoder Kripto (Eksklusif Owner/Admin dengan Kode)
+Membuat semua tabel + seed owner default: `owner@fxcomunity.com` / `owner123`
 
-## Fitur Owner (Eksklusif)
-1. **Generate Kode Akses**: Buat kode untuk Admin agar bisa menggunakan tools tertentu.
-2. **Manajemen Role**: Turunkan/naikkan jabatan user dengan satu klik.
-3. **Persetujuan IP Banned**: Izinkan user dari IP terblokir untuk aktif kembali.
-4. **Log Aktivitas**: Pantau semua tindakan sensitif di platform.
+## Halaman
+
+| Path | Deskripsi |
+|---|---|
+| `/login` | Login & Portal Auth |
+| `/register` | Daftar akun baru |
+| `/verify-email` | Verifikasi OTP |
+| `/forgot-password` | Reset password via OTP |
+| `/library` | Perpustakaan PDF (butuh login) |
+| `/music` | Player musik komunitas |
+| `/popular` | PDF paling populer |
+| `/dashboard` | Dashboard user |
+| `/profile` | Edit profil |
+| `/report` | Kirim laporan/bug |
+| `/admin` | Panel Admin & Owner |
+| `/crypto` | Decoder Kripto (eksklusif) |
 
 ## Deploy ke Vercel
+
 1. Push ke GitHub
 2. Import repo di Vercel
 3. Set semua ENV variables

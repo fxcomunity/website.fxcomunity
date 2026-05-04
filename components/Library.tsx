@@ -1,11 +1,9 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import dynamic from 'next/dynamic'
 import BannerSlider from '@/components/BannerSlider'
-import { BookOpen, Heart, GraduationCap, TrendingUp, BarChart2, Target, HeartOff, Download, Link as LinkIcon, MessageCircle, Loader2, Search, Share2, X, Check } from 'lucide-react'
-
-const QRCode = dynamic(() => import('qrcode.react'), { ssr: false })
+import { BookOpen, Heart, GraduationCap, TrendingUp, BarChart2, Target, Loader2, Search, Share2, Link as LinkIcon, MessageCircle } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 
 interface PDF {
   id: number; name: string; url: string; category: string
@@ -57,7 +55,6 @@ export default function Library() {
   const [expandedPDF, setExpandedPDF] = useState(false)
   const [contactStep, setContactStep] = useState<'rules' | 'options'>('rules')
   const [rulesAccepted, setRulesAccepted] = useState(false)
-  const qrRef = useRef<HTMLDivElement>(null)
   const { toast, show: showToast } = useToast()
   const searchParams = useSearchParams()
 
@@ -130,24 +127,21 @@ export default function Library() {
 
   useEffect(() => { const t = setTimeout(() => filterPDFs(allPdfs), 100); return () => clearTimeout(t) }, [search, activeCat, user, allPdfs])
 
-  useEffect(() => {
-    if (showQR && sharePdf && qrRef.current && typeof window !== 'undefined') {
-      qrRef.current.innerHTML = ''
-      const fId = sharePdf.category.replace('fx-', '')
-      const url = `${window.location.origin}/library?folder=${fId}`
-      if ((window as any).QRCode) {
-        new (window as any).QRCode(qrRef.current, { text: url, width: 200, height: 200, colorDark: '#00E5FF', colorLight: '#0D1120' })
-      }
-    }
-  }, [showQR, sharePdf])
-
   function toggleFav(pdf: PDF) {
     if (!user) { showToast('Silakan login untuk simpan favorit', 'error'); return }
-    const favIds: number[] = JSON.parse(localStorage.getItem('fav_pdfs') || '[]')
-    const newFavIds = pdf.is_fav ? favIds.filter(id => id !== pdf.id) : [...favIds, pdf.id]
-    localStorage.setItem('fav_pdfs', JSON.stringify(newFavIds))
-    setPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, is_fav: !p.is_fav } : p))
-    showToast(pdf.is_fav ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit')
+    // ── OPTIMISTIC UPDATE: UI langsung berubah sebelum sync ──
+    const willBeFav = !pdf.is_fav
+    setPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, is_fav: willBeFav } : p))
+    setAllPdfs(prev => prev.map(p => p.id === pdf.id ? { ...p, is_fav: willBeFav } : p))
+    showToast(willBeFav ? '❤️ Ditambahkan ke favorit' : 'Dihapus dari favorit')
+    // ── Sync ke localStorage setelah render (non-blocking) ──
+    setTimeout(() => {
+      const favIds: number[] = JSON.parse(localStorage.getItem('fav_pdfs') || '[]')
+      const newFavIds = willBeFav
+        ? [...new Set([...favIds, pdf.id])]
+        : favIds.filter(id => id !== pdf.id)
+      localStorage.setItem('fav_pdfs', JSON.stringify(newFavIds))
+    }, 0)
   }
 
   async function handleDownload(pdf: PDF) {
@@ -419,7 +413,7 @@ export default function Library() {
               </button>
               {showQR && (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', marginTop: '12px' }}>
-                  <QRCode value={getShareUrl(sharePdf)} size={200} level="H" includeMargin={true} 
+                  <QRCodeSVG value={getShareUrl(sharePdf)} size={200} level="H" includeMargin={true}
                     bgColor="#0D1120" fgColor="#00E5FF" />
                 </div>
               )}
@@ -624,7 +618,9 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
           cursor: 'pointer', fontSize: '15px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.2s ease',
         }}
-      >{pdf.is_fav ? <Heart size={16} fill="currentColor" color="currentColor" /> : <Heart size={16} />}</button>
+      >{pdf.is_fav
+        ? <Heart size={15} fill="#FF3050" color="#FF3050" style={{ filter: 'drop-shadow(0 0 4px rgba(255,48,80,0.6))' }} />
+        : <Heart size={15} />}</button>
 
       {/* Thumbnail */}
       <div
@@ -679,7 +675,7 @@ function PDFCard({ pdf, onView, onDownload, onShare, onFav }: {
       </div>
 
       {/* Actions — 3 premium buttons */}
-      <div style={{ display: 'flex', gap: '6px', marginTop: 'auto', paddingTop: '12px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '5px', marginTop: 'auto', paddingTop: '12px' }}>
         {/* Lihat / View */}
         <button
           onClick={onView}
