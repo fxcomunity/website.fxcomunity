@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -16,43 +16,43 @@ interface StatCardProps {
 
 const IconPDF = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-    <polyline points="14 2 14 8 20 8"/>
-    <line x1="16" y1="13" x2="8" y2="13"/>
-    <line x1="16" y1="17" x2="8" y2="17"/>
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
   </svg>
 )
 const IconCheck = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="20 6 9 17 4 12"/>
+    <polyline points="20 6 9 17 4 12" />
   </svg>
 )
 const IconUser = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="8" r="4"/>
-    <path d="M20 21a8 8 0 10-16 0"/>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M20 21a8 8 0 10-16 0" />
   </svg>
 )
 const IconDownload = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-    <polyline points="7 10 12 15 17 10"/>
-    <line x1="12" y1="15" x2="12" y2="3"/>
+    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
   </svg>
 )
 const IconEye = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-    <circle cx="12" cy="12" r="3"/>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
   </svg>
 )
 
 const colorMap = {
-  blue:   { accent: "#3b82f6", light: "#60a5fa", bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.18)",  glow: "rgba(59,130,246,0.2)"  },
-  green:  { accent: "#10b981", light: "#34d399", bg: "rgba(16,185,129,0.1)",  border: "rgba(16,185,129,0.18)",  glow: "rgba(16,185,129,0.2)"  },
+  blue: { accent: "#3b82f6", light: "#60a5fa", bg: "rgba(59,130,246,0.1)", border: "rgba(59,130,246,0.18)", glow: "rgba(59,130,246,0.2)" },
+  green: { accent: "#10b981", light: "#34d399", bg: "rgba(16,185,129,0.1)", border: "rgba(16,185,129,0.18)", glow: "rgba(16,185,129,0.2)" },
   purple: { accent: "#8b5cf6", light: "#a78bfa", bg: "rgba(139,92,246,0.1)", border: "rgba(139,92,246,0.18)", glow: "rgba(139,92,246,0.2)" },
-  orange: { accent: "#f97316", light: "#fb923c", bg: "rgba(249,115,22,0.1)",  border: "rgba(249,115,22,0.18)",  glow: "rgba(249,115,22,0.2)"  },
-  teal:   { accent: "#06b6d4", light: "#22d3ee", bg: "rgba(6,182,212,0.1)",   border: "rgba(6,182,212,0.18)",   glow: "rgba(6,182,212,0.2)"   },
+  orange: { accent: "#f97316", light: "#fb923c", bg: "rgba(249,115,22,0.1)", border: "rgba(249,115,22,0.18)", glow: "rgba(249,115,22,0.2)" },
+  teal: { accent: "#06b6d4", light: "#22d3ee", bg: "rgba(6,182,212,0.1)", border: "rgba(6,182,212,0.18)", glow: "rgba(6,182,212,0.2)" },
 }
 
 function StatCard({ label, value, color, icon }: StatCardProps) {
@@ -75,13 +75,13 @@ function StatCard({ label, value, color, icon }: StatCardProps) {
         position: "absolute", top: 0, left: 0, right: 0, height: 2,
         background: `linear-gradient(90deg, ${c.accent}, ${c.light})`,
         borderRadius: "16px 16px 0 0",
-      }}/>
+      }} />
       <div style={{
         position: "absolute", bottom: -20, right: -10,
         width: 90, height: 90, borderRadius: "50%",
         background: c.accent, filter: "blur(30px)", opacity: 0.12,
         pointerEvents: "none",
-      }}/>
+      }} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
         <div>
           <p style={{
@@ -113,7 +113,7 @@ function StatCard({ label, value, color, icon }: StatCardProps) {
           background: c.light,
           boxShadow: `0 0 6px ${c.light}`,
           display: "inline-block",
-        }}/>
+        }} />
         Live
       </div>
     </div>
@@ -172,7 +172,7 @@ function DonutChart({ id, data, labels, colors, total, totalLabel }: DonutProps)
 
   return (
     <div style={{ position: "relative", width: 160, height: 160, flexShrink: 0 }}>
-      <canvas ref={ref} id={id} aria-label={`Donut chart for ${totalLabel}`}/>
+      <canvas ref={ref} id={id} aria-label={`Donut chart for ${totalLabel}`} />
       <div style={{
         position: "absolute", inset: 0,
         display: "flex", flexDirection: "column",
@@ -273,13 +273,13 @@ function DashboardLineChart({ monthlyData }: { monthlyData: any[] }) {
     return () => chart.destroy()
   }, [monthlyData])
 
-  return <canvas ref={ref} aria-label="Grafik pertumbuhan PDF dan User per bulan"/>
+  return <canvas ref={ref} aria-label="Grafik pertumbuhan PDF dan User per bulan" />
 }
 
 function LegendRow({ color, name, count, pct }: { color: string; name: string; count: number; pct: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ width: 10, height: 10, borderRadius: 3, background: color, flexShrink: 0 }}/>
+      <div style={{ width: 10, height: 10, borderRadius: 3, background: color, flexShrink: 0 }} />
       <span style={{ fontSize: 12, color: "#64748b", flex: 1 }}>{name}</span>
       <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 500, color: "#94a3b8" }}>
         {count}
@@ -300,7 +300,7 @@ function Panel({ title, dotColor, children }: { title: string; dotColor: string;
       height: "100%",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
-        <div style={{ width: 8, height: 8, borderRadius: "50%", background: dotColor, boxShadow: `0 0 8px ${dotColor}` }}/>
+        <div style={{ width: 8, height: 8, borderRadius: "50%", background: dotColor, boxShadow: `0 0 8px ${dotColor}` }} />
         <span style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", letterSpacing: 0.2 }}>{title}</span>
       </div>
       {children}
@@ -354,43 +354,43 @@ const IcoCircle = ({ cx, cy, r }: { cx: number; cy: number; r: number }) => (
 const MENU_ITEMS = [
   {
     key: 'dashboard', label: 'Dashboard',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
   },
   {
     key: 'pdfs', label: 'Kelola PDF',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="13" x2="15" y2="13" /><line x1="9" y1="17" x2="15" y2="17" /></svg>
   },
   {
     key: 'users', label: 'Kelola User',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
   },
   {
     key: 'music', label: 'Kelola Musik',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
   },
   {
     key: 'music-sql', label: 'Music SQL Runner',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7v10M9 7v10M14 7v10M19 7v10M5 12h14"/><path d="M12 19l-2 2-2-2M12 5l-2-2-2 2"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7v10M9 7v10M14 7v10M19 7v10M5 12h14" /><path d="M12 19l-2 2-2-2M12 5l-2-2-2 2" /></svg>
   },
   {
     key: 'notifications', label: 'Notifikasi',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
   },
   {
     key: 'reports', label: 'Laporan User',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
   },
   {
     key: 'access-codes', label: 'Kode Akses & Decoder',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3L15.5 7.5z"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3L15.5 7.5z" /></svg>
   },
   {
     key: 'settings', label: 'Pengaturan',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
   },
   {
     key: 'deploy', label: 'Deploy Website',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
   },
 ]
 
@@ -442,7 +442,7 @@ export default function AdminPage() {
   const [gitLoading, setGitLoading] = useState(false)
   const [gitOutput, setGitOutput] = useState('')
   const [gitCommitMsg, setGitCommitMsg] = useState('')
-  const [gitHistory, setGitHistory] = useState<{cmd: string; output: string; time: string; ok: boolean}[]>([])
+  const [gitHistory, setGitHistory] = useState<{ cmd: string; output: string; time: string; ok: boolean }[]>([])
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -605,7 +605,7 @@ export default function AdminPage() {
         const formData = new FormData()
         formData.append('audioFile', uploadFile)
         musicForm.genre_ids.forEach(id => formData.append('genre_ids[]', String(id)))
-        
+
         res = await fetch('/api/music', {
           method: 'POST',
           body: formData,
@@ -798,7 +798,7 @@ export default function AdminPage() {
       showToast('⚠️ Admin tidak memiliki akses untuk mengubah status user')
       return
     }
-    
+
     const newStatus = u.status === 'Aktif' ? 'Tidak Aktif' : 'Aktif'
     await fetch('/api/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, status: newStatus }) })
     loadAll(); showToast(`User ${newStatus === 'Aktif' ? '✅ diaktifkan' : '🚫 dinonaktifkan'}`)
@@ -810,19 +810,19 @@ export default function AdminPage() {
       showToast('⚠️ Hanya Owner yang bisa mengubah role user')
       return
     }
-    
+
     // Validasi: Owner tidak bisa diturunkan
     if (u.role === 'Owner') {
       showToast('⚠️ Owner tidak bisa diturunkan jabatannya')
       return
     }
-    
+
     // Validasi: tidak mengubah ke role yang sama
     if (u.role === newRole) {
       showToast('ℹ️ Role sudah sama dengan sebelumnya')
       return
     }
-    
+
     try {
       const res = await fetch('/api/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, role: newRole }) })
       const data = await res.json()
@@ -898,7 +898,7 @@ export default function AdminPage() {
     }
   }
 
-async function sendNotification() {
+  async function sendNotification() {
     if (!notifForm.title || !notifForm.message) {
       showToast('⚠️ Judul dan pesan wajib diisi')
       return
@@ -912,7 +912,7 @@ async function sendNotification() {
         type: notifForm.type,
         user_id: notifForm.user_id === 'all' ? null : parseInt(notifForm.user_id as string)
       }
-      
+
       const res = await fetch('/api/admin/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -991,9 +991,9 @@ async function sendNotification() {
       )}
 
       {/* Sidebar */}
-      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''} ${mobileOpen ? 'mobile-open' : ''}`} style={{ 
-        width: sidebarOpen ? '256px' : '72px', 
-        display: 'flex', 
+      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''} ${mobileOpen ? 'mobile-open' : ''}`} style={{
+        width: sidebarOpen ? '256px' : '72px',
+        display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.28s ease',
         position: 'fixed',
@@ -1004,7 +1004,7 @@ async function sendNotification() {
         {/* Logo */}
         <div className="admin-sidebar-logo" style={{ display: 'flex', alignItems: 'center', gap: '12px', minHeight: '64px' }}>
           <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 14px rgba(0,229,255,0.25)', color: '#000' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
           </div>
           {sidebarOpen && (
             <div style={{ overflow: 'hidden' }}>
@@ -1056,15 +1056,15 @@ async function sendNotification() {
             >
               <span className="admin-nav-icon" style={{ background: maintenance ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)' }}>
                 {maintenance
-                  ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}
+                  ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                  : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>}
               </span>
               {sidebarOpen && <span style={{ fontSize: '13px' }}>Maintenance {maintenance ? 'ON' : 'OFF'}</span>}
             </button>
             <Link href="/admin/banners-manage" style={{ textDecoration: 'none' }}>
               <div className="admin-nav-item" style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '11px 14px' : '11px 0' }}>
                 <span className="admin-nav-icon">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
                 </span>
                 {sidebarOpen && <span style={{ fontSize: '13px' }}>Banner Manager</span>}
               </div>
@@ -1077,7 +1077,7 @@ async function sendNotification() {
           <Link href="/library" style={{ textDecoration: 'none' }}>
             <div className="admin-nav-item" style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '10px 14px' : '10px 0' }}>
               <span className="admin-nav-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
               </span>
               {sidebarOpen && <span style={{ fontSize: '13px' }}>Ke Library</span>}
             </div>
@@ -1089,8 +1089,8 @@ async function sendNotification() {
           >
             <span className="admin-nav-icon">
               {sidebarOpen
-                ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-                : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>}
+                ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+                : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>}
             </span>
             {sidebarOpen && <span style={{ fontSize: '13px' }}>Collapse</span>}
           </button>
@@ -1099,8 +1099,8 @@ async function sendNotification() {
 
 
       {/* Main Content */}
-      <main style={{ 
-        flex: 1, 
+      <main style={{
+        flex: 1,
         marginLeft: sidebarOpen ? '256px' : '72px',
         transition: 'margin-left 0.28s ease',
         minHeight: '100vh',
@@ -1170,12 +1170,12 @@ async function sendNotification() {
                     />
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 13, minWidth: '150px' }}>
                       {categoryData.map((d, i) => (
-                        <LegendRow 
-                          key={d.name} 
-                          color={["#a855f7", "#3b82f6", "#10b981", "#f97316", "#ef4444", "#eab308", "#06b6d4"][i % 7]} 
-                          name={d.name} 
-                          count={d.value} 
-                          pct={stats.totalPdf ? Math.round((d.value / stats.totalPdf) * 100) + "%" : "0%"} 
+                        <LegendRow
+                          key={d.name}
+                          color={["#a855f7", "#3b82f6", "#10b981", "#f97316", "#ef4444", "#eab308", "#06b6d4"][i % 7]}
+                          name={d.name}
+                          count={d.value}
+                          pct={stats.totalPdf ? Math.round((d.value / stats.totalPdf) * 100) + "%" : "0%"}
                         />
                       ))}
                     </div>
@@ -1195,12 +1195,12 @@ async function sendNotification() {
                     />
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 13, minWidth: '150px' }}>
                       {userRoleData.map((d, i) => (
-                        <LegendRow 
-                          key={d.name} 
-                          color={["#3b82f6", "#f97316", "#10b981", "#8b5cf6"][i % 4]} 
-                          name={d.name} 
-                          count={d.value} 
-                          pct={stats.totalUser ? Math.round((d.value / stats.totalUser) * 100) + "%" : "0%"} 
+                        <LegendRow
+                          key={d.name}
+                          color={["#3b82f6", "#f97316", "#10b981", "#8b5cf6"][i % 4]}
+                          name={d.name}
+                          count={d.value}
+                          pct={stats.totalUser ? Math.round((d.value / stats.totalUser) * 100) + "%" : "0%"}
                         />
                       ))}
                       <div style={{
@@ -1222,14 +1222,14 @@ async function sendNotification() {
                 {/* Legend */}
                 <div style={{ display: "flex", gap: 20, marginBottom: 16, marginTop: -6 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: "#64748b" }}>
-                    <div style={{ width: 20, height: 3, borderRadius: 2, background: "#60a5fa" }}/>
+                    <div style={{ width: 20, height: 3, borderRadius: 2, background: "#60a5fa" }} />
                     PDF
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: "#64748b" }}>
                     <div style={{
                       width: 20, height: 3,
                       background: "repeating-linear-gradient(90deg, #ec4899 0,#ec4899 5px,transparent 5px,transparent 9px)",
-                    }}/>
+                    }} />
                     Users
                   </div>
                 </div>
@@ -1287,7 +1287,7 @@ async function sendNotification() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '14px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Username</label>
@@ -1302,7 +1302,7 @@ async function sendNotification() {
                     <input className="input" type="password" placeholder="Minimal 6 karakter" value={adminForm.password} onChange={e => setAdminForm(f => ({ ...f, password: e.target.value }))} style={{ background: 'rgba(0,0,0,0.2)' }} />
                   </div>
                 </div>
-                
+
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
                   <button className="btn btn-primary" onClick={createAdminCandidate} disabled={creatingAdmin} style={{ padding: '10px 24px', borderRadius: '10px' }}>
                     {creatingAdmin ? <><span className="spin" style={{ display: 'inline-block', marginRight: '8px' }}>⚙️</span> Memproses...</> : me?.role === 'Owner' ? '➕ Tambah Admin' : '📨 Ajukan ke Owner'}
@@ -1361,7 +1361,7 @@ async function sendNotification() {
                   </span>
                   <div className="admin-search-wrap" style={{ width: '240px' }}>
                     <span className="admin-search-icon">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                     </span>
                     <input type="text" placeholder="Cari nama atau email..." className="admin-search" style={{ height: '38px', borderRadius: '10px', fontSize: '12px' }}
                       value={search} onChange={e => setSearch(e.target.value)} />
@@ -1376,13 +1376,13 @@ async function sendNotification() {
                       <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'linear-gradient(135deg, #00B8D4, #00E5FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '16px', boxShadow: '0 4px 12px rgba(0,229,255,0.2)', color: '#000' }}>
                         {(u.username || u.first_name || u.email || '?')[0].toUpperCase()}
                       </div>
-                      
+
                       {/* Info */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <span style={{ fontWeight: 700, fontSize: '14px', color: '#fff' }}>{u.username || u.first_name || 'Tanpa Nama'}</span>
                         <p className="user-email" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', display: 'none', margin: 0 }}>{u.email}</p>
                       </div>
-                      
+
                       {/* Email (Desktop) */}
                       <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {u.email}
@@ -1424,9 +1424,9 @@ async function sendNotification() {
                       <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                         {me?.role === 'Owner' ? (
                           <>
-                            <button 
+                            <button
                               onClick={() => toggleUserStatus(u)}
-                              className="admin-btn-icon" 
+                              className="admin-btn-icon"
                               title={u.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}
                               style={{ color: u.status === 'Aktif' ? '#ff8080' : '#60d090' }}
                             >
@@ -1434,7 +1434,7 @@ async function sendNotification() {
                             </button>
                             {u.role !== 'Owner' && (
                               <button className="admin-btn-icon danger" onClick={() => deleteUser(u)} title="Hapus User">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
                               </button>
                             )}
                           </>
@@ -1444,7 +1444,7 @@ async function sendNotification() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {filteredUsers.length === 0 && (
                     <div className="admin-empty" style={{ padding: '40px 20px', border: 'none', background: 'transparent' }}>
                       <div style={{ fontSize: '30px', marginBottom: '10px' }}>👥</div>
@@ -1461,7 +1461,7 @@ async function sendNotification() {
                 <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, background: 'rgba(168,85,247,0.15)', filter: 'blur(40px)', borderRadius: '50%' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' }}>
                   <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(168,85,247,0.25)' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C084FC" strokeWidth="2" strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C084FC" strokeWidth="2" strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
                   </div>
                   <div>
                     <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#fff' }}>Kirim Notifikasi Push</h3>
@@ -1472,16 +1472,16 @@ async function sendNotification() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', background: 'rgba(0,0,0,0.15)', padding: '20px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.03)' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Judul Notifikasi</label>
-                    <input className="input" placeholder="Contoh: Update Chapter Baru!" value={notifForm.title} onChange={e => setNotifForm({...notifForm, title: e.target.value})} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }} />
+                    <input className="input" placeholder="Contoh: Update Chapter Baru!" value={notifForm.title} onChange={e => setNotifForm({ ...notifForm, title: e.target.value })} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pesan / Isi</label>
-                    <textarea className="input" rows={4} placeholder="Tuliskan isi pesan notifikasi di sini..." value={notifForm.message} onChange={e => setNotifForm({...notifForm, message: e.target.value})} style={{ resize: 'vertical', background: 'rgba(255,255,255,0.03)', padding: '14px' }} />
+                    <textarea className="input" rows={4} placeholder="Tuliskan isi pesan notifikasi di sini..." value={notifForm.message} onChange={e => setNotifForm({ ...notifForm, message: e.target.value })} style={{ resize: 'vertical', background: 'rgba(255,255,255,0.03)', padding: '14px' }} />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Tipe Notifikasi</label>
-                      <select className="input" value={notifForm.type} onChange={e => setNotifForm({...notifForm, type: e.target.value})} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }}>
+                      <select className="input" value={notifForm.type} onChange={e => setNotifForm({ ...notifForm, type: e.target.value })} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }}>
                         <option value="info">Info (Biru)</option>
                         <option value="success">Success (Hijau)</option>
                         <option value="warning">Warning (Kuning)</option>
@@ -1490,7 +1490,7 @@ async function sendNotification() {
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Target Penerima</label>
-                      <select className="input" value={notifForm.user_id} onChange={e => setNotifForm({...notifForm, user_id: e.target.value})} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }}>
+                      <select className="input" value={notifForm.user_id} onChange={e => setNotifForm({ ...notifForm, user_id: e.target.value })} style={{ height: '44px', background: 'rgba(255,255,255,0.03)' }}>
                         <option value="all">Semua User (Global)</option>
                         {users.map(u => (
                           <option key={u.id} value={u.id}>{u.username} ({u.role})</option>
@@ -1501,7 +1501,7 @@ async function sendNotification() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                   <button className="btn btn-primary" onClick={sendNotification} disabled={sendingNotif} style={{ padding: '12px 28px', borderRadius: '12px', background: 'linear-gradient(135deg, #9333ea, #c084fc)', boxShadow: '0 8px 20px rgba(168,85,247,0.3)' }}>
-                    {sendingNotif ? <><span className="spin" style={{ marginRight: '8px' }}>⚙️</span> Mengirim...</> : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ marginRight: '8px' }}><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Kirim Sekarang</>}
+                    {sendingNotif ? <><span className="spin" style={{ marginRight: '8px' }}>⚙️</span> Mengirim...</> : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ marginRight: '8px' }}><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4 20-7z" /></svg> Kirim Sekarang</>}
                   </button>
                 </div>
               </div>
@@ -1516,11 +1516,11 @@ async function sendNotification() {
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button className="btn btn-secondary" onClick={loadAll} style={{ padding: '11px 18px', borderRadius: '12px', gap: '8px', display: 'flex', alignItems: 'center' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
                     Refresh
                   </button>
                   <button className="btn btn-primary" onClick={openMusicAdd} style={{ padding: '11px 22px', borderRadius: '12px', gap: '8px', display: 'flex', alignItems: 'center', boxShadow: '0 6px 20px rgba(0,229,255,0.22)' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                     Upload Lagu
                   </button>
                 </div>
@@ -1547,12 +1547,12 @@ async function sendNotification() {
               {musicList.length === 0 ? (
                 <div className="admin-empty" style={{ padding: '80px 20px' }}>
                   <div className="admin-empty-icon" style={{ width: '80px', height: '80px', borderRadius: '24px' }}>
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="1.5" strokeLinecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="1.5" strokeLinecap="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
                   </div>
                   <h3>Belum Ada Lagu</h3>
                   <p>Klik tombol Upload Lagu untuk mulai mengisi library SoundVault Anda.</p>
                   <button className="btn btn-primary" onClick={openMusicAdd} style={{ marginTop: '16px', gap: '8px', display: 'flex', alignItems: 'center' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                     Upload Sekarang
                   </button>
                 </div>
@@ -1565,7 +1565,7 @@ async function sendNotification() {
                     </span>
                     <div className="admin-search-wrap" style={{ width: '240px' }}>
                       <span className="admin-search-icon">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                       </span>
                       <input type="text" placeholder="Cari judul atau artis..." className="admin-search" style={{ height: '38px', borderRadius: '10px', fontSize: '12px' }}
                         value={search} onChange={e => setSearch(e.target.value)} />
@@ -1579,7 +1579,7 @@ async function sendNotification() {
                       .map((m: any, i: number) => {
                         const genreNames: string[] = (m.genres || []).map((g: any) => g.name)
                         const dur = m.duration_sec || 0
-                        const durStr = dur > 0 ? `${Math.floor(dur/60)}:${String(dur%60).padStart(2,'0')}` : '--:--'
+                        const durStr = dur > 0 ? `${Math.floor(dur / 60)}:${String(dur % 60).padStart(2, '0')}` : '--:--'
                         return (
                           <div key={m.id} className="music-row-item">
                             {/* Number */}
@@ -1592,15 +1592,15 @@ async function sendNotification() {
                               {m.cover_url
                                 ? <img src={m.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a2744,#0d1424)' }}>
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,229,255,0.4)" strokeWidth="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                                  </div>}
+                                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,229,255,0.4)" strokeWidth="1.5"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
+                                </div>}
                             </div>
 
                             {/* Title + Artist */}
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontWeight: 700, fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#fff' }}>{m.title}</div>
                               <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.38)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
                                 {m.artist || <span style={{ fontStyle: 'italic', opacity: 0.5 }}>Unknown Artist</span>}
                               </div>
                             </div>
@@ -1617,7 +1617,7 @@ async function sendNotification() {
 
                             {/* Play count */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.28)', fontSize: '12px', minWidth: '50px' }}>
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                               {(m.play_count || 0).toLocaleString()}
                             </div>
 
@@ -1629,10 +1629,10 @@ async function sendNotification() {
                             {/* Actions */}
                             <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', flexShrink: 0 }}>
                               <button onClick={() => openMusicEdit(m)} className="admin-btn-icon" title="Edit" style={{ width: '34px', height: '34px', borderRadius: '10px' }}>
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                               </button>
                               <button onClick={() => deleteMusic(m.id, m.title)} className="admin-btn-icon danger" title="Hapus" style={{ width: '34px', height: '34px', borderRadius: '10px' }}>
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" /></svg>
                               </button>
                             </div>
                           </div>
@@ -1682,7 +1682,7 @@ async function sendNotification() {
                 .length === 0 ? (
                 <div className="admin-empty" style={{ padding: '60px 20px' }}>
                   <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
                   </div>
                   <h3 style={{ margin: '0 0 6px', color: '#fff' }}>Bersih!</h3>
                   <p style={{ color: 'rgba(255,255,255,0.4)', margin: 0, fontSize: '13px' }}>Tidak ada laporan yang sesuai dengan filter saat ini.</p>
@@ -1697,20 +1697,20 @@ async function sendNotification() {
                     .map(r => {
                       const getTypeStyle = () => {
                         switch (r.type) {
-                          case 'bug': return { c: '#EF4444', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg> }
-                          case 'saran': return { c: '#F59E0B', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> }
-                          case 'pertanyaan': return { c: '#3B82F6', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg> }
-                          case 'konten': return { c: '#8B5CF6', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> }
-                          default: return { c: '#64748B', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> }
+                          case 'bug': return { c: '#EF4444', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="M12 11h4" /><path d="M12 16h4" /><path d="M8 11h.01" /><path d="M8 16h.01" /></svg> }
+                          case 'saran': return { c: '#F59E0B', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> }
+                          case 'pertanyaan': return { c: '#3B82F6', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg> }
+                          case 'konten': return { c: '#8B5CF6', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg> }
+                          default: return { c: '#64748B', i: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg> }
                         }
                       }
                       const styleInfo = getTypeStyle()
                       const statusColor = r.status === 'open' ? '#EF4444' : r.status === 'resolved' ? '#10B981' : '#64748B'
-                      
+
                       return (
                         <div key={r.id} className="admin-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative', overflow: 'hidden' }}>
                           <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '3px', background: statusColor }} />
-                          
+
                           {/* Header */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1723,40 +1723,40 @@ async function sendNotification() {
                               {r.status}
                             </span>
                           </div>
-                          
+
                           {/* Body */}
                           <div style={{ flex: 1 }}>
                             <h4 style={{ margin: '0 0 8px', fontSize: '15px', color: '#fff', fontWeight: 700 }}>{r.title}</h4>
                             <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)' }}>{r.description}</p>
                           </div>
-                          
+
                           {/* Footer Info */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 'auto' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                 {r.username || r.email || 'Anonim'}
                               </span>
                               <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                                 {new Date(r.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                            
+
                             {/* Actions */}
                             <div style={{ display: 'flex', gap: '6px' }}>
                               {r.status === 'open' && (
                                 <button className="admin-btn-icon" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)' }} onClick={() => updateReportStatus(r.id, 'resolved')} title="Tandai Selesai">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
                                 </button>
                               )}
                               {r.status !== 'closed' && (
                                 <button className="admin-btn-icon" style={{ background: 'rgba(100,116,139,0.1)', color: '#94A3B8', border: '1px solid rgba(100,116,139,0.2)' }} onClick={() => updateReportStatus(r.id, 'closed')} title="Tutup Laporan">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                                 </button>
                               )}
                               <button className="admin-btn-icon danger" onClick={() => deleteReport(r.id)} title="Hapus Laporan permanently">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
                               </button>
                             </div>
                           </div>
@@ -1781,7 +1781,7 @@ async function sendNotification() {
                   <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'rgba(0,229,255,0.15)', filter: 'blur(50px)', borderRadius: '50%' }} />
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', position: 'relative', zIndex: 1, marginBottom: '24px' }}>
                     <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(0,229,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,229,255,0.25)', flexShrink: 0, boxShadow: '0 8px 24px rgba(0,229,255,0.2)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                     </div>
                     <div>
                       <h3 style={{ fontSize: '15px', fontWeight: 900, marginBottom: '4px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
@@ -1795,7 +1795,7 @@ async function sendNotification() {
                   <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ flex: 1, minWidth: '150px' }}>
                       <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '6px', textTransform: 'uppercase' }}>Metode Decode</label>
-                      <select 
+                      <select
                         className="input"
                         value={decoderMethod}
                         onChange={e => setDecoderMethod(e.target.value)}
@@ -1808,8 +1808,8 @@ async function sendNotification() {
                         <option value="html">HTML Entity Decode</option>
                       </select>
                     </div>
-                    <button 
-                      className="btn btn-primary" 
+                    <button
+                      className="btn btn-primary"
                       onClick={decodeText}
                       disabled={decodingLoading || !decoderInput.trim()}
                       style={{ height: '36px', padding: '0 20px', alignSelf: 'flex-end', background: 'linear-gradient(135deg, #00B8D4, #00E5FF)', color: '#000', fontSize: '12px' }}
@@ -1818,7 +1818,7 @@ async function sendNotification() {
                     </button>
                   </div>
 
-                  <textarea 
+                  <textarea
                     className="input"
                     value={decoderInput}
                     onChange={e => setDecoderInput(e.target.value)}
@@ -1849,7 +1849,7 @@ async function sendNotification() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A855F7', border: '1px solid rgba(168,85,247,0.3)', boxShadow: '0 8px 20px rgba(168,85,247,0.15)' }}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                       </div>
                       <div>
                         <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1864,10 +1864,10 @@ async function sendNotification() {
                   <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '24px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ flex: 1, minWidth: '200px' }}>
                       <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase' }}>Durasi Akses</label>
-                      <select 
-                        className="input" 
-                        value={accessForm.duration_hours} 
-                        onChange={e => setAccessForm({...accessForm, duration_hours: e.target.value})}
+                      <select
+                        className="input"
+                        value={accessForm.duration_hours}
+                        onChange={e => setAccessForm({ ...accessForm, duration_hours: e.target.value })}
                         style={{ height: '40px' }}
                       >
                         <option value="1">1 Jam</option>
@@ -1875,8 +1875,8 @@ async function sendNotification() {
                         <option value="24">24 Jam (1 Hari)</option>
                       </select>
                     </div>
-                    <button 
-                      className="btn btn-primary" 
+                    <button
+                      className="btn btn-primary"
                       onClick={generateAccessCode}
                       disabled={generatingCode}
                       style={{ height: '40px', padding: '0 24px', background: 'linear-gradient(135deg, #A855F7, #C084FC)' }}
@@ -1938,7 +1938,7 @@ async function sendNotification() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: maintenance ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: maintenance ? '#EF4444' : '#10B981', border: `1px solid ${maintenance ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`, boxShadow: `0 8px 20px ${maintenance ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)'}` }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
                     </div>
                     <div>
                       <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1961,7 +1961,7 @@ async function sendNotification() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A855F7', border: '1px solid rgba(168,85,247,0.3)', boxShadow: '0 8px 20px rgba(168,85,247,0.15)' }}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                       </div>
                       <div>
                         <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1976,10 +1976,10 @@ async function sendNotification() {
                   <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '24px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ flex: 1, minWidth: '200px' }}>
                       <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase' }}>Pilih Target Tool</label>
-                      <select 
-                        className="input" 
-                        value={accessForm.target_tool} 
-                        onChange={e => setAccessForm({...accessForm, target_tool: e.target.value})}
+                      <select
+                        className="input"
+                        value={accessForm.target_tool}
+                        onChange={e => setAccessForm({ ...accessForm, target_tool: e.target.value })}
                         style={{ height: '40px' }}
                       >
                         <option value="crypto_decoder">Crypto Decoder (Enkripsi & JWT)</option>
@@ -1987,10 +1987,10 @@ async function sendNotification() {
                     </div>
                     <div style={{ width: '150px' }}>
                       <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase' }}>Durasi Akses</label>
-                      <select 
-                        className="input" 
-                        value={accessForm.duration_hours} 
-                        onChange={e => setAccessForm({...accessForm, duration_hours: e.target.value})}
+                      <select
+                        className="input"
+                        value={accessForm.duration_hours}
+                        onChange={e => setAccessForm({ ...accessForm, duration_hours: e.target.value })}
                         style={{ height: '40px' }}
                       >
                         <option value="1">1 Jam</option>
@@ -1998,8 +1998,8 @@ async function sendNotification() {
                         <option value="24">24 Jam (1 Hari)</option>
                       </select>
                     </div>
-                    <button 
-                      className="btn btn-primary" 
+                    <button
+                      className="btn btn-primary"
                       onClick={generateAccessCode}
                       disabled={generatingCode}
                       style={{ height: '40px', padding: '0 24px', background: 'linear-gradient(135deg, #A855F7, #C084FC)' }}
@@ -2054,7 +2054,7 @@ async function sendNotification() {
                   <div style={{ position: 'absolute', top: 0, right: 0, width: '4px', height: '100%', background: '#EF4444' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
                     <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)', boxShadow: '0 8px 20px rgba(239,68,68,0.15)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" /></svg>
                     </div>
                     <div>
                       <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2081,7 +2081,7 @@ async function sendNotification() {
                             </div>
                           </div>
                           {me?.role === 'Owner' && (
-                            <button 
+                            <button
                               className="btn btn-primary"
                               onClick={() => unbanIp(ban.ip_address)}
                               style={{ height: '32px', padding: '0 16px', background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}
@@ -2099,7 +2099,7 @@ async function sendNotification() {
               {/* Stats */}
               <div className="admin-card" style={{ padding: '24px' }}>
                 <div style={{ fontWeight: 800, fontSize: '15px', color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 15h18v-2a4 4 0 0 0-4-4H3v6z"/><path d="M3 15v4a2 2 0 0 0 2 2h14v-4"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" /><path d="M3 15h18v-2a4 4 0 0 0-4-4H3v6z" /><path d="M3 15v4a2 2 0 0 0 2 2h14v-4" /></svg>
                   Sekilas Database
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
@@ -2127,7 +2127,7 @@ async function sendNotification() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
                 <div className="admin-card" style={{ padding: '24px' }}>
                   <div style={{ fontWeight: 800, fontSize: '15px', color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 16 16 12 12 8" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
                     Pintasan Navigasi
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -2135,7 +2135,7 @@ async function sendNotification() {
                       <Link key={l.href} href={l.href} style={{ textDecoration: 'none' }}>
                         <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#fff', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s' }} className="hover-highlight">
                           {l.label}
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>
                         </div>
                       </Link>
                     ))}
@@ -2144,7 +2144,7 @@ async function sendNotification() {
 
                 <div className="admin-card" style={{ padding: '24px' }}>
                   <div style={{ fontWeight: 800, fontSize: '15px', color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
                     Informasi Server
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -2215,7 +2215,7 @@ async function sendNotification() {
             <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg,rgba(0,229,255,0.04),transparent)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
                 </div>
                 <div>
                   <h3 style={{ fontSize: '17px', fontWeight: 900, letterSpacing: '-0.3px', margin: 0 }}>{musicModal === 'edit' ? 'Edit Lagu' : 'Upload Lagu Baru'}</h3>
@@ -2223,7 +2223,7 @@ async function sendNotification() {
                 </div>
               </div>
               <button className="admin-btn-icon" onClick={() => setMusicModal(null)} style={{ width: '36px', height: '36px', borderRadius: '10px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
 
@@ -2256,18 +2256,18 @@ async function sendNotification() {
                     {uploadFile ? (
                       <>
                         <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(0,229,255,0.12)', border: '1px solid rgba(0,229,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontWeight: 700, fontSize: '13px', color: '#fff', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uploadFile.name}</div>
-                          <div style={{ fontSize: '11px', color: '#00E5FF', marginTop: '4px', fontWeight: 600 }}>{(uploadFile.size / (1024*1024)).toFixed(2)} MB · {uploadFile.type.split('/')[1]?.toUpperCase()}</div>
+                          <div style={{ fontSize: '11px', color: '#00E5FF', marginTop: '4px', fontWeight: 600 }}>{(uploadFile.size / (1024 * 1024)).toFixed(2)} MB · {uploadFile.type.split('/')[1]?.toUpperCase()}</div>
                         </div>
                         <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '20px' }}>Klik untuk ganti file</span>
                       </>
                     ) : (
                       <>
                         <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontWeight: 700, fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>Klik untuk pilih file audio</div>
@@ -2285,21 +2285,21 @@ async function sendNotification() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div>
                     <label className="admin-field-label">Judul Lagu <span style={{ color: '#F87171' }}>*</span></label>
-                    <input className="input" placeholder="Judul lagu" value={musicForm.title} onChange={e => setMusicForm(f => ({ ...f, title: e.target.value }))} style={{ height: '42px', marginTop: '6px' }}/>
+                    <input className="input" placeholder="Judul lagu" value={musicForm.title} onChange={e => setMusicForm(f => ({ ...f, title: e.target.value }))} style={{ height: '42px', marginTop: '6px' }} />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
                       <label className="admin-field-label">Artis</label>
-                      <input className="input" placeholder="Nama artis" value={musicForm.artist} onChange={e => setMusicForm(f => ({ ...f, artist: e.target.value }))} style={{ height: '42px', marginTop: '6px' }}/>
+                      <input className="input" placeholder="Nama artis" value={musicForm.artist} onChange={e => setMusicForm(f => ({ ...f, artist: e.target.value }))} style={{ height: '42px', marginTop: '6px' }} />
                     </div>
                     <div>
                       <label className="admin-field-label">Album</label>
-                      <input className="input" placeholder="Nama album" value={musicForm.album} onChange={e => setMusicForm(f => ({ ...f, album: e.target.value }))} style={{ height: '42px', marginTop: '6px' }}/>
+                      <input className="input" placeholder="Nama album" value={musicForm.album} onChange={e => setMusicForm(f => ({ ...f, album: e.target.value }))} style={{ height: '42px', marginTop: '6px' }} />
                     </div>
                   </div>
                   <div>
                     <label className="admin-field-label">URL Cover</label>
-                    <input className="input" placeholder="https://..." value={musicForm.cover_url} onChange={e => setMusicForm(f => ({ ...f, cover_url: e.target.value }))} style={{ height: '42px', marginTop: '6px' }}/>
+                    <input className="input" placeholder="https://..." value={musicForm.cover_url} onChange={e => setMusicForm(f => ({ ...f, cover_url: e.target.value }))} style={{ height: '42px', marginTop: '6px' }} />
                   </div>
                 </div>
               )}
@@ -2342,8 +2342,8 @@ async function sendNotification() {
                 {editingMusic
                   ? <><span className="loader-sm"></span> Memproses...</>
                   : musicModal === 'edit'
-                    ? <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Simpan Perubahan</>
-                    : <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload Sekarang</>
+                    ? <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg> Simpan Perubahan</>
+                    : <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg> Upload Sekarang</>
                 }
               </button>
             </div>
@@ -2353,16 +2353,16 @@ async function sendNotification() {
 
       {/* Maintenance Modal */}
       {maintenanceModal && (
-        <div style={{ 
+        <div style={{
           position: 'fixed', inset: 0, zIndex: 1000,
           background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '20px'
         }} onClick={() => setMaintenanceModal(false)}>
-          <div 
+          <div
             className="admin-card"
             onClick={e => e.stopPropagation()}
-            style={{ 
+            style={{
               maxWidth: '900px', width: '100%', padding: '28px',
               animation: 'slideUp 0.3s ease-out',
               maxHeight: '90vh', overflowY: 'auto',
@@ -2380,7 +2380,7 @@ async function sendNotification() {
                   <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Saat ini: <strong>{maintenance ? '🔴 AKTIF' : '🟢 NONAKTIF'}</strong></p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setMaintenanceModal(false)}
                 style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
@@ -2406,7 +2406,7 @@ async function sendNotification() {
                 {/* Code Editor */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M16 18l2-2m-2 2l-2-2M8 6l-2 2m2-2l2 2"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M16 18l2-2m-2 2l-2-2M8 6l-2 2m2-2l2 2" /></svg>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Kode Halaman Maintenance</label>
                   </div>
                   <textarea
@@ -2450,14 +2450,14 @@ async function sendNotification() {
 
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button 
+              <button
                 onClick={() => setMaintenanceModal(false)}
                 style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', minWidth: '120px' }}
               >
                 ✕ Tutup
               </button>
               {maintenanceCodeEdit !== maintenanceCode && (
-                <button 
+                <button
                   onClick={saveMaintenanceCode}
                   disabled={savingMaintenanceCode}
                   style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #A855F7, #C084FC)', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: savingMaintenanceCode ? 'wait' : 'pointer', transition: 'all 0.2s', minWidth: '140px' }}
@@ -2465,17 +2465,17 @@ async function sendNotification() {
                   {savingMaintenanceCode ? <span>⏳ Menyimpan...</span> : <span>💾 Simpan Kode</span>}
                 </button>
               )}
-              <button 
+              <button
                 onClick={confirmToggleMaintenance}
-                style={{ 
-                  flex: 1, 
-                  padding: '12px', 
+                style={{
+                  flex: 1,
+                  padding: '12px',
                   background: maintenance ? 'linear-gradient(135deg, #10B981, #34D399)' : 'linear-gradient(135deg, #EF4444, #F87171)',
-                  border: 'none', 
-                  borderRadius: '10px', 
-                  color: '#fff', 
-                  fontSize: '13px', 
-                  fontWeight: 700, 
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  fontSize: '13px',
+                  fontWeight: 700,
                   cursor: 'pointer',
                   boxShadow: maintenance ? '0 4px 14px rgba(16,185,129,0.3)' : '0 4px 14px rgba(239,68,68,0.3)',
                   minWidth: '140px',
@@ -2495,134 +2495,161 @@ async function sendNotification() {
           </div>
         </div>
       )}
-      {/* ════════════ DEPLOY WEBSITE ════════════ */}
+
+      {/* DEPLOY WEBSITE */}
       {activeMenu === 'deploy' && (
-        <div style={{ padding: '28px 24px', maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ marginBottom: 28 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#e2e8f0', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              Deploy &amp; Git Control
-            </h2>
-            <p style={{ fontSize: 13, color: '#475569' }}>Eksekusi perintah Git langsung dari panel admin. Hanya Owner yang bisa menggunakan fitur ini.</p>
+        <div style={{ padding: '28px 20px 40px', maxWidth: 920, margin: '0 auto' }}>
+
+          {/* Header */}
+          <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <div>
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#e2e8f0', margin: 0 }}>Deploy &amp; Git Control</h2>
+                <p style={{ fontSize: 12, color: '#475569', margin: 0 }}>Eksekusi perintah Git dari server &middot; <span style={{ color: '#f59e0b' }}>Owner only</span></p>
+              </div>
+            </div>
+            {gitLoading && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', borderRadius: 20, background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.15)' }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#00E5FF', boxShadow: '0 0 8px #00E5FF' }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#00E5FF', letterSpacing: '0.5px' }}>RUNNING...</span>
+              </div>
+            )}
           </div>
 
           {me?.role !== 'Owner' ? (
-            <div style={{ padding: '40px', textAlign: 'center', background: '#0d1526', borderRadius: 16, border: '1px solid rgba(239,68,68,0.2)' }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.5)" strokeWidth="1.5" style={{ margin: '0 auto 16px' }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <p style={{ color: '#ef4444', fontWeight: 700, fontSize: 15 }}>Akses Terbatas</p>
-              <p style={{ color: '#475569', fontSize: 13, marginTop: 6 }}>Fitur ini hanya tersedia untuk Owner.</p>
+            <div style={{ padding: '60px 40px', textAlign: 'center', background: 'linear-gradient(145deg,#0d1526,#080e1c)', borderRadius: 20, border: '1px solid rgba(239,68,68,0.12)' }}>
+              <div style={{ width: 60, height: 60, borderRadius: 18, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <p style={{ color: '#ef4444', fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Akses Terbatas</p>
+              <p style={{ color: '#475569', fontSize: 13 }}>Fitur ini hanya tersedia untuk Owner.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gap: 20 }}>
+            <div style={{ display: 'grid', gap: 14 }}>
 
-              {/* Quick Actions */}
-              <div style={{ background: '#0d1526', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 16, padding: '22px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5FF', boxShadow: '0 0 8px #00E5FF' }}/>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Quick Actions</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
+              {/* Quick Actions 4-col */}
+              <div style={{ background: 'linear-gradient(145deg,#0d1526,#080e1c)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 18, padding: '18px 20px' }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#334155', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 14, margin: '0 0 14px' }}>Quick Actions</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                   {[
-                    { key: 'status', label: 'Git Status', color: '#3b82f6', icon: 'M9 11l3 3L22 4' },
-                    { key: 'pull', label: 'Git Pull', color: '#10b981', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
-                    { key: 'add', label: 'Git Add -A', color: '#f59e0b', icon: 'M12 5v14M5 12h14' },
-                    { key: 'push', label: 'Git Push', color: '#8b5cf6', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12' },
-                    { key: 'log', label: 'Git Log', color: '#06b6d4', icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z' },
-                    { key: 'diff', label: 'Git Diff', color: '#ec4899', icon: 'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z' },
-                    { key: 'stash', label: 'Git Stash', color: '#f97316', icon: 'M5 8h14M5 8a2 2 0 1 0 0-4h14a2 2 0 1 0 0 4M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8' },
-                    { key: 'stash_pop', label: 'Stash Pop', color: '#84cc16', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12' },
+                    { key: 'status', label: 'Status',   sub: 'Cek status',    color: '#3b82f6' },
+                    { key: 'pull',   label: 'Pull',     sub: 'Ambil update',  color: '#10b981' },
+                    { key: 'add',    label: 'Add -A',   sub: 'Stage semua',   color: '#f59e0b' },
+                    { key: 'push',   label: 'Push',     sub: 'Upload repo',   color: '#8b5cf6' },
+                    { key: 'log',    label: 'Log',      sub: '10 commit',     color: '#06b6d4' },
+                    { key: 'diff',   label: 'Diff',     sub: 'Lihat diff',    color: '#ec4899' },
+                    { key: 'stash',  label: 'Stash',    sub: 'Simpan temp',   color: '#f97316' },
+                    { key: 'stash_pop', label: 'Pop',   sub: 'Keluarkan',     color: '#84cc16' },
                   ].map(btn => (
                     <button key={btn.key} onClick={() => runGit(btn.key)} disabled={gitLoading}
-                      style={{ padding: '12px 10px', borderRadius: 12, border: `1px solid ${btn.color}30`, background: `${btn.color}10`, color: btn.color, fontWeight: 700, fontSize: 12, cursor: gitLoading ? 'wait' : 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${btn.color}20`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${btn.color}10`; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
+                      style={{ padding: '13px 6px', borderRadius: 12, border: `1px solid ${btn.color}20`, background: `${btn.color}0a`, color: btn.color, cursor: gitLoading ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, opacity: gitLoading ? 0.45 : 1, fontFamily: 'inherit' }}
+                      onMouseEnter={e => { if (!gitLoading) { (e.currentTarget as HTMLElement).style.background = `${btn.color}18`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = `0 6px 20px ${btn.color}20` } }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${btn.color}0a`; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={btn.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={btn.icon}/></svg>
-                      {btn.label}
+                      <span style={{ fontSize: 11, fontWeight: 800, fontFamily: '"JetBrains Mono", monospace', opacity: 0.5 }}>git</span>
+                      <span style={{ fontSize: 12, fontWeight: 700 }}>{btn.label}</span>
+                      <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 500 }}>{btn.sub}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Commit with message */}
-              <div style={{ background: '#0d1526', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 16, padding: '22px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 8px #a855f7' }}/>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Git Commit</span>
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <input
-                    value={gitCommitMsg}
-                    onChange={e => setGitCommitMsg(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && runGit('commit')}
-                    placeholder='Pesan commit... (misal: "fix: perbaiki bug login")'  
-                    style={{ flex: 1, padding: '11px 14px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.25)', background: 'rgba(168,85,247,0.05)', color: '#e2e8f0', fontFamily: 'inherit', fontSize: 13, outline: 'none' }}
-                  />
-                  <button onClick={() => runGit('commit')} disabled={gitLoading || !gitCommitMsg.trim()}
-                    style={{ padding: '11px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer', opacity: gitCommitMsg.trim() ? 1 : 0.5, whiteSpace: 'nowrap' }}
-                  >Commit</button>
-                </div>
-                <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-                  <button onClick={() => { runGit('add'); setTimeout(() => runGit('commit'), 1000) }} disabled={gitLoading || !gitCommitMsg.trim()}
-                    style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.2)', background: 'rgba(168,85,247,0.08)', color: '#a855f7', fontWeight: 700, fontSize: 12, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer', opacity: gitCommitMsg.trim() ? 1 : 0.5 }}
-                  >Add + Commit</button>
-                  <button onClick={async () => { await runGit('add'); setTimeout(async () => { await runGit('commit'); setTimeout(() => runGit('push'), 1200) }, 1000) }} disabled={gitLoading || !gitCommitMsg.trim()}
-                    style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: gitCommitMsg.trim() ? 'linear-gradient(135deg, #7c3aed, #a855f7)' : 'rgba(255,255,255,0.05)', color: gitCommitMsg.trim() ? '#fff' : '#475569', fontWeight: 700, fontSize: 12, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer' }}
-                  >Add + Commit + Push</button>
-                </div>
-              </div>
-
-              {/* Reset */}
-              <div style={{ background: '#0d1526', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 16, padding: '22px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444' }}/>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Reset &amp; Danger Zone</span>
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button
-                    onClick={() => { if (confirm('⚠️ RESET HARD akan menghapus semua perubahan lokal yang belum di-commit!\n\nLanjutkan?')) runGit('reset_hard') }}
-                    disabled={gitLoading}
-                    style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', fontWeight: 700, fontSize: 13, cursor: gitLoading ? 'wait' : 'pointer' }}
-                  >⚠️ Reset Hard (HEAD)</button>
-                </div>
-                <p style={{ fontSize: 11, color: '#475569', marginTop: 8 }}>Perintah ini akan membatalkan semua perubahan lokal yang belum di-commit. Gunakan dengan hati-hati!</p>
-              </div>
-
-              {/* Output Terminal */}
-              <div style={{ background: '#0d1526', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 16, padding: '22px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }}/>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Terminal Output</span>
+              {/* Commit Panel */}
+              <div style={{ background: 'linear-gradient(145deg,#0d1526,#080e1c)', border: '1px solid rgba(168,85,247,0.1)', borderRadius: 18, padding: '18px 20px' }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#334155', letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 14px' }}>Commit &amp; Deploy</p>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.4, pointerEvents: 'none' }}><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    <input
+                      value={gitCommitMsg}
+                      onChange={e => setGitCommitMsg(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && runGit('commit')}
+                      placeholder='Pesan commit...'
+                      style={{ width: '100%', padding: '11px 14px 11px 34px', borderRadius: 10, border: `1px solid ${gitCommitMsg ? 'rgba(168,85,247,0.35)' : 'rgba(255,255,255,0.07)'}`, background: 'rgba(168,85,247,0.05)', color: '#e2e8f0', fontFamily: 'inherit', fontSize: 13, outline: 'none', transition: 'all 0.2s', boxSizing: 'border-box' }}
+                    />
                   </div>
-                  {gitLoading && <span style={{ fontSize: 11, color: '#06b6d4', animation: 'pulse 1s infinite' }}>⏳ Running...</span>}
                 </div>
-                <pre style={{ background: '#060d1a', borderRadius: 10, padding: '16px', fontSize: 12, color: '#4ade80', fontFamily: '"Fira Code", "JetBrains Mono", monospace', minHeight: 120, whiteSpace: 'pre-wrap', wordBreak: 'break-all', border: '1px solid rgba(0,0,0,0.3)', overflowY: 'auto', maxHeight: 300 }}>
-                  {gitLoading ? '⏳ Menjalankan perintah...' : gitOutput || '// Output akan muncul di sini setelah menjalankan perintah'}
-                </pre>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.4fr', gap: 8 }}>
+                  <button onClick={() => runGit('commit')} disabled={gitLoading || !gitCommitMsg.trim()}
+                    style={{ padding: '10px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.2)', background: 'rgba(168,85,247,0.07)', color: '#c084fc', fontWeight: 700, fontSize: 12, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer', opacity: gitCommitMsg.trim() ? 1 : 0.4, transition: 'all 0.2s', fontFamily: 'inherit' }}>
+                    Commit
+                  </button>
+                  <button onClick={() => { runGit('add'); setTimeout(() => runGit('commit'), 1200) }} disabled={gitLoading || !gitCommitMsg.trim()}
+                    style={{ padding: '10px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.2)', background: 'rgba(168,85,247,0.07)', color: '#a855f7', fontWeight: 700, fontSize: 12, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer', opacity: gitCommitMsg.trim() ? 1 : 0.4, transition: 'all 0.2s', fontFamily: 'inherit' }}>
+                    Add + Commit
+                  </button>
+                  <button onClick={async () => { await runGit('add'); setTimeout(async () => { await runGit('commit'); setTimeout(() => runGit('push'), 1400) }, 1200) }} disabled={gitLoading || !gitCommitMsg.trim()}
+                    style={{ padding: '10px', borderRadius: 10, border: 'none', background: gitCommitMsg.trim() && !gitLoading ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : 'rgba(255,255,255,0.04)', color: gitCommitMsg.trim() ? '#fff' : '#334155', fontWeight: 800, fontSize: 11, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer', transition: 'all 0.2s', fontFamily: 'inherit', boxShadow: gitCommitMsg.trim() ? '0 4px 14px rgba(139,92,246,0.3)' : 'none' }}>
+                    {'\uD83D\uDE80'} Add + Commit + Push
+                  </button>
+                </div>
+              </div>
+
+              {/* Terminal + Danger side by side */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 210px', gap: 14 }}>
+
+                {/* Terminal */}
+                <div style={{ background: '#040b15', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 18, overflow: 'hidden' }}>
+                  <div style={{ background: '#0a1222', padding: '9px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div style={{ display: 'flex', gap: 5 }}>
+                      {['#ef4444','#f59e0b','#10b981'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
+                    </div>
+                    <span style={{ fontSize: 10, color: '#1e293b', marginLeft: 4, fontFamily: 'monospace', userSelect: 'none' as const }}>bash — git output</span>
+                    {gitLoading && <span style={{ marginLeft: 'auto', fontSize: 9, color: '#00E5FF', fontWeight: 700, letterSpacing: '1px' }}>● LIVE</span>}
+                  </div>
+                  <pre style={{ padding: '14px 18px', margin: 0, fontSize: 11.5, color: gitOutput ? '#4ade80' : '#1e293b', fontFamily: '"JetBrains Mono","Fira Code",monospace', minHeight: 170, maxHeight: 260, whiteSpace: 'pre-wrap' as const, wordBreak: 'break-all' as const, overflowY: 'auto' as const, lineHeight: 1.8 }}>
+                    {gitLoading
+                      ? '$ running...'
+                      : gitOutput
+                      ? '$ output\n' + gitOutput
+                      : '$ awaiting command...\n\n  Klik tombol di atas\n  untuk menjalankan perintah Git'}
+                  </pre>
+                </div>
+
+                {/* Danger Zone */}
+                <div style={{ background: 'linear-gradient(145deg,#0d1526,#080e1c)', border: '1px solid rgba(239,68,68,0.1)', borderRadius: 18, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: '1.5px', textTransform: 'uppercase', margin: 0 }}>Danger Zone</p>
+                  <button
+                    onClick={() => { if (confirm('RESET HARD akan menghapus semua perubahan yang belum di-commit!\n\nYakin lanjutkan?')) runGit('reset_hard') }}
+                    disabled={gitLoading}
+                    style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.06)', color: '#f87171', fontWeight: 700, fontSize: 12, cursor: gitLoading ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'inherit' }}
+                    onMouseEnter={e => { if (!gitLoading) { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(239,68,68,0.35)' } }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.06)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(239,68,68,0.2)' }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Reset Hard
+                  </button>
+                  <p style={{ fontSize: 10, color: '#334155', lineHeight: 1.6, margin: 0 }}>Membatalkan semua perubahan lokal. Tidak bisa dibatalkan!</p>
+                  <div style={{ height: 1, background: 'rgba(255,255,255,0.04)' }} />
+                  <div style={{ fontSize: 10, color: '#334155', lineHeight: 1.7 }}>
+                    <span style={{ color: '#475569', fontWeight: 600 }}>Info:</span><br />
+                    Setelah push, Vercel auto-deploy dalam ~2 mnt.
+                  </div>
+                </div>
               </div>
 
               {/* History */}
               {gitHistory.length > 0 && (
-                <div style={{ background: '#0d1526', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 16, padding: '22px 24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 8px #f59e0b' }}/>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Riwayat Perintah</span>
+                <div style={{ background: 'linear-gradient(145deg,#0d1526,#080e1c)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: '#334155', letterSpacing: '1.5px', textTransform: 'uppercase', margin: 0 }}>Riwayat</p>
+                    <span style={{ fontSize: 10, color: '#1e293b' }}>{gitHistory.length} perintah</span>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {gitHistory.slice(0, 10).map((h, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, background: h.ok ? 'rgba(16,185,129,0.05)' : 'rgba(239,68,68,0.05)', border: `1px solid ${h.ok ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}` }}>
-                        <span style={{ fontSize: 16, flexShrink: 0 }}>{h.ok ? '✅' : '❌'}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0', fontFamily: 'monospace' }}>{h.cmd}</div>
-                          <div style={{ fontSize: 11, color: '#475569', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.output.split('\n')[0]}</div>
-                        </div>
-                        <span style={{ fontSize: 10, color: '#334155', flexShrink: 0 }}>{h.time}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {gitHistory.slice(0, 8).map((h, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', borderRadius: 9, background: h.ok ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.04)', border: `1px solid ${h.ok ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)'}` }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: h.ok ? '#10b981' : '#ef4444', flexShrink: 0 }} />
+                        <code style={{ flex: 1, fontSize: 11, color: h.ok ? '#6ee7b7' : '#fca5a5', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{h.cmd}</code>
+                        <span style={{ fontSize: 9, color: '#1e293b', flexShrink: 0 }}>{h.time}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+
             </div>
           )}
         </div>
