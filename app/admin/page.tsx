@@ -388,6 +388,10 @@ const MENU_ITEMS = [
     key: 'settings', label: 'Pengaturan',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   },
+  {
+    key: 'deploy', label: 'Deploy Website',
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+  },
 ]
 
 export default function AdminPage() {
@@ -434,6 +438,11 @@ export default function AdminPage() {
   const [maintenanceCodeEdit, setMaintenanceCodeEdit] = useState('')
   const [loadingMaintenanceCode, setLoadingMaintenanceCode] = useState(false)
   const [savingMaintenanceCode, setSavingMaintenanceCode] = useState(false)
+  // Git / Deploy states
+  const [gitLoading, setGitLoading] = useState(false)
+  const [gitOutput, setGitOutput] = useState('')
+  const [gitCommitMsg, setGitCommitMsg] = useState('')
+  const [gitHistory, setGitHistory] = useState<{cmd: string; output: string; time: string; ok: boolean}[]>([])
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -726,6 +735,33 @@ export default function AdminPage() {
     setSavingMaintenanceCode(false)
   }
 
+
+  async function runGit(command: string) {
+    if (me?.role !== 'Owner') { showToast('⚠️ Hanya Owner yang bisa menjalankan perintah Git'); return }
+    setGitLoading(true)
+    setGitOutput('')
+    try {
+      const body: any = { command }
+      if (command === 'commit') {
+        if (!gitCommitMsg.trim()) { showToast('⚠️ Pesan commit wajib diisi'); setGitLoading(false); return }
+        body.message = gitCommitMsg
+      }
+      const res = await fetch('/api/admin/git', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+      const data = await res.json()
+      const output = data.output || data.error || '(tidak ada output)'
+      setGitOutput(output)
+      const time = new Date().toLocaleTimeString('id-ID')
+      setGitHistory(prev => [{ cmd: `git ${command}`, output, time, ok: data.success }, ...prev].slice(0, 20))
+      if (data.success) showToast(`✅ Berhasil: git ${command}`)
+      else showToast(`⚠️ Error: ${output.substring(0, 80)}`)
+    } catch (e: any) {
+      showToast('⚠️ Gagal koneksi ke server')
+    }
+    setGitLoading(false)
+  }
 
   function openAdd() { setForm({ name: '', url: '', category: 'fx-basic', thumbnail: '📄' }); setEditTarget(null); setModal('add') }
   function openEdit(p: PDF) { setForm({ name: p.name, url: p.url, category: p.category, thumbnail: p.thumbnail }); setEditTarget(p); setModal('edit') }
@@ -2457,6 +2493,138 @@ async function sendNotification() {
               </p>
             </div>
           </div>
+        </div>
+      )}
+      {/* ════════════ DEPLOY WEBSITE ════════════ */}
+      {activeMenu === 'deploy' && (
+        <div style={{ padding: '28px 24px', maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ marginBottom: 28 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#e2e8f0', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              Deploy &amp; Git Control
+            </h2>
+            <p style={{ fontSize: 13, color: '#475569' }}>Eksekusi perintah Git langsung dari panel admin. Hanya Owner yang bisa menggunakan fitur ini.</p>
+          </div>
+
+          {me?.role !== 'Owner' ? (
+            <div style={{ padding: '40px', textAlign: 'center', background: '#0d1526', borderRadius: 16, border: '1px solid rgba(239,68,68,0.2)' }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.5)" strokeWidth="1.5" style={{ margin: '0 auto 16px' }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <p style={{ color: '#ef4444', fontWeight: 700, fontSize: 15 }}>Akses Terbatas</p>
+              <p style={{ color: '#475569', fontSize: 13, marginTop: 6 }}>Fitur ini hanya tersedia untuk Owner.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: 20 }}>
+
+              {/* Quick Actions */}
+              <div style={{ background: '#0d1526', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 16, padding: '22px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5FF', boxShadow: '0 0 8px #00E5FF' }}/>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Quick Actions</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
+                  {[
+                    { key: 'status', label: 'Git Status', color: '#3b82f6', icon: 'M9 11l3 3L22 4' },
+                    { key: 'pull', label: 'Git Pull', color: '#10b981', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
+                    { key: 'add', label: 'Git Add -A', color: '#f59e0b', icon: 'M12 5v14M5 12h14' },
+                    { key: 'push', label: 'Git Push', color: '#8b5cf6', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12' },
+                    { key: 'log', label: 'Git Log', color: '#06b6d4', icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z' },
+                    { key: 'diff', label: 'Git Diff', color: '#ec4899', icon: 'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z' },
+                    { key: 'stash', label: 'Git Stash', color: '#f97316', icon: 'M5 8h14M5 8a2 2 0 1 0 0-4h14a2 2 0 1 0 0 4M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8' },
+                    { key: 'stash_pop', label: 'Stash Pop', color: '#84cc16', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12' },
+                  ].map(btn => (
+                    <button key={btn.key} onClick={() => runGit(btn.key)} disabled={gitLoading}
+                      style={{ padding: '12px 10px', borderRadius: 12, border: `1px solid ${btn.color}30`, background: `${btn.color}10`, color: btn.color, fontWeight: 700, fontSize: 12, cursor: gitLoading ? 'wait' : 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${btn.color}20`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${btn.color}10`; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={btn.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={btn.icon}/></svg>
+                      {btn.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Commit with message */}
+              <div style={{ background: '#0d1526', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 16, padding: '22px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 8px #a855f7' }}/>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Git Commit</span>
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <input
+                    value={gitCommitMsg}
+                    onChange={e => setGitCommitMsg(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && runGit('commit')}
+                    placeholder='Pesan commit... (misal: "fix: perbaiki bug login")'  
+                    style={{ flex: 1, padding: '11px 14px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.25)', background: 'rgba(168,85,247,0.05)', color: '#e2e8f0', fontFamily: 'inherit', fontSize: 13, outline: 'none' }}
+                  />
+                  <button onClick={() => runGit('commit')} disabled={gitLoading || !gitCommitMsg.trim()}
+                    style={{ padding: '11px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer', opacity: gitCommitMsg.trim() ? 1 : 0.5, whiteSpace: 'nowrap' }}
+                  >Commit</button>
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                  <button onClick={() => { runGit('add'); setTimeout(() => runGit('commit'), 1000) }} disabled={gitLoading || !gitCommitMsg.trim()}
+                    style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.2)', background: 'rgba(168,85,247,0.08)', color: '#a855f7', fontWeight: 700, fontSize: 12, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer', opacity: gitCommitMsg.trim() ? 1 : 0.5 }}
+                  >Add + Commit</button>
+                  <button onClick={async () => { await runGit('add'); setTimeout(async () => { await runGit('commit'); setTimeout(() => runGit('push'), 1200) }, 1000) }} disabled={gitLoading || !gitCommitMsg.trim()}
+                    style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: gitCommitMsg.trim() ? 'linear-gradient(135deg, #7c3aed, #a855f7)' : 'rgba(255,255,255,0.05)', color: gitCommitMsg.trim() ? '#fff' : '#475569', fontWeight: 700, fontSize: 12, cursor: gitLoading || !gitCommitMsg.trim() ? 'not-allowed' : 'pointer' }}
+                  >Add + Commit + Push</button>
+                </div>
+              </div>
+
+              {/* Reset */}
+              <div style={{ background: '#0d1526', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 16, padding: '22px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444' }}/>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Reset &amp; Danger Zone</span>
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => { if (confirm('⚠️ RESET HARD akan menghapus semua perubahan lokal yang belum di-commit!\n\nLanjutkan?')) runGit('reset_hard') }}
+                    disabled={gitLoading}
+                    style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', fontWeight: 700, fontSize: 13, cursor: gitLoading ? 'wait' : 'pointer' }}
+                  >⚠️ Reset Hard (HEAD)</button>
+                </div>
+                <p style={{ fontSize: 11, color: '#475569', marginTop: 8 }}>Perintah ini akan membatalkan semua perubahan lokal yang belum di-commit. Gunakan dengan hati-hati!</p>
+              </div>
+
+              {/* Output Terminal */}
+              <div style={{ background: '#0d1526', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 16, padding: '22px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }}/>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Terminal Output</span>
+                  </div>
+                  {gitLoading && <span style={{ fontSize: 11, color: '#06b6d4', animation: 'pulse 1s infinite' }}>⏳ Running...</span>}
+                </div>
+                <pre style={{ background: '#060d1a', borderRadius: 10, padding: '16px', fontSize: 12, color: '#4ade80', fontFamily: '"Fira Code", "JetBrains Mono", monospace', minHeight: 120, whiteSpace: 'pre-wrap', wordBreak: 'break-all', border: '1px solid rgba(0,0,0,0.3)', overflowY: 'auto', maxHeight: 300 }}>
+                  {gitLoading ? '⏳ Menjalankan perintah...' : gitOutput || '// Output akan muncul di sini setelah menjalankan perintah'}
+                </pre>
+              </div>
+
+              {/* History */}
+              {gitHistory.length > 0 && (
+                <div style={{ background: '#0d1526', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 16, padding: '22px 24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 8px #f59e0b' }}/>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Riwayat Perintah</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {gitHistory.slice(0, 10).map((h, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, background: h.ok ? 'rgba(16,185,129,0.05)' : 'rgba(239,68,68,0.05)', border: `1px solid ${h.ok ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}` }}>
+                        <span style={{ fontSize: 16, flexShrink: 0 }}>{h.ok ? '✅' : '❌'}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0', fontFamily: 'monospace' }}>{h.cmd}</div>
+                          <div style={{ fontSize: 11, color: '#475569', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.output.split('\n')[0]}</div>
+                        </div>
+                        <span style={{ fontSize: 10, color: '#334155', flexShrink: 0 }}>{h.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

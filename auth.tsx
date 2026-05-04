@@ -28,6 +28,9 @@ export default function AuthPage() {
   const [submitError, setSubmitError] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [supportStep, setSupportStep] = useState<'qris' | 'done'>('qris');
 
   useEffect(() => {
     const modeParam = new URLSearchParams(window.location.search).get('mode')
@@ -60,6 +63,16 @@ export default function AuthPage() {
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    if (mode === 'register' && !termsAccepted) {
+      setSubmitError('Harap centang persetujuan syarat & ketentuan terlebih dahulu');
+      return;
+    }
+    if (mode === 'register' && !showSupportModal) {
+      // Show support modal first before actual register
+      setSupportStep('qris');
+      setShowSupportModal(true);
+      return;
+    }
     setLoading(true); setSubmitError('');
     try {
       if (mode === 'login') {
@@ -439,6 +452,119 @@ export default function AuthPage() {
           text-decoration: underline;
         }
 
+        /* Terms checkbox */
+        .terms-check-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 14px;
+          background: rgba(0,229,255,0.04);
+          border: 1px solid rgba(0,229,255,0.12);
+          border-radius: 12px;
+          margin-bottom: 16px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .terms-check-row:hover { background: rgba(0,229,255,0.07); }
+        .terms-check-row input[type="checkbox"] {
+          width: 17px; height: 17px;
+          margin-top: 1px; flex-shrink: 0;
+          accent-color: #00E5FF;
+          cursor: pointer;
+        }
+        .terms-check-text {
+          font-size: 12px;
+          color: rgba(255,255,255,0.55);
+          line-height: 1.6;
+        }
+        .terms-check-text a {
+          color: #00E5FF;
+          text-decoration: none;
+          font-weight: 700;
+        }
+        .terms-check-text a:hover { text-decoration: underline; }
+
+        /* Support Modal */
+        .support-overlay {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.85);
+          backdrop-filter: blur(12px);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 9999; padding: 20px;
+          animation: fadeInSupport 0.25s ease;
+        }
+        @keyframes fadeInSupport {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .support-card {
+          background: rgba(10, 14, 28, 0.98);
+          border: 1px solid rgba(0,229,255,0.15);
+          border-radius: 24px;
+          width: 100%; max-width: 400px;
+          padding: 28px;
+          box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(0,229,255,0.05);
+          animation: slideUpSupport 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes slideUpSupport {
+          from { opacity: 0; transform: translateY(20px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .support-title {
+          font-size: 18px; font-weight: 800;
+          color: #fff; margin-bottom: 4px;
+          display: flex; align-items: center; gap: 8px;
+        }
+        .support-sub {
+          font-size: 12px; color: rgba(255,255,255,0.45);
+          margin-bottom: 20px; line-height: 1.6;
+        }
+        .support-qris {
+          width: 100%; border-radius: 16px;
+          overflow: hidden; background: #fff;
+          padding: 12px; margin-bottom: 20px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .support-qris img {
+          width: 100%; max-width: 260px;
+          height: auto; display: block;
+          border-radius: 8px;
+        }
+        .support-name {
+          text-align: center;
+          font-size: 13px; font-weight: 700;
+          color: rgba(255,255,255,0.8);
+          margin-bottom: 4px;
+        }
+        .support-nmid {
+          text-align: center;
+          font-size: 11px; color: rgba(255,255,255,0.35);
+          margin-bottom: 20px; letter-spacing: 0.5px;
+        }
+        .support-btn-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+        .support-skip {
+          padding: 12px; border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.04);
+          color: rgba(255,255,255,0.5);
+          font-family: inherit; font-size: 13px; font-weight: 700;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .support-skip:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+        .support-done {
+          padding: 12px; border-radius: 12px;
+          border: none;
+          background: linear-gradient(135deg, #00B8D4, #00E5FF);
+          color: #000;
+          font-family: inherit; font-size: 13px; font-weight: 800;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .support-done:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,229,255,0.3); }
+
         /* Security badge */
         .security-badge {
           display: flex;
@@ -630,7 +756,28 @@ export default function AuthPage() {
                   </div>
                   {errors.confirmPassword && <div className="field-error">{errors.confirmPassword}</div>}
                 </div>
-                <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
+                
+                {/* Terms & Conditions Checkbox */}
+                <label className="terms-check-row">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={e => setTermsAccepted(e.target.checked)}
+                  />
+                  <span className="terms-check-text">
+                    Saya telah membaca dan menyetujui{' '}
+                    <a href="/terms" target="_blank">Syarat &amp; Ketentuan</a>
+                    {' '}serta{' '}
+                    <a href="/privacy" target="_blank">Kebijakan Privasi</a>
+                    {' '}FX Community
+                  </span>
+                </label>
+
+                <button className="submit-btn" onClick={() => {
+                  if (!validate()) return;
+                  if (!termsAccepted) { setSubmitError('Harap centang persetujuan terlebih dahulu'); return; }
+                  setShowSupportModal(true);
+                }} disabled={loading || !termsAccepted} style={{ opacity: termsAccepted ? 1 : 0.5 }}>
                   {loading ? <><div className="auth-spinner" /> Membuat akun...</> : (
                     <>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
@@ -638,7 +785,6 @@ export default function AuthPage() {
                     </>
                   )}
                 </button>
-                <p className="terms">Dengan mendaftar, kamu menyetujui <a href="/terms">Syarat & Ketentuan</a> serta <a href="/privacy">Kebijakan Privasi</a> kami.</p>
                 <p className="switch-text">Sudah punya akun? <a onClick={() => setMode('login')}>Masuk di sini</a></p>
               </div>
             )}
@@ -653,6 +799,39 @@ export default function AuthPage() {
       </div>
 
       {loading && <PremiumLoader />}
+
+      {/* ── Support Developer Modal ── */}
+      {showSupportModal && (
+        <div className="support-overlay" onClick={() => setShowSupportModal(false)}>
+          <div className="support-card" onClick={e => e.stopPropagation()}>
+            <div className="support-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              Support Developer Kecil
+            </div>
+            <p className="support-sub">
+              Platform ini dibuat oleh developer independen. Jika kamu merasa terbantu, donasi kecil sangat berarti untuk pengembangan lanjutan!
+            </p>
+
+            <div className="support-qris">
+              <img src="/qris-support.png" alt="QRIS Support" />
+            </div>
+            <div className="support-name">ApaAjaGwBisaKo</div>
+            <div className="support-nmid">NMID: ID1026515052896</div>
+
+            <div className="support-btn-row">
+              <button className="support-skip" onClick={() => {
+                setShowSupportModal(false)
+                // Proceed with actual register
+                handleSubmit()
+              }}>Lewati</button>
+              <button className="support-done" onClick={() => {
+                setShowSupportModal(false)
+                handleSubmit()
+              }}>Sudah Transfer ✓</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
