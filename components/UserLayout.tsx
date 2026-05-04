@@ -144,11 +144,10 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   )
 
   const NAV_LINKS = [
-    { name: 'Home',      path: '/dashboard', icon: <IconHome /> },
-    { name: 'Library',   path: '/library',   icon: <IconLibrary /> },
-    { name: 'Music',     path: '/music',     icon: <IconMusic /> },
-    { name: 'Popular',   path: '/popular',   icon: <IconPopular /> },
-    { name: 'Favorites', path: '/favorites', icon: <IconFavorites /> },
+    { name: 'Home',    path: '/dashboard', icon: <IconHome /> },
+    { name: 'Library', path: '/library',   icon: <IconLibrary /> },
+    { name: 'Music',   path: '/music',     icon: <IconMusic /> },
+    { name: 'Popular', path: '/popular',   icon: <IconPopular /> },
   ]
 
   const MOBILE_BOTTOM_NAV = [
