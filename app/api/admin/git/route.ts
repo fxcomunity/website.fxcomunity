@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { exec } from 'child_process'
 import { promisify } from 'util'
-import { cookies } from 'next/headers'
-import { jwtVerify } from 'jose'
+import { verifyAuth } from '@/lib/auth'
 
 const execAsync = promisify(exec)
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret')
 
 // Whitelist of allowed git commands for security
 const ALLOWED_COMMANDS: Record<string, string> = {
@@ -21,19 +19,9 @@ const ALLOWED_COMMANDS: Record<string, string> = {
   stash_pop:   'git stash pop',
 }
 
-async function getMe(req: NextRequest) {
-  try {
-    const cookieStore = await cookies()
-    const token = cookieStore.get('auth_token')?.value
-    if (!token) return null
-    const { payload } = await jwtVerify(token, JWT_SECRET)
-    return payload as any
-  } catch { return null }
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const me = await getMe(req)
+    const me = await verifyAuth(req)
     if (!me || me.role !== 'Owner') {
       return NextResponse.json({ success: false, error: 'Hanya Owner yang bisa menjalankan perintah Git' }, { status: 403 })
     }
@@ -71,7 +59,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const me = await getMe(req)
+  const me = await verifyAuth(req)
   if (!me || me.role !== 'Owner') {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 })
   }
