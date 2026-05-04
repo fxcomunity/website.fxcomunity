@@ -20,7 +20,14 @@ export async function PUT(req: NextRequest) {
   
   if (role) {
     const oldUser = await query('SELECT role FROM users WHERE id=$1', [id])
-    if (oldUser.rows.length > 0 && oldUser.rows[0].role !== role) {
+    if (oldUser.rows.length === 0) return NextResponse.json({ error: 'User tidak ditemukan' }, { status: 404 })
+    
+    // Validasi: Owner tidak bisa diturunkan
+    if (oldUser.rows[0].role === 'Owner') {
+      return NextResponse.json({ error: 'Owner tidak bisa diturunkan jabatannya' }, { status: 403 })
+    }
+    
+    if (oldUser.rows[0].role !== role) {
       if (role === 'Admin') {
         await query('INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)', [id, 'Promosi Jabatan', 'Selamat! Jabatan Anda telah dinaikkan menjadi Admin oleh Owner.', 'success'])
       } else if (role === 'User') {

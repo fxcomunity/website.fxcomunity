@@ -12,11 +12,14 @@ interface Banner {
   target_url: string | null
   target_blank: boolean
   priority: number
+  media_width?: number
+  media_height?: number
 }
 
 export default function BannerSlider({ variant = 'grid' }: { variant?: 'grid' | 'hero' }) {
   const [banners, setBanners] = useState<Banner[]>([])
   const [paused, setPaused] = useState(false)
+  const [imageDimensions, setImageDimensions] = useState<{ [key: number]: string }>({})
 
   async function fetchBanners() {
     try {
@@ -27,6 +30,22 @@ export default function BannerSlider({ variant = 'grid' }: { variant?: 'grid' | 
       const data = await r.json()
       const list = Array.isArray(data) ? data : Array.isArray(data?.banners) ? data.banners : Array.isArray(data?.data) ? data.data : []
       setBanners(list)
+      
+      // Load image dimensions
+      const dims: { [key: number]: string } = {}
+      for (const banner of list) {
+        if (banner.media_type === 'image') {
+          const img = new Image()
+          img.onload = () => {
+            const aspectRatio = img.width / img.height
+            dims[banner.id] = aspectRatio.toString()
+            setImageDimensions(prev => ({ ...prev, [banner.id]: aspectRatio.toString() }))
+          }
+          img.src = banner.media_url
+        } else {
+          dims[banner.id] = (16 / 9).toString() // Default video ratio
+        }
+      }
     } catch {
       setBanners([])
     }
@@ -51,6 +70,10 @@ export default function BannerSlider({ variant = 'grid' }: { variant?: 'grid' | 
   
   if (!banners.length) return null
   const loopBanners = [...banners, ...banners]
+  
+  const getAspectRatio = (bannerId: number) => {
+    return imageDimensions[bannerId] || '16 / 9'
+  }
 
   return (
     <>
@@ -61,7 +84,7 @@ export default function BannerSlider({ variant = 'grid' }: { variant?: 'grid' | 
         @media (min-width: 641px) and (max-width: 1024px) { .banner-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1025px) { .banner-grid { grid-template-columns: repeat(3, 1fr); } }
         .banner-card { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); }
-        .banner-media { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
+        .banner-media { width: 100%; object-fit: cover; display: block; }
         .banner-caption { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.5); color: #fff; border-radius: 8px; padding: 8px 10px; }
         .banner-title { font-size: 13px; font-weight: 700; }
         .banner-desc { font-size: 11px; color: rgba(255,255,255,0.85); }
@@ -78,9 +101,9 @@ export default function BannerSlider({ variant = 'grid' }: { variant?: 'grid' | 
           <div className="banner-grid">
             {banners.map(b => {
           const content = b.media_type === 'video' ? (
-            <video src={b.media_url} poster={b.thumbnail_url || undefined} autoPlay muted loop className="banner-media" />
+            <video src={b.media_url} poster={b.thumbnail_url || undefined} autoPlay muted loop className="banner-media" style={{ aspectRatio: getAspectRatio(b.id) }} />
           ) : (
-            <img src={b.media_url} alt={b.alt_text || b.title} loading="lazy" className="banner-media" />
+            <img src={b.media_url} alt={b.alt_text || b.title} loading="lazy" className="banner-media" style={{ aspectRatio: getAspectRatio(b.id) }} />
           )
           const inner = (
             <div className="banner-card">

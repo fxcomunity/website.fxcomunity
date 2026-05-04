@@ -381,16 +381,8 @@ const MENU_ITEMS = [
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   },
   {
-    key: 'banned-ips', label: 'IP Terblokir',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-  },
-  {
-    key: 'access-codes', label: 'Kode Akses',
+    key: 'access-codes', label: 'Kode Akses & Decoder',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3L15.5 7.5z"/></svg>
-  },
-  {
-    key: 'crypto', label: 'Crypto Decoder',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
   },
   {
     key: 'settings', label: 'Pengaturan',
@@ -432,6 +424,16 @@ export default function AdminPage() {
   const [accessForm, setAccessForm] = useState({ target_tool: 'crypto_decoder', duration_hours: '1' })
   const [generatingCode, setGeneratingCode] = useState(false)
   const [bannedIps, setBannedIps] = useState<any[]>([])
+  const [maintenanceModal, setMaintenanceModal] = useState(false)
+  const [decoderInput, setDecoderInput] = useState('')
+  const [decoderOutput, setDecoderOutput] = useState('')
+  const [decoderMethod, setDecoderMethod] = useState('base64')
+  const [decodingLoading, setDecodingLoading] = useState(false)
+  const [decoderError, setDecoderError] = useState('')
+  const [maintenanceCode, setMaintenanceCode] = useState('')
+  const [maintenanceCodeEdit, setMaintenanceCodeEdit] = useState('')
+  const [loadingMaintenanceCode, setLoadingMaintenanceCode] = useState(false)
+  const [savingMaintenanceCode, setSavingMaintenanceCode] = useState(false)
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -458,7 +460,7 @@ export default function AdminPage() {
       fetch('/api/music', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
       fetch('/api/music/genres', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })),
       me?.role === 'Owner' ? fetch('/api/admin/access-codes', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })) : Promise.resolve({ success: false, data: [] }),
-      me?.role === 'Owner' ? fetch('/api/admin/banned-ips', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })) : Promise.resolve({ success: false, data: [] })
+      me?.role && ['Owner', 'Admin'].includes(me.role) ? fetch('/api/admin/banned-ips', { next: { revalidate: 0 } }).then(r => r.json()).catch(() => ({ success: false, data: [] })) : Promise.resolve({ success: false, data: [] })
     ])
     if (pRes.success) setPdfs(pRes.data)
     if (uRes.success) setUsers(uRes.data)
@@ -539,6 +541,31 @@ export default function AdminPage() {
     } catch {
       showToast('⚠️ Error koneksi saat cabut blokir IP')
     }
+  }
+
+  async function decodeText() {
+    if (!decoderInput.trim()) {
+      setDecoderError('Masukkan teks yang ingin didecode')
+      return
+    }
+    setDecodingLoading(true)
+    setDecoderError('')
+    try {
+      const res = await fetch('/api/crypto/decode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: decoderInput.trim(), method: decoderMethod })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setDecoderOutput(data.result)
+      } else {
+        setDecoderError(data.error || 'Gagal melakukan decode')
+      }
+    } catch (e: any) {
+      setDecoderError('Error koneksi: ' + e.message)
+    }
+    setDecodingLoading(false)
   }
 
   async function saveMusic() {
@@ -636,7 +663,14 @@ export default function AdminPage() {
 
 
   async function toggleMaintenance() {
-    if (!confirm(maintenance ? 'Matikan Mode Maintenance?' : 'Aktifkan Mode Maintenance? Semua user biasa tidak akan bisa akses web.')) return
+    setMaintenanceModal(!maintenanceModal)
+    if (!maintenanceModal) {
+      // Opening modal - load the maintenance code
+      loadMaintenanceCode()
+    }
+  }
+
+  async function confirmToggleMaintenance() {
     const newVal = !maintenance
     try {
       const res = await fetch('/api/admin/settings', {
@@ -646,9 +680,50 @@ export default function AdminPage() {
       const data = await res.json()
       if (data.success) {
         setMaintenance(newVal)
+        setMaintenanceModal(false)
         showToast(newVal ? '🚧 Mode Maintenance AKTIF' : '✅ Mode Maintenance MATI')
       } else showToast('⚠️ Gagal ubah maintenance')
     } catch { showToast('⚠️ Error ubah maintenance') }
+  }
+
+  async function loadMaintenanceCode() {
+    setLoadingMaintenanceCode(true)
+    try {
+      const res = await fetch('/app/maintenance/page.tsx')
+      const code = await res.text()
+      setMaintenanceCode(code)
+      setMaintenanceCodeEdit(code)
+    } catch (e) {
+      // If file can't be fetched directly, show placeholder
+      setMaintenanceCode('// Halaman Maintenance\n// File: app/maintenance/page.tsx\n\n// Konten halaman maintenance dapat diedit di file tersebut.')
+      setMaintenanceCodeEdit('// Halaman Maintenance\n// File: app/maintenance/page.tsx\n\n// Konten halaman maintenance dapat diedit di file tersebut.')
+    }
+    setLoadingMaintenanceCode(false)
+  }
+
+  async function saveMaintenanceCode() {
+    if (maintenanceCodeEdit === maintenanceCode) {
+      showToast('⚠️ Tidak ada perubahan untuk disimpan')
+      return
+    }
+    setSavingMaintenanceCode(true)
+    try {
+      // Save to settings as a fallback approach
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'maintenance_code', value: maintenanceCodeEdit })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setMaintenanceCode(maintenanceCodeEdit)
+        showToast('✅ Kode Maintenance berhasil disimpan!')
+      } else {
+        showToast('⚠️ Gagal simpan kode')
+      }
+    } catch (e) {
+      showToast('⚠️ Error saat menyimpan kode')
+    }
+    setSavingMaintenanceCode(false)
   }
 
 
@@ -691,6 +766,35 @@ export default function AdminPage() {
     const newStatus = u.status === 'Aktif' ? 'Tidak Aktif' : 'Aktif'
     await fetch('/api/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, status: newStatus }) })
     loadAll(); showToast(`User ${newStatus === 'Aktif' ? '✅ diaktifkan' : '🚫 dinonaktifkan'}`)
+  }
+
+  async function changeUserRole(u: User, newRole: string) {
+    // Validasi: hanya Owner bisa ubah role
+    if (me?.role !== 'Owner') {
+      showToast('⚠️ Hanya Owner yang bisa mengubah role user')
+      return
+    }
+    
+    // Validasi: Owner tidak bisa diturunkan
+    if (u.role === 'Owner') {
+      showToast('⚠️ Owner tidak bisa diturunkan jabatannya')
+      return
+    }
+    
+    // Validasi: tidak mengubah ke role yang sama
+    if (u.role === newRole) {
+      showToast('ℹ️ Role sudah sama dengan sebelumnya')
+      return
+    }
+    
+    try {
+      const res = await fetch('/api/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, role: newRole }) })
+      const data = await res.json()
+      if (data.success) {
+        loadAll()
+        showToast(`✅ Role user berubah menjadi ${newRole}`)
+      } else showToast('⚠️ ' + (data.error || 'Gagal ubah role'))
+    } catch { showToast('⚠️ Gagal ubah role user') }
   }
 
   async function deleteUser(u: User) {
@@ -895,8 +999,7 @@ async function sendNotification() {
             <button
               key={item.key}
               onClick={() => {
-                if (item.key === 'crypto') router.push('/crypto')
-                else if (item.key === 'music-sql') router.push('/admin/music-sql')
+                if (item.key === 'music-sql') router.push('/admin/music-sql')
                 else setActiveMenu(item.key)
                 setMobileOpen(false)
               }}
@@ -1249,9 +1352,35 @@ async function sendNotification() {
                         {u.email}
                       </div>
 
-                      {/* Badges */}
+                      {/* Badges & Role Selector */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
-                        <span className={`badge ${u.role === 'Owner' ? 'badge-orange' : u.role === 'Admin' ? 'badge-purple' : 'badge-blue'}`}>{u.role}</span>
+                        {me?.role === 'Owner' && u.role !== 'Owner' ? (
+                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                            {['Owner', 'Admin', 'User'].map(role => (
+                              <button
+                                key={role}
+                                onClick={() => changeUserRole(u, role)}
+                                style={{
+                                  padding: '4px 10px',
+                                  borderRadius: '8px',
+                                  fontSize: '10px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  background: u.role === role ? (role === 'Owner' ? 'rgba(245,158,11,0.3)' : role === 'Admin' ? 'rgba(168,85,247,0.3)' : 'rgba(59,130,246,0.3)') : 'rgba(255,255,255,0.05)',
+                                  color: u.role === role ? (role === 'Owner' ? '#F59E0B' : role === 'Admin' ? '#C084FC' : '#60A5FA') : 'rgba(255,255,255,0.4)',
+                                  border: u.role === role ? `1px solid ${role === 'Owner' ? 'rgba(245,158,11,0.5)' : role === 'Admin' ? 'rgba(168,85,247,0.5)' : 'rgba(59,130,246,0.5)'}` : '1px solid rgba(255,255,255,0.1)',
+                                  transition: 'all 0.2s'
+                                }}
+                              >
+                                {role}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className={`badge ${u.role === 'Owner' ? 'badge-orange' : u.role === 'Admin' ? 'badge-purple' : 'badge-blue'}`}>
+                            {u.role}
+                          </span>
+                        )}
                         <span className={`badge ${u.status === 'Aktif' ? 'badge-green' : 'badge-red'}`} style={{ fontSize: '10px', padding: '2px 6px' }}>{u.status}</span>
                       </div>
 
@@ -1267,9 +1396,11 @@ async function sendNotification() {
                             >
                               {u.status === 'Aktif' ? '🚫' : '✅'}
                             </button>
-                            <button className="admin-btn-icon danger" onClick={() => deleteUser(u)} title="Hapus User">
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                            </button>
+                            {u.role !== 'Owner' && (
+                              <button className="admin-btn-icon danger" onClick={() => deleteUser(u)} title="Hapus User">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                              </button>
+                            )}
                           </>
                         ) : me?.role === 'Admin' ? (
                           <span style={{ color: 'var(--text3)', fontSize: '11px' }}>No access</span>
@@ -1600,6 +1731,163 @@ async function sendNotification() {
                 </div>
               )}
             </div>
+          ) : activeMenu === 'access-codes' ? (
+            /* ACCESS CODES & DECODER */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="admin-page-header" style={{ marginBottom: '4px' }}>
+                <h2 style={{ fontSize: '20px', letterSpacing: '-0.5px' }}>🔑 Kode Akses & Crypto Decoder</h2>
+                <p>Generate kode akses untuk Admin, decode teks terenkripsi, dan kelola security tokens.</p>
+              </div>
+
+              {/* Crypto Decoder Tool (Owner/Admin) */}
+              {me?.role && ['Owner', 'Admin'].includes(me.role) && (
+                <div className="admin-card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'rgba(0,229,255,0.15)', filter: 'blur(50px)', borderRadius: '50%' }} />
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', position: 'relative', zIndex: 1, marginBottom: '24px' }}>
+                    <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(0,229,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,229,255,0.25)', flexShrink: 0, boxShadow: '0 8px 24px rgba(0,229,255,0.2)' }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '15px', fontWeight: 900, marginBottom: '4px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                        🔐 Crypto Decoder
+                        {me?.role === 'Owner' && <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.2)' }}>OWNER</span>}
+                      </h3>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Dekripsi token keamanan, JWT, payload hex, dan teks terenkripsi lainnya.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ flex: 1, minWidth: '150px' }}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '6px', textTransform: 'uppercase' }}>Metode Decode</label>
+                      <select 
+                        className="input"
+                        value={decoderMethod}
+                        onChange={e => setDecoderMethod(e.target.value)}
+                        style={{ height: '36px', background: 'rgba(0,0,0,0.2)' }}
+                      >
+                        <option value="base64">Base64 Decode</option>
+                        <option value="hex">Hex Decode</option>
+                        <option value="jwt">JWT Decode</option>
+                        <option value="url">URL Decode</option>
+                        <option value="html">HTML Entity Decode</option>
+                      </select>
+                    </div>
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={decodeText}
+                      disabled={decodingLoading || !decoderInput.trim()}
+                      style={{ height: '36px', padding: '0 20px', alignSelf: 'flex-end', background: 'linear-gradient(135deg, #00B8D4, #00E5FF)', color: '#000', fontSize: '12px' }}
+                    >
+                      {decodingLoading ? '⚙️ Decoding...' : 'DECODE'}
+                    </button>
+                  </div>
+
+                  <textarea 
+                    className="input"
+                    value={decoderInput}
+                    onChange={e => setDecoderInput(e.target.value)}
+                    placeholder="Paste teks sandi, token JWT, atau hex code di sini..."
+                    rows={3}
+                    style={{ fontFamily: '"Fira Code", monospace', fontSize: '12px', background: 'rgba(0,0,0,0.3)', marginBottom: '12px' }}
+                  />
+
+                  {decoderError && (
+                    <div style={{ padding: '10px 12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: '#F87171', fontSize: '12px', marginBottom: '12px' }}>
+                      ⚠️ {decoderError}
+                    </div>
+                  )}
+
+                  {decoderOutput && (
+                    <div style={{ padding: '12px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '8px', color: '#10B981', fontSize: '12px', fontFamily: '"Fira Code", monospace', maxHeight: '200px', overflowY: 'auto' }}>
+                      <div style={{ fontWeight: 700, marginBottom: '8px' }}>✅ Hasil Decode:</div>
+                      <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{decoderOutput}</pre>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Security Access Codes (OWNER ONLY) */}
+              {me?.role === 'Owner' && (
+                <div className="admin-card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 0, right: 0, width: '4px', height: '100%', background: '#A855F7' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A855F7', border: '1px solid rgba(168,85,247,0.3)', boxShadow: '0 8px 20px rgba(168,85,247,0.15)' }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          Generate Kode Akses
+                          <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.2)' }}>OWNER ONLY</span>
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Buat kode akses sementara untuk Admin agar bisa mengakses fitur-fitur terbatas.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '24px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', textTransform: 'uppercase' }}>Durasi Akses</label>
+                      <select 
+                        className="input" 
+                        value={accessForm.duration_hours} 
+                        onChange={e => setAccessForm({...accessForm, duration_hours: e.target.value})}
+                        style={{ height: '40px' }}
+                      >
+                        <option value="1">1 Jam</option>
+                        <option value="12">12 Jam</option>
+                        <option value="24">24 Jam (1 Hari)</option>
+                      </select>
+                    </div>
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={generateAccessCode}
+                      disabled={generatingCode}
+                      style={{ height: '40px', padding: '0 24px', background: 'linear-gradient(135deg, #A855F7, #C084FC)' }}
+                    >
+                      {generatingCode ? <span className="spin">⏳</span> : '+ Buat Kode'}
+                    </button>
+                  </div>
+
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>📋 Riwayat Kode Akses</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {accessCodes.length === 0 ? (
+                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', padding: '12px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>Belum ada kode akses yang dibuat.</div>
+                      ) : (
+                        accessCodes.map(code => {
+                          const isExpired = new Date(code.expires_at) < new Date()
+                          return (
+                            <div key={code.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <div>
+                                <div style={{ fontSize: '14px', fontFamily: '"Fira Code", monospace', fontWeight: 800, color: isExpired ? 'rgba(255,255,255,0.3)' : '#00E5FF', marginBottom: '4px' }}>
+                                  {code.code}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+                                  Expires: {new Date(code.expires_at).toLocaleString('id-ID')}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {code.used_by_name && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)' }}>
+                                    By: {code.used_by_name}
+                                  </span>
+                                )}
+                                {isExpired && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}>
+                                    EXPIRED
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : activeMenu === 'settings' ? (
             /* SETTINGS */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1724,8 +2012,8 @@ async function sendNotification() {
                 </div>
               )}
 
-              {/* Banned IPs (OWNER ONLY) */}
-              {me?.role === 'Owner' && (
+              {/* Banned IPs (OWNER & ADMIN) */}
+              {me?.role && ['Owner', 'Admin'].includes(me.role) && (
                 <div className="admin-card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', top: 0, right: 0, width: '4px', height: '100%', background: '#EF4444' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
@@ -1734,16 +2022,16 @@ async function sendNotification() {
                     </div>
                     <div>
                       <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Daftar IP Terblokir
+                        🚫 IP Blokir
                         <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}>KEAMANAN</span>
                       </h4>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Daftar IP yang diblokir oleh sistem anti-spam. Owner bisa mencabut blokir di sini.</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Daftar IP yang diblokir oleh sistem anti-spam. {me?.role === 'Owner' ? 'Owner bisa mencabut blokir' : 'Admin bisa melihat dan mengelola'} di sini.</p>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {bannedIps.length === 0 ? (
-                      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', padding: '16px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.05)' }}>Tidak ada IP yang terblokir saat ini. Bersih!</div>
+                      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', padding: '16px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.05)' }}>✨ Tidak ada IP yang terblokir saat ini. Bersih!</div>
                     ) : (
                       bannedIps.map(ban => (
                         <div key={ban.ip_address} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -1756,13 +2044,15 @@ async function sendNotification() {
                               <span>Terblokir Sejak: <strong>{new Date(ban.updated_at).toLocaleString('id-ID')}</strong></span>
                             </div>
                           </div>
-                          <button 
-                            className="btn btn-primary"
-                            onClick={() => unbanIp(ban.ip_address)}
-                            style={{ height: '32px', padding: '0 16px', background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}
-                          >
-                            ✓ Approve (Unban)
-                          </button>
+                          {me?.role === 'Owner' && (
+                            <button 
+                              className="btn btn-primary"
+                              onClick={() => unbanIp(ban.ip_address)}
+                              style={{ height: '32px', padding: '0 16px', background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}
+                            >
+                              ✓ Unban IP
+                            </button>
+                          )}
                         </div>
                       ))
                     )}
@@ -2020,6 +2310,151 @@ async function sendNotification() {
                     : <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload Sekarang</>
                 }
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Maintenance Modal */}
+      {maintenanceModal && (
+        <div style={{ 
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setMaintenanceModal(false)}>
+          <div 
+            className="admin-card"
+            onClick={e => e.stopPropagation()}
+            style={{ 
+              maxWidth: '900px', width: '100%', padding: '28px',
+              animation: 'slideUp 0.3s ease-out',
+              maxHeight: '90vh', overflowY: 'auto',
+              display: 'flex', flexDirection: 'column', gap: '20px'
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: maintenance ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: maintenance ? '#EF4444' : '#10B981', fontSize: '20px' }}>
+                  {maintenance ? '⚠️' : '✅'}
+                </div>
+                <div>
+                  <h2 style={{ margin: '0 0 2px', fontSize: '18px', fontWeight: 900, color: '#fff' }}>Mode Maintenance</h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Saat ini: <strong>{maintenance ? '🔴 AKTIF' : '🟢 NONAKTIF'}</strong></p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setMaintenanceModal(false)}
+                style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Info */}
+            <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+              <p style={{ margin: 0, fontSize: '12px', lineHeight: 1.5, color: 'rgba(255,255,255,0.6)' }}>
+                <strong>Info:</strong> Mode Maintenance memblokir akses user biasa. Hanya Admin/Owner yang bisa mengakses. Preview & edit halaman maintenance di bawah ini.
+              </p>
+            </div>
+
+            {/* Code Preview/Editor Section */}
+            {loadingMaintenanceCode ? (
+              <div style={{ padding: '40px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '10px' }}>
+                <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', margin: 0 }}>Memuat kode maintenance...</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Code Editor */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round"><path d="M16 18l2-2m-2 2l-2-2M8 6l-2 2m2-2l2 2"/></svg>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Kode Halaman Maintenance</label>
+                  </div>
+                  <textarea
+                    value={maintenanceCodeEdit}
+                    onChange={e => setMaintenanceCodeEdit(e.target.value)}
+                    style={{
+                      width: '100%',
+                      height: '300px',
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '10px',
+                      color: '#fff',
+                      fontFamily: '"Fira Code", "JetBrains Mono", monospace',
+                      fontSize: '11px',
+                      padding: '12px',
+                      lineHeight: 1.6,
+                      resize: 'vertical',
+                      scrollBehavior: 'smooth'
+                    }}
+                  />
+                  {maintenanceCodeEdit !== maintenanceCode && (
+                    <div style={{ fontSize: '10px', color: '#F59E0B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>●</span> Ada perubahan yang belum disimpan
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Status Indicators */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ padding: '12px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.5px' }}>✅ Mode: NORMAL</div>
+                <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Semua user akses</p>
+              </div>
+              <div style={{ padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#EF4444', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🚧 Mode: MAINTENANCE</div>
+                <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Hanya admin/owner</p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button 
+                onClick={() => setMaintenanceModal(false)}
+                style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', minWidth: '120px' }}
+              >
+                ✕ Tutup
+              </button>
+              {maintenanceCodeEdit !== maintenanceCode && (
+                <button 
+                  onClick={saveMaintenanceCode}
+                  disabled={savingMaintenanceCode}
+                  style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #A855F7, #C084FC)', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: savingMaintenanceCode ? 'wait' : 'pointer', transition: 'all 0.2s', minWidth: '140px' }}
+                >
+                  {savingMaintenanceCode ? <span>⏳ Menyimpan...</span> : <span>💾 Simpan Kode</span>}
+                </button>
+              )}
+              <button 
+                onClick={confirmToggleMaintenance}
+                style={{ 
+                  flex: 1, 
+                  padding: '12px', 
+                  background: maintenance ? 'linear-gradient(135deg, #10B981, #34D399)' : 'linear-gradient(135deg, #EF4444, #F87171)',
+                  border: 'none', 
+                  borderRadius: '10px', 
+                  color: '#fff', 
+                  fontSize: '13px', 
+                  fontWeight: 700, 
+                  cursor: 'pointer',
+                  boxShadow: maintenance ? '0 4px 14px rgba(16,185,129,0.3)' : '0 4px 14px rgba(239,68,68,0.3)',
+                  minWidth: '140px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {maintenance ? '✅ Matikan Maintenance' : '🚧 Aktifkan Maintenance'}
+              </button>
+            </div>
+
+            {/* File Info */}
+            <div style={{ padding: '10px 12px', background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '8px' }}>
+              <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>
+                💡 File: <code style={{ background: 'rgba(0,0,0,0.2)', padding: '2px 6px', borderRadius: '3px', fontFamily: '"Fira Code", monospace', fontSize: '9px' }}>app/maintenance/page.tsx</code>
+              </p>
             </div>
           </div>
         </div>
