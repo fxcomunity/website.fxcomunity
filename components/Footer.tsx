@@ -1,8 +1,10 @@
 'use client'
+import { useState } from 'react'
 import Link from 'next/link'
 
 export default function Footer() {
   const year = new Date().getFullYear()
+  const [showSupport, setShowSupport] = useState(false)
 
   return (
     <footer className="fxc-footer">
@@ -68,12 +70,24 @@ export default function Footer() {
             <ul className="footer-links">
               <li><Link href="/report" className="footer-link">Kirim Laporan</Link></li>
               <li>
-                <button 
+                <button
                   onClick={() => window.dispatchEvent(new CustomEvent('openContactModal'))}
                   className="footer-link"
                   style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit', color: 'inherit' }}
                 >
                   Hubungi Kami
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => setShowSupport(true)}
+                  className="footer-link footer-support-btn"
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit', color: 'inherit' }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#f87171', flexShrink: 0 }}>
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  Support Developer
                 </button>
               </li>
             </ul>
@@ -94,6 +108,56 @@ export default function Footer() {
           <span className="footer-disclaimer">Investasi mengandung risiko. Lakukan riset sebelum berinvestasi.</span>
         </div>
       </div>
+
+      {/* ── Support Developer Modal ── */}
+      {showSupport && (
+        <div className="support-modal-overlay" onClick={() => setShowSupport(false)}>
+          <div className="support-modal-card" onClick={e => e.stopPropagation()}>
+            {/* Close */}
+            <button className="support-modal-close" onClick={() => setShowSupport(false)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            {/* Header */}
+            <div className="support-modal-header">
+              <div className="support-heart-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#f87171" stroke="#f87171" strokeWidth="1">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="support-modal-title">Support Developer Kecil</h3>
+                <p className="support-modal-sub">Terima kasih telah menggunakan FX Community!</p>
+              </div>
+            </div>
+
+            {/* Description */}
+            <p className="support-modal-desc">
+              Platform ini dikembangkan secara independen dengan penuh dedikasi. Jika kamu merasa platform ini bermanfaat, donasi kecilmu sangat berarti untuk keberlanjutan pengembangan!
+            </p>
+
+            {/* QRIS Card */}
+            <div className="support-qris-wrapper">
+              <div className="support-qris-card">
+                <img src="/qris-support.png" alt="QRIS ApaAjaGwBisaKo" className="support-qris-img" />
+              </div>
+              <div className="support-qris-info">
+                <div className="support-qris-name">ApaAjaGwBisaKo</div>
+                <div className="support-qris-nmid">NMID: ID1026515052896</div>
+                <div className="support-qris-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  Pembayaran aman via QRIS
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <button className="support-modal-btn" onClick={() => setShowSupport(false)}>
+              Tutup — Terima kasih! 🙏
+            </button>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .fxc-footer {
@@ -293,14 +357,27 @@ export default function Footer() {
           transition: all 0.18s ease;
         }
 
+        .footer-support-btn::before {
+          background: rgba(248,113,113,0.4) !important;
+        }
+
         .footer-link:hover {
           color: #00E5FF;
           transform: translateX(3px);
         }
 
+        .footer-support-btn:hover {
+          color: #f87171 !important;
+        }
+
         .footer-link:hover::before {
           background: #00E5FF;
           box-shadow: 0 0 6px rgba(0,229,255,0.6);
+        }
+
+        .footer-support-btn:hover::before {
+          background: #f87171 !important;
+          box-shadow: 0 0 6px rgba(248,113,113,0.6) !important;
         }
 
         /* ── RISK BADGE ── */
@@ -354,6 +431,195 @@ export default function Footer() {
             gap: 6px;
           }
           .footer-disclaimer { text-align: left; }
+        }
+
+        /* ══════════════════════════════════
+           SUPPORT DEVELOPER MODAL
+        ══════════════════════════════════ */
+        .support-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.8);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          padding: 20px;
+          animation: supportFadeIn 0.22s ease;
+        }
+
+        @keyframes supportFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .support-modal-card {
+          position: relative;
+          background: linear-gradient(145deg, rgba(13,17,32,0.98), rgba(8,11,20,0.99));
+          border: 1px solid rgba(248,113,113,0.2);
+          border-radius: 24px;
+          width: 100%;
+          max-width: 420px;
+          padding: 28px;
+          box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 60px rgba(248,113,113,0.05);
+          animation: supportSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes supportSlideUp {
+          from { opacity: 0; transform: translateY(24px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .support-modal-close {
+          position: absolute;
+          top: 16px; right: 16px;
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.04);
+          color: rgba(255,255,255,0.4);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .support-modal-close:hover {
+          background: rgba(255,255,255,0.09);
+          color: #fff;
+          border-color: rgba(255,255,255,0.15);
+        }
+
+        .support-modal-header {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin-bottom: 16px;
+        }
+
+        .support-heart-icon {
+          width: 48px; height: 48px;
+          border-radius: 14px;
+          background: rgba(248,113,113,0.1);
+          border: 1px solid rgba(248,113,113,0.2);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          animation: heartPulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes heartPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
+        }
+
+        .support-modal-title {
+          font-size: 18px;
+          font-weight: 800;
+          color: #f0f4ff;
+          margin: 0 0 3px;
+        }
+
+        .support-modal-sub {
+          font-size: 12px;
+          color: rgba(255,255,255,0.4);
+          margin: 0;
+        }
+
+        .support-modal-desc {
+          font-size: 13px;
+          line-height: 1.7;
+          color: rgba(255,255,255,0.55);
+          margin-bottom: 20px;
+          padding: 14px;
+          background: rgba(248,113,113,0.04);
+          border: 1px solid rgba(248,113,113,0.1);
+          border-radius: 12px;
+        }
+
+        .support-qris-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+
+        .support-qris-card {
+          width: 100%;
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .support-qris-img {
+          width: 100%;
+          max-width: 260px;
+          height: auto;
+          display: block;
+          border-radius: 8px;
+        }
+
+        .support-qris-info {
+          text-align: center;
+        }
+
+        .support-qris-name {
+          font-size: 16px;
+          font-weight: 800;
+          color: #f0f4ff;
+          margin-bottom: 3px;
+        }
+
+        .support-qris-nmid {
+          font-size: 11px;
+          color: rgba(255,255,255,0.35);
+          letter-spacing: 0.5px;
+          margin-bottom: 10px;
+        }
+
+        .support-qris-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.4);
+          padding: 5px 12px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 20px;
+        }
+
+        .support-modal-btn {
+          width: 100%;
+          padding: 14px;
+          border-radius: 14px;
+          border: none;
+          background: linear-gradient(135deg, rgba(248,113,113,0.15), rgba(248,113,113,0.08));
+          border: 1px solid rgba(248,113,113,0.25);
+          color: #f87171;
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          letter-spacing: 0.3px;
+        }
+
+        .support-modal-btn:hover {
+          background: linear-gradient(135deg, rgba(248,113,113,0.25), rgba(248,113,113,0.15));
+          border-color: rgba(248,113,113,0.4);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(248,113,113,0.15);
+        }
+
+        @media (max-width: 480px) {
+          .support-modal-card { padding: 22px 18px; border-radius: 20px; }
+          .support-modal-title { font-size: 16px; }
         }
       `}</style>
     </footer>
