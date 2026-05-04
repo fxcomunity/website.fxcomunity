@@ -6,6 +6,61 @@ export default function Footer() {
   const year = new Date().getFullYear()
   const [showSupport, setShowSupport] = useState(false)
 
+  // Download QRIS as JPG
+  const downloadJPG = async () => {
+    const a = document.createElement('a')
+    a.href = '/qris-support.png'
+    a.download = 'QRIS-ApaAjaGwBisaKo.jpg'
+    a.click()
+  }
+
+  // Download QRIS as PDF via canvas
+  const downloadPDF = async () => {
+    try {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.src = '/qris-support.png?t=' + Date.now()
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej })
+
+      const canvas = document.createElement('canvas')
+      const scale = 2
+      canvas.width = img.naturalWidth * scale
+      canvas.height = img.naturalHeight * scale
+      const ctx = canvas.getContext('2d')!
+      ctx.scale(scale, scale)
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, img.naturalWidth, img.naturalHeight)
+      ctx.drawImage(img, 0, 0)
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95)
+
+      // Build minimal PDF manually (no external lib needed)
+      const w = img.naturalWidth
+      const h = img.naturalHeight
+      // Use jsPDF via CDN-free approach: just wrap image in a simple PDF blob
+      const pdfW = 595  // A4 width in pts
+      const pdfH = Math.round(h / w * pdfW)
+
+      // Create a temporary link with data URL for PDF using print approach
+      const printWindow = window.open('', '_blank')
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html><html><head>
+          <title>QRIS ApaAjaGwBisaKo</title>
+          <style>*{margin:0;padding:0} body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fff}
+          img{max-width:100%;max-height:100vh;object-fit:contain}</style>
+          </head><body>
+          <img src="${imgData}" />
+          <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),1000)}<\/script>
+          </body></html>`)
+        printWindow.document.close()
+      }
+    } catch (e) {
+      // fallback: just download the image
+      downloadJPG()
+    }
+  }
+
   return (
     <footer className="fxc-footer">
       <div className="footer-inner">
@@ -151,10 +206,20 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Footer */}
-            <button className="support-modal-btn" onClick={() => setShowSupport(false)}>
-              Tutup — Terima kasih! 🙏
-            </button>
+            {/* Action Buttons */}
+            <div className="support-action-row">
+              <button className="support-dl-btn support-dl-jpg" onClick={downloadJPG}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Download JPG
+              </button>
+              <button className="support-dl-btn support-dl-pdf" onClick={downloadPDF}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Download PDF
+              </button>
+              <button className="support-modal-btn" onClick={() => setShowSupport(false)}>
+                Tutup 🙏
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -595,31 +660,77 @@ export default function Footer() {
         }
 
         .support-modal-btn {
-          width: 100%;
-          padding: 14px;
-          border-radius: 14px;
+          flex: 1;
+          padding: 12px;
+          border-radius: 12px;
           border: none;
-          background: linear-gradient(135deg, rgba(248,113,113,0.15), rgba(248,113,113,0.08));
-          border: 1px solid rgba(248,113,113,0.25);
+          background: rgba(248,113,113,0.08);
+          border: 1px solid rgba(248,113,113,0.2);
           color: #f87171;
           font-family: inherit;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 700;
           cursor: pointer;
           transition: all 0.2s;
-          letter-spacing: 0.3px;
         }
 
         .support-modal-btn:hover {
-          background: linear-gradient(135deg, rgba(248,113,113,0.25), rgba(248,113,113,0.15));
-          border-color: rgba(248,113,113,0.4);
+          background: rgba(248,113,113,0.15);
+          border-color: rgba(248,113,113,0.35);
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(248,113,113,0.15);
+        }
+
+        .support-action-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 8px;
+        }
+
+        .support-dl-btn {
+          flex: 1;
+          padding: 12px 8px;
+          border-radius: 12px;
+          border: none;
+          font-family: inherit;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+
+        .support-dl-jpg {
+          background: rgba(59,130,246,0.1);
+          border: 1px solid rgba(59,130,246,0.25);
+          color: #60a5fa;
+        }
+        .support-dl-jpg:hover {
+          background: rgba(59,130,246,0.18);
+          border-color: rgba(59,130,246,0.4);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px rgba(59,130,246,0.15);
+        }
+
+        .support-dl-pdf {
+          background: rgba(239,68,68,0.08);
+          border: 1px solid rgba(239,68,68,0.22);
+          color: #f87171;
+        }
+        .support-dl-pdf:hover {
+          background: rgba(239,68,68,0.15);
+          border-color: rgba(239,68,68,0.38);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px rgba(239,68,68,0.12);
         }
 
         @media (max-width: 480px) {
           .support-modal-card { padding: 22px 18px; border-radius: 20px; }
           .support-modal-title { font-size: 16px; }
+          .support-action-row { grid-template-columns: 1fr 1fr; }
+          .support-modal-btn { grid-column: 1 / -1; }
         }
       `}</style>
     </footer>

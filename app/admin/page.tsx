@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -1030,7 +1030,7 @@ export default function AdminPage() {
         </div>
 
         {/* Menu */}
-        <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto', overflowX: 'hidden' }}>
+        <nav style={{ flex: 1, padding: '8px 10px', overflowY: 'auto', overflowX: 'hidden' }}>
           {MENU_ITEMS.map(item => (
             <button
               key={item.key}
@@ -1040,19 +1040,19 @@ export default function AdminPage() {
                 setMobileOpen(false)
               }}
               className={`admin-nav-item ${activeMenu === item.key ? 'active' : ''}`}
-              style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '11px 14px' : '11px 0' }}
+              style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '9px 14px' : '9px 0' }}
             >
               <span className="admin-nav-icon">{item.icon}</span>
-              {sidebarOpen && <span style={{ fontSize: '13.5px' }}>{item.label}</span>}
+              {sidebarOpen && <span style={{ fontSize: '13px' }}>{item.label}</span>}
             </button>
           ))}
 
           {/* Utility Section */}
-          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <button
               onClick={toggleMaintenance}
               className="admin-nav-item"
-              style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '11px 14px' : '11px 0', color: maintenance ? '#F87171' : '#4ADE80' }}
+              style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '9px 14px' : '9px 0', color: maintenance ? '#F87171' : '#4ADE80' }}
             >
               <span className="admin-nav-icon" style={{ background: maintenance ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)' }}>
                 {maintenance
@@ -1062,39 +1062,35 @@ export default function AdminPage() {
               {sidebarOpen && <span style={{ fontSize: '13px' }}>Maintenance {maintenance ? 'ON' : 'OFF'}</span>}
             </button>
             <Link href="/admin/banners-manage" style={{ textDecoration: 'none' }}>
-              <div className="admin-nav-item" style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '11px 14px' : '11px 0' }}>
+              <div className="admin-nav-item" style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '9px 14px' : '9px 0' }}>
                 <span className="admin-nav-icon">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
                 </span>
                 {sidebarOpen && <span style={{ fontSize: '13px' }}>Banner Manager</span>}
               </div>
             </Link>
+            <Link href="/library" style={{ textDecoration: 'none' }}>
+              <div className="admin-nav-item" style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '9px 14px' : '9px 0' }}>
+                <span className="admin-nav-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                </span>
+                {sidebarOpen && <span style={{ fontSize: '13px' }}>Ke Library</span>}
+              </div>
+            </Link>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="admin-nav-item"
+              style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '9px 14px' : '9px 0' }}
+            >
+              <span className="admin-nav-icon">
+                {sidebarOpen
+                  ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+                  : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>}
+              </span>
+              {sidebarOpen && <span style={{ fontSize: '13px' }}>Collapse</span>}
+            </button>
           </div>
         </nav>
-
-        {/* Bottom */}
-        <div style={{ padding: '12px 10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <Link href="/library" style={{ textDecoration: 'none' }}>
-            <div className="admin-nav-item" style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '10px 14px' : '10px 0' }}>
-              <span className="admin-nav-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
-              </span>
-              {sidebarOpen && <span style={{ fontSize: '13px' }}>Ke Library</span>}
-            </div>
-          </Link>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="admin-nav-item"
-            style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center', padding: sidebarOpen ? '10px 14px' : '10px 0', marginTop: '2px' }}
-          >
-            <span className="admin-nav-icon">
-              {sidebarOpen
-                ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
-                : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>}
-            </span>
-            {sidebarOpen && <span style={{ fontSize: '13px' }}>Collapse</span>}
-          </button>
-        </div>
       </aside>
 
 
