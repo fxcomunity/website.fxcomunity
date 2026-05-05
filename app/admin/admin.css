@@ -625,6 +625,23 @@
   .user-row-item > div:nth-child(2) p.user-email { display: block !important; } /* Show email under name */
 }
 
+/* ── Role Selector Responsive ── */
+.desktop-role-selector {
+  display: flex !important;
+}
+
+.mobile-role-selector {
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .desktop-role-selector {
+    display: none !important;
+  }
+  .mobile-role-selector {
+    display: block !important;
+  }
+}
 
 
 /* ── Modern Loader ── */

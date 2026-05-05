@@ -1,0 +1,1 @@
+# TODO: Push ke GitHub\n\n✅ [ ] 1. Install GitHub CLI\n✅ [ ] 2. GitHub auth login\n✅ [ ] 3. Buat branch blackboxai/push-updates\n✅ [ ] 4. Add & commit changes (skip APK besar)\n✅ [ ] 5. Push branch\n✅ [ ] 6. Buat Pull Request\n\nNext: Merge PR → deploy Vercel
