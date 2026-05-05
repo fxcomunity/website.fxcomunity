@@ -135,6 +135,22 @@ export default function Notification() {
     } catch {}
   }
 
+  async function deleteNotif(id: number, e: React.MouseEvent) {
+    e.stopPropagation()
+    try {
+      await fetch('/api/notifications', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      })
+      setNotifs(prev => prev.filter(n => n.id !== id))
+      setUnread(prev => {
+        const n = notifs.find(x => x.id === id)
+        return n && !n.is_read ? Math.max(0, prev - 1) : prev
+      })
+    } catch {}
+  }
+
   async function markAllRead() {
     setMarkingAll(true)
     await Promise.all(notifs.filter(n => !n.is_read).map(n => markRead(n.id)))
@@ -295,21 +311,39 @@ export default function Notification() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '3px' }}>
                         <div style={{
-                          fontSize: '13px', fontWeight: n.is_read ? 500 : 700,
+                          fontSize: '12px', fontWeight: n.is_read ? 500 : 700,
                           color: n.is_read ? 'rgba(255,255,255,0.6)' : '#fff',
                           lineHeight: '1.3',
                         }}>
                           {n.title}
                         </div>
-                        {!n.is_read && (
-                          <div style={{
-                            width: '7px', height: '7px', borderRadius: '50%',
-                            background: '#00E5FF', flexShrink: 0, marginTop: '3px',
-                            boxShadow: '0 0 6px rgba(0,229,255,0.6)',
-                          }} />
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {!n.is_read && (
+                            <div style={{
+                              width: '6px', height: '6px', borderRadius: '50%',
+                              background: '#00E5FF', flexShrink: 0,
+                              boxShadow: '0 0 6px rgba(0,229,255,0.6)',
+                            }} />
+                          )}
+                          <button
+                            onClick={(e) => deleteNotif(n.id, e)}
+                            style={{
+                              background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.2)',
+                              cursor: 'pointer', padding: '4px', borderRadius: '5px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              transition: 'all 0.15s ease'
+                            }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#f87171'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.1)' }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.2)'; (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
+                            title="Hapus"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', lineHeight: '1.5', marginBottom: '6px' }}>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', lineHeight: '1.4', marginBottom: '6px' }}>
                         {n.message}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -368,12 +402,13 @@ export default function Notification() {
 
       <style jsx>{`
         .notif-dropdown {
-          width: 360px;
+          width: 340px;
         }
         @media (max-width: 480px) {
           .notif-dropdown {
-            width: calc(100vw - 32px);
-            right: -10px !important;
+            width: calc(100vw - 40px);
+            right: -50px !important;
+            max-height: 70vh !important;
           }
         }
         @keyframes notifSlideDown {

@@ -42,3 +42,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: 'DB Error' }, { status: 500 })
   }
 }
+
+export async function DELETE(req: Request) {
+  const session = await getCurrentUser()
+  if (!session) {
+    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { id } = await req.json()
+  if (!id) return NextResponse.json({ success: false, message: 'Missing ID' }, { status: 400 })
+
+  try {
+    // Delete (ensure user only deletes their own OR global)
+    await query(
+      'DELETE FROM notifications WHERE id = $1 AND (user_id = $2 OR user_id IS NULL)',
+      [id, session.id]
+    )
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json({ success: false, message: 'DB Error' }, { status: 500 })
+  }
+}

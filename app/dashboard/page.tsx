@@ -21,6 +21,9 @@ const IconCalendar= () => <svg width="12" height="12" viewBox="0 0 24 24" fill="
 const IconSend    = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
 const IconCheck   = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
 const IconSpinner = () => <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="2" strokeLinecap="round" style={{ animation: 'spin 1s linear infinite' }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+const IconQr      = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="7" y1="7" x2="7" y2="7"/><line x1="17" y1="7" x2="17" y2="7"/><line x1="17" y1="17" x2="17" y2="17"/><line x1="7" y1="17" x2="7" y2="17"/></svg>
+const IconUsers   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+const IconShield  = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
 
 export default function UserDashboard() {
   const router = useRouter()
@@ -30,6 +33,7 @@ export default function UserDashboard() {
   const [notifications, setNotifications] = useState<any[]>([])
   const [reports, setReports] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showQrModal, setShowQrModal] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
@@ -187,6 +191,53 @@ export default function UserDashboard() {
           </div>
         </div>
 
+        {/* ── Community & Support ── */}
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Komunitas & Dukungan</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+            
+            {/* Join Group */}
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(0,229,255,0.15)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(0,229,255,0.1)', color: '#00E5FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IconUsers />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '13px', fontWeight: 700 }}>Gabung Grup</div>
+                <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Diskusi dengan trader lain</div>
+              </div>
+              <a href="https://t.me/fxcommunity" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', background: 'var(--gradient)', color: '#000', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Gabung</a>
+            </div>
+
+            {/* Rules */}
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IconShield />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '13px', fontWeight: 700 }}>Rules & Edukasi</div>
+                <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Pahami aturan komunitas</div>
+              </div>
+              <Link href="/(legal)/terms" style={{ textDecoration: 'none', background: 'rgba(139,92,246,0.2)', color: '#C084FC', border: '1px solid rgba(139,92,246,0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Lihat</Link>
+            </div>
+
+            {/* QR Support */}
+            <div 
+              onClick={() => setShowQrModal(true)}
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
+            >
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(245,158,11,0.1)', color: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IconQr />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '13px', fontWeight: 700 }}>Donasi / Support</div>
+                <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Dukung perkembangan platform</div>
+              </div>
+              <div style={{ background: 'rgba(245,158,11,0.2)', color: '#FBBF24', border: '1px solid rgba(245,158,11,0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Donasi</div>
+            </div>
+
+          </div>
+        </div>
+
         {/* ── Bottom: Notifications + Reports ── */}
         <div className="bottom-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
 
@@ -252,8 +303,56 @@ export default function UserDashboard() {
         </div>
       </div>
 
+      {/* QR Support Modal */}
+      {showQrModal && (
+        <div 
+          onClick={() => setShowQrModal(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(10px)', zIndex: 3000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+          }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff', padding: '24px', borderRadius: '24px',
+              maxWidth: '360px', width: '100%', textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+              animation: 'fadeInUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            }}
+          >
+            <h3 style={{ color: '#000', marginBottom: '8px', fontWeight: 800 }}>Dukung FXCOMMUNITY</h3>
+            <p style={{ color: '#666', fontSize: '13px', marginBottom: '20px' }}>Scan QRIS di bawah untuk berdonasi mendukung operasional & perkembangan platform kami.</p>
+            
+            <div style={{ background: '#f8f9fa', padding: '16px', borderRadius: '16px', marginBottom: '20px', border: '1px dashed #ddd' }}>
+              <img 
+                src="/qris-support.png" 
+                alt="QRIS Support" 
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '10px' }} 
+              />
+            </div>
+
+            <button 
+              onClick={() => setShowQrModal(false)}
+              style={{
+                width: '100%', padding: '12px', borderRadius: '12px',
+                background: '#000', color: '#fff', border: 'none',
+                fontWeight: 700, cursor: 'pointer'
+              }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
 
         /* ── Tablet (max 768px) ── */
         @media (max-width: 768px) {
