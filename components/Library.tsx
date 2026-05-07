@@ -184,13 +184,11 @@ export default function Library() {
       {/* Hero / Banner Section */}
       <div style={{
         background: 'radial-gradient(ellipse 90% 50% at 50% -5%, rgba(0,229,255,0.1) 0%, transparent 65%)',
-        padding: '24px 16px 16px',
+        padding: 0,
       }}>
-        <div style={{ margin: '0 auto', maxWidth: '1200px' }}>
-          <BannerSlider variant="hero" />
-        </div>
+        <BannerSlider variant="hero" />
         {search && (
-          <div style={{ maxWidth: '1200px', margin: '12px auto 0', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ maxWidth: '100%', margin: '12px auto 0', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', padding: '0 16px' }}>
             <span style={{ color: 'var(--text2)', fontSize: '13px' }}>Hasil pencarian:</span>
             <span style={{
               background: 'rgba(0,229,255,0.12)', border: '1px solid rgba(0,229,255,0.3)',
