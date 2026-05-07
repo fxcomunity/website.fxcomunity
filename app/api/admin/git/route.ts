@@ -8,10 +8,10 @@ const execAsync = promisify(exec)
 // Whitelist of allowed git commands for security
 const ALLOWED_COMMANDS: Record<string, string> = {
   status:      'git status',
-  pull:        'git pull',
+  pull:        'git pull origin main',
   add:         'git add -A',
   commit:      'git commit -m',   // needs message param
-  push:        'git push',
+  push:        'git push origin main',
   log:         'git log --oneline -10',
   diff:        'git diff --stat',
   reset_hard:  'git reset --hard HEAD',

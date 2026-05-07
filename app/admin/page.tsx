@@ -438,6 +438,7 @@ export default function AdminPage() {
   const [maintenanceCodeEdit, setMaintenanceCodeEdit] = useState('')
   const [loadingMaintenanceCode, setLoadingMaintenanceCode] = useState(false)
   const [savingMaintenanceCode, setSavingMaintenanceCode] = useState(false)
+  const [openRoleMenuId, setOpenRoleMenuId] = useState<number | null>(null)
   // Git / Deploy states
   const [gitLoading, setGitLoading] = useState(false)
   const [gitOutput, setGitOutput] = useState('')
@@ -1387,27 +1388,90 @@ export default function AdminPage() {
                       {/* Badges & Role Selector */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
                         {me?.role === 'Owner' && u.role !== 'Owner' ? (
-                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                            {['Owner', 'Admin', 'User'].map(role => (
+                          <>
+                            {/* Desktop: Inline role buttons */}
+                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }} className="desktop-role-selector">
+                              {['Owner', 'Admin', 'User'].map(role => (
+                                <button
+                                  key={role}
+                                  onClick={() => changeUserRole(u, role)}
+                                  style={{
+                                    padding: '4px 10px',
+                                    borderRadius: '8px',
+                                    fontSize: '10px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    background: u.role === role ? (role === 'Owner' ? 'rgba(245,158,11,0.3)' : role === 'Admin' ? 'rgba(168,85,247,0.3)' : 'rgba(59,130,246,0.3)') : 'rgba(255,255,255,0.05)',
+                                    color: u.role === role ? (role === 'Owner' ? '#F59E0B' : role === 'Admin' ? '#C084FC' : '#60A5FA') : 'rgba(255,255,255,0.4)',
+                                    border: u.role === role ? `1px solid ${role === 'Owner' ? 'rgba(245,158,11,0.5)' : role === 'Admin' ? 'rgba(168,85,247,0.5)' : 'rgba(59,130,246,0.5)'}` : '1px solid rgba(255,255,255,0.1)',
+                                    transition: 'all 0.2s'
+                                  }}
+                                >
+                                  {role}
+                                </button>
+                              ))}
+                            </div>
+                            {/* Mobile: Dropdown role selector */}
+                            <div style={{ position: 'relative', display: 'none' }} className="mobile-role-selector">
                               <button
-                                key={role}
-                                onClick={() => changeUserRole(u, role)}
+                                onClick={() => setOpenRoleMenuId(openRoleMenuId === u.id ? null : u.id)}
                                 style={{
                                   padding: '4px 10px',
                                   borderRadius: '8px',
                                   fontSize: '10px',
                                   fontWeight: 700,
                                   cursor: 'pointer',
-                                  background: u.role === role ? (role === 'Owner' ? 'rgba(245,158,11,0.3)' : role === 'Admin' ? 'rgba(168,85,247,0.3)' : 'rgba(59,130,246,0.3)') : 'rgba(255,255,255,0.05)',
-                                  color: u.role === role ? (role === 'Owner' ? '#F59E0B' : role === 'Admin' ? '#C084FC' : '#60A5FA') : 'rgba(255,255,255,0.4)',
-                                  border: u.role === role ? `1px solid ${role === 'Owner' ? 'rgba(245,158,11,0.5)' : role === 'Admin' ? 'rgba(168,85,247,0.5)' : 'rgba(59,130,246,0.5)'}` : '1px solid rgba(255,255,255,0.1)',
+                                  background: 'rgba(0,229,255,0.1)',
+                                  color: '#00E5FF',
+                                  border: '1px solid rgba(0,229,255,0.3)',
                                   transition: 'all 0.2s'
                                 }}
                               >
-                                {role}
+                                {u.role} ▼
                               </button>
-                            ))}
-                          </div>
+                              {openRoleMenuId === u.id && (
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  left: 0,
+                                  marginTop: '4px',
+                                  background: 'rgba(8,11,20,0.98)',
+                                  border: '1px solid rgba(0,229,255,0.2)',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  zIndex: 10,
+                                  minWidth: '120px',
+                                  boxShadow: '0 8px 16px rgba(0,0,0,0.4)'
+                                }}>
+                                  {['Owner', 'Admin', 'User'].map(role => (
+                                    <button
+                                      key={role}
+                                      onClick={() => {
+                                        changeUserRole(u, role)
+                                        setOpenRoleMenuId(null)
+                                      }}
+                                      style={{
+                                        display: 'block',
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        border: 'none',
+                                        background: u.role === role ? (role === 'Owner' ? 'rgba(245,158,11,0.2)' : role === 'Admin' ? 'rgba(168,85,247,0.2)' : 'rgba(59,130,246,0.2)') : 'transparent',
+                                        color: u.role === role ? (role === 'Owner' ? '#F59E0B' : role === 'Admin' ? '#C084FC' : '#60A5FA') : 'rgba(255,255,255,0.6)',
+                                        fontSize: '11px',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                        borderBottom: role !== 'User' ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      {role}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </>
                         ) : (
                           <span className={`badge ${u.role === 'Owner' ? 'badge-orange' : u.role === 'Admin' ? 'badge-purple' : 'badge-blue'}`}>
                             {u.role}

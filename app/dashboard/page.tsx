@@ -34,6 +34,7 @@ export default function UserDashboard() {
   const [reports, setReports] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showQrModal, setShowQrModal] = useState(false)
+  const [showRulesModal, setShowRulesModal] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
@@ -196,29 +197,39 @@ export default function UserDashboard() {
           <h2 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Komunitas & Dukungan</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
             
-            {/* Join Group */}
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(0,229,255,0.15)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(0,229,255,0.1)', color: '#00E5FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <IconUsers />
+            {/* Rules Grup */}
+            <div 
+              onClick={() => setShowRulesModal(true)}
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,107,53,0.15)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,107,53,0.4)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,107,53,0.08)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,107,53,0.15)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)' }}
+            >
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(255,107,53,0.1)', color: '#FF6B35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700 }}>Gabung Grup</div>
-                <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Diskusi dengan trader lain</div>
+                <div style={{ fontSize: '13px', fontWeight: 700 }}>Rules Grup</div>
+                <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Peraturan komunitas</div>
               </div>
-              <a href="https://t.me/fxcommunity" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', background: 'var(--gradient)', color: '#000', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Gabung</a>
+              <div style={{ background: 'rgba(255,107,53,0.2)', color: '#FF9A6A', border: '1px solid rgba(255,107,53,0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Lihat</div>
             </div>
 
             {/* Rules */}
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <IconShield />
+            <a href="https://chat.whatsapp.com/KnkESJgEUKT5PEki4SpDD0" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139,92,246,0.4)'; (e.currentTarget as HTMLElement).style.background = 'rgba(139,92,246,0.08)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139,92,246,0.15)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)' }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconShield />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700 }}>Grup Diskusi</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Gabung komunitas WhatsApp</div>
+                </div>
+                <div style={{ background: 'rgba(139,92,246,0.2)', color: '#C084FC', border: '1px solid rgba(139,92,246,0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Gabung</div>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700 }}>Rules & Edukasi</div>
-                <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Pahami aturan komunitas</div>
-              </div>
-              <Link href="/(legal)/terms" style={{ textDecoration: 'none', background: 'rgba(139,92,246,0.2)', color: '#C084FC', border: '1px solid rgba(139,92,246,0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Lihat</Link>
-            </div>
+            </a>
 
             {/* QR Support */}
             <div 
@@ -234,6 +245,23 @@ export default function UserDashboard() {
               </div>
               <div style={{ background: 'rgba(245,158,11,0.2)', color: '#FBBF24', border: '1px solid rgba(245,158,11,0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Donasi</div>
             </div>
+
+            {/* Download App */}
+            <a href="https://mega.nz/file/DLIzVA5I#AoO4cdFq_GD07MOFBPGEOwu90SCCfoPU7vQpZtDmAYQ" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(16,185,129,0.4)'; (e.currentTarget as HTMLElement).style.background = 'rgba(16,185,129,0.08)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(16,185,129,0.15)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)' }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(16,185,129,0.1)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700 }}>Download Aplikasi</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text3)' }}>APK untuk Android</div>
+                </div>
+                <div style={{ background: 'rgba(16,185,129,0.2)', color: '#6EE7B7', border: '1px solid rgba(16,185,129,0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>Download</div>
+              </div>
+            </a>
 
           </div>
         </div>
@@ -342,6 +370,104 @@ export default function UserDashboard() {
               }}
             >
               Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Rules Modal */}
+      {showRulesModal && (
+        <div 
+          onClick={() => setShowRulesModal(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(10px)', zIndex: 3000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+          }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#080B14', border: '1px solid rgba(0,229,255,0.15)', padding: '28px', borderRadius: '20px',
+              maxWidth: '520px', width: '100%', maxHeight: '80vh', overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+              animation: 'fadeInUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <div>
+                <h2 style={{ color: '#fff', margin: 0, marginBottom: '4px', fontSize: '22px', fontWeight: 800 }}>FX COMMUNITY 📈</h2>
+                <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0, fontSize: '12px' }}>Peraturan Komunitas Resmi</p>
+              </div>
+              <button
+                onClick={() => setShowRulesModal(false)}
+                style={{
+                  width: 32, height: 32, borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.color = '#fff' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)' }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            {/* Description */}
+            <div style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
+              <p style={{ color: 'rgba(0,229,255,0.9)', fontSize: '13px', margin: 0, lineHeight: '1.6' }}>
+                Tempat sharing trader Forex dari berbagai level, dari pemula sampai pro. Saling belajar, sharing setup, dan jaga vibe positif.
+              </p>
+            </div>
+
+            {/* Rules Title */}
+            <h3 style={{ color: '#fff', fontSize: '14px', fontWeight: 800, marginBottom: '14px', marginTop: '20px' }}>📋 Peraturan Grup:</h3>
+
+            {/* Rules List */}
+            <ol style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
+              {[
+                'Dilarang promosi akun, sinyal, atau grup lain tanpa izin admin.',
+                'Jaga sopan santun & hindari debat gak penting.',
+                'Share analisa, edukasi, atau info market yang bermanfaat.',
+                'Hoax, spam, dan SARA = kick tanpa peringatan.',
+                'Boleh tanya apa pun soal trading, tapi usahakan jelas & sopan.',
+                'Gunakan bahasa yang mudah dipahami, jangan singkatan berlebihan.',
+                'Admin berhak menegur atau mengeluarkan anggota jika melanggar.',
+                'User tidak diperbolehkan memakai BOT Chat lagi di Grub, kami tidak menerima alasan apapun.',
+                'User tidak diperbolehkan ngirim stiker berbasis vulgar, apabila ketahuan sama admin, admin wajib langsung kick tanpa basa-basi.'
+              ].map((rule, idx) => (
+                <li key={idx} style={{
+                  padding: '12px 0', color: 'rgba(255,255,255,0.8)', fontSize: '13px', lineHeight: '1.6',
+                  borderBottom: idx < 8 ? '1px solid rgba(255,255,255,0.05)' : 'none'
+                }}>
+                  <span style={{ color: '#00E5FF', fontWeight: 700, marginRight: '8px' }}>{idx + 1}.</span>
+                  {rule}
+                </li>
+              ))}
+            </ol>
+
+            {/* Footer Message */}
+            <div style={{ background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.2)', borderRadius: '12px', padding: '14px', marginTop: '20px' }}>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', margin: 0, lineHeight: '1.5' }}>
+                <strong style={{ color: '#FF9A6A' }}>⚠️ Catatan:</strong> Semua anggota wajib mematuhi peraturan ini. Pelanggaran berulang dapat mengakibatkan penghapusan dari grup.
+              </p>
+            </div>
+
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowRulesModal(false)}
+              style={{
+                width: '100%', padding: '12px', borderRadius: '12px',
+                background: 'rgba(0,229,255,0.15)', color: '#00E5FF', border: '1px solid rgba(0,229,255,0.3)',
+                fontWeight: 700, cursor: 'pointer', marginTop: '20px', fontSize: '13px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,255,0.25)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,255,0.15)' }}
+            >
+              Saya Mengerti
             </button>
           </div>
         </div>
