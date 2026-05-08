@@ -56,8 +56,6 @@ NEXT_PUBLIC_BASE_URL=https://domain-kamu.vercel.app
 GET /api/init
 ```
 
-Membuat semua tabel + seed owner default: `owner@fxcomunity.com` / `owner123`
-
 ## Halaman
 
 | Path | Deskripsi |
